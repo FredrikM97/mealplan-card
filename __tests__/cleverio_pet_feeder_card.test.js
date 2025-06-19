@@ -1,4 +1,4 @@
-import '../www/cleverio-pf100-feeder-card/cleverio_pet_feeder_card.js';
+import '../www/cleverio-pf100-feeder-card/main.js';
 import { encodeMealPlanData, decodeMealPlanData } from '../www/cleverio-pf100-feeder-card/utils/mealplan-state.js';
 import DaysUtil from '../www/cleverio-pf100-feeder-card/utils/days-util.js';
 
@@ -42,5 +42,33 @@ describe("CleverioPF100Card", () => {
     ];
     const totals = card.getTotalFoodPerDay();
     expect(totals["Monday"]).toBe(2);
+  });
+
+  it('fires manage-schedules event from overview', async () => {
+    const el = document.createElement('cleverio-pf100-card');
+    el.setConfig({ sensor: 'sensor.test' });
+    document.body.appendChild(el);
+    let fired = false;
+    const overview = el.shadowRoot.querySelector('cleverio-overview-view');
+    overview.addEventListener('manage-schedules', () => { fired = true; });
+    await overview.updateComplete;
+    const btn = overview.shadowRoot.querySelector('.manage-btn');
+    btn.click();
+    await new Promise(r => setTimeout(r, 50));
+    expect(fired).to.be.true;
+    document.body.removeChild(el);
+  });
+
+  it('renders schedules dialog on manage', async () => {
+    const el = document.createElement('cleverio-pf100-card');
+    el.setConfig({ sensor: 'sensor.test' });
+    document.body.appendChild(el);
+    const overview = el.shadowRoot.querySelector('cleverio-overview-view');
+    await overview.updateComplete;
+    const btn = overview.shadowRoot.querySelector('.manage-btn');
+    btn.click();
+    await new Promise(r => setTimeout(r, 50));
+    expect(el.shadowRoot.querySelector('cleverio-schedules-dialog')).to.exist;
+    document.body.removeChild(el);
   });
 });

@@ -81,35 +81,62 @@ export function decodeMealPlan(encoded) {
 // Utility for meal plan state (plain JS, no Lit)
 import DaysUtil from './days-util.js';
 
-export function getNextSchedule(feedingTimes = []) {
-  // Return '-' if no enabled times
-  const enabled = feedingTimes.filter(ft => ft.enabled);
-  if (!enabled.length) return '-';
-  // Return the next scheduled time (simplified)
-  return enabled[0].time || '-';
-}
-
-export function getTotalFoodPerDay(feedingTimes = []) {
-  const totals = {};
-  DaysUtil.DAYS.forEach(day => { totals[day] = 0; });
-  feedingTimes.forEach(ft => {
-    if (!ft.enabled) return;
-    DaysUtil.bitmaskToDaysArray(ft.daysMask).forEach(day => {
-      totals[day] += ft.portion || 0;
-    });
-  });
-  return totals;
-}
-
-export function getTodaysFoodGrams(feedingTimes = [], today = 'Monday') {
-  let total = 0;
-  feedingTimes.forEach(ft => {
-    if (!ft.enabled) return;
-    if (DaysUtil.bitmaskToDaysArray(ft.daysMask).includes(today)) {
-      total += ft.portion || 0;
+/**
+ * Returns the next enabled schedule time as a string, or '-' if none
+ * @param {Array} meals - Array of meal objects with time, enabled, daysMask
+ * @returns {string}
+ */
+export function getNextSchedule(meals) {
+    const now = new Date();
+    const todayIdx = now.getDay() === 0 ? 6 : now.getDay() - 1; // 0=Monday
+    const enabled = (meals || []).filter(m => m.enabled && (m.daysMask & (1 << todayIdx)));
+    if (!enabled.length) return '-';
+    enabled.sort((a, b) => a.time.localeCompare(b.time));
+    for (const meal of enabled) {
+        if (meal.time > now.toTimeString().slice(0,5)) return meal.time;
     }
-  });
-  return total;
+    return enabled[0].time;
+}
+
+/**
+ * Returns an object: { Monday: grams, ... }
+ * @param {Array} meals - Array of meal objects with portion, enabled, daysMask
+ * @returns {Object}
+ */
+export function getTotalFoodPerDay(meals) {
+    const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const result = { Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0, Sunday: 0 };
+    for (const meal of meals || []) {
+        if (!meal.enabled) continue;
+        for (let i = 0; i < 7; i++) {
+            if (meal.daysMask & (1 << i)) {
+                const day = DAYS[i];
+                result[day] += meal.portion || 0;
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ * Returns the total grams of food scheduled for a given day
+ * @param {Array} meals - Array of meal objects with portion, enabled, daysMask
+ * @param {string} day - Day name (e.g., 'Monday')
+ * @returns {number}
+ */
+export function getTodaysFoodGrams(meals, day) {
+    if (!day) return 0;
+    const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const idx = DAYS.indexOf(day);
+    if (idx === -1) return 0;
+    let total = 0;
+    for (const meal of meals || []) {
+        if (!meal.enabled) continue;
+        if (meal.daysMask & (1 << idx)) {
+            total += meal.portion || 0;
+        }
+    }
+    return total;
 }
 
 // Feeding time utilities for test compatibility

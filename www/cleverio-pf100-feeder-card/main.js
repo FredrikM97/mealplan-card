@@ -1,8 +1,11 @@
+import { getNextSchedule, getTotalFoodPerDay } from './utils/mealplan-state.js';
 import DaysUtil from './utils/days-util.js';
 import * as MealUtils from './utils/mealplan-state.js';
 import { mealsEqual } from './utils/mealplan-state.js';
-import { renderOverviewView } from './overview.js';
-import { showSchedulesView } from './schedules.js';
+import './overview.js';
+import './schedules.js';
+import './edit.js';
+import './cleverio-pf100-card-editor.js';
 
 class CleverioPetFeederCard extends HTMLElement {
   _config;
@@ -10,6 +13,7 @@ class CleverioPetFeederCard extends HTMLElement {
   _meals = [];
   _persistedMeals = [];
   _unsaved = false;
+  _overlayView = null; // 'schedules' or null
 
   constructor() {
     super();
@@ -82,23 +86,43 @@ class CleverioPetFeederCard extends HTMLElement {
   _render() {
     if (!this.shadowRoot) return;
     this.shadowRoot.innerHTML = '';
-    const overview = renderOverviewView({
-      meals: this._meals,
-      onManageSchedules: () => showSchedulesView({
-        container: this.shadowRoot,
-        meals: this._meals,
-        onMealsChanged: updatedMeals => {
-          this._meals = updatedMeals;
-          this._render();
-        },
-        onSave: (updatedMeals) => {
-          this._meals = updatedMeals;
-          this._saveMealsToSensor(); // Persist to backend and refresh, will re-render after
-        },
-        onCancel: () => this._render()
-      })
+    // Render overview
+    const overview = document.createElement('cleverio-overview-view');
+    overview.meals = this._meals;
+    overview.title = this._config?.title || 'Cleverio Pet Feeder';
+    overview.addEventListener('manage-schedules', () => {
+      this._showSchedulesDialog();
     });
     this.shadowRoot.appendChild(overview);
+    // If overlay is active, render it
+    if (this._overlayView === 'schedules') {
+      this._renderSchedulesDialog();
+    }
+  }
+
+  _showSchedulesDialog() {
+    this._overlayView = 'schedules';
+    this._render();
+  }
+
+  _closeOverlay() {
+    this._overlayView = null;
+    this._render();
+  }
+
+  _renderSchedulesDialog() {
+    // Remove any existing dialog
+    const oldDialog = this.shadowRoot.querySelector('cleverio-schedules-dialog');
+    if (oldDialog) oldDialog.remove();
+    const dialog = document.createElement('cleverio-schedules-dialog');
+    dialog.meals = this._meals;
+    dialog.addEventListener('close-dialog', () => this._closeOverlay());
+    dialog.addEventListener('save', e => {
+      this._meals = e.detail.meals;
+      this._saveMealsToSensor();
+      this._closeOverlay();
+    });
+    this.shadowRoot.appendChild(dialog);
   }
 
   _saveMealsToSensor() {
@@ -107,8 +131,29 @@ class CleverioPetFeederCard extends HTMLElement {
       entity_id: this.getSensorID(),
       value
     });
-    // Instead of just updating local state, re-fetch from Home Assistant
-    setTimeout(() => this._updateHass(), 500); // Give backend a moment to update
+    setTimeout(() => this._updateHass(), 500);
+  }
+
+  getNextSchedule() {
+    return getNextSchedule(this.feedingTimes || this._meals || []);
+  }
+
+  getTotalFoodPerDay() {
+    return getTotalFoodPerDay(this.feedingTimes || this._meals || []);
+  }
+
+  static async getConfigElement() {
+    await import('./cleverio-pf100-card-editor.js');
+    return document.createElement('cleverio-pf100-card-editor');
+  }
+
+  static getStubConfig() {
+    return { sensor: '', title: 'Cleverio Pet Feeder' };
+  }
+
+  static getCardSize(config) {
+    // Default grid size: 2x2 (width x height)
+    return 2;
   }
 }
 

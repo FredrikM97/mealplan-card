@@ -3,8 +3,8 @@ import { describe, it, expect } from 'vitest';
 
 describe('DaysUtil', () => {
   it('getDaysLabel returns correct labels', () => {
-    expect(DaysUtil.getDaysLabel(0b0111110)).toBe('Weekdays');
-    expect(DaysUtil.getDaysLabel(0b1000001)).toBe('Weekend');
+    expect(DaysUtil.getDaysLabel(0b00011111)).toBe('Weekdays');
+    expect(DaysUtil.getDaysLabel(0b1100000)).toBe('Weekend');
     expect(DaysUtil.getDaysLabel(0b1111111)).toBe('Every day');
     expect(DaysUtil.getDaysLabel(0b0000001)).toBe('Monday');
   });
@@ -34,7 +34,7 @@ describe('DaysUtil', () => {
   it('getDaysLabel returns short names for multiple days', () => {
     // Not a group, not a single day
     const mask = DaysUtil.daysArrayToBitmask(['Monday', 'Wednesday', 'Friday']);
-    expect(DaysUtil.getDaysLabel(mask)).toBe('Wed, Fri, Mon');
+    expect(DaysUtil.getDaysLabel(mask)).toBe('Mon, Wed, Fri');
   });
 
   it('getDaysLabel returns empty string for mask 0', () => {

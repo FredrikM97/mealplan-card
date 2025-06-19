@@ -5,8 +5,8 @@ const DaysUtil = {
     DAYS: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
     // Group labels and masks for UI
     DAY_GROUPS: [
-        { mask: 0b0111110, label: "Weekdays" },
-        { mask: 0b1000001, label: "Weekend" },
+        { mask: 0b00011111, label: "Weekdays" }, // Monday–Friday
+        { mask: 0b1100000, label: "Weekend" },   // Saturday–Sunday
         { mask: 0b1111111, label: "Every day" },
     ],
     getUIDays() {
@@ -27,12 +27,9 @@ const DaysUtil = {
             if (mask === group.mask) return group.label;
         }
         // If only one day, return full name
-        const days = DaysUtil.getUIDays().map((day, i) => {
-            const bit = (i + 1) % 7;
-            return (mask & (1 << bit)) ? day : null;
-        }).filter(Boolean);
+        const days = DaysUtil.DAYS.filter((_, i) => mask & (1 << i));
         if (days.length === 1) return days[0];
-        // Otherwise, return short names
+        // Otherwise, return short names in Monday-Sunday order
         return days.map(day => day.slice(0,3)).join(', ');
     },
 };
