@@ -1,6 +1,6 @@
 {
   "name": "Cleverio PF100 Feeder Card",
-  "content_in_root": false,
+  "content_in_root": true,
   "filename": "cleverio-pf100-feeder-card.bundle.js",
   "domains": ["lovelace"],
   "country": "SE",

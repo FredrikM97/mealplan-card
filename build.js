@@ -6,7 +6,7 @@ build({
   bundle: true,
   minify: true,
   format: 'esm',
-  outfile: './www/cleverio-pf100-feeder-card/cleverio-pf100-feeder-card.bundle.js',
+  outfile: 'cleverio-pf100-feeder-card.bundle.js',
   target: ['es2020'],
   sourcemap: true,
   logLevel: 'info'
