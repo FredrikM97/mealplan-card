@@ -2,7 +2,7 @@
 import { build } from 'esbuild';
 
 build({
-  entryPoints: ['./www/cleverio-pf100-feeder-card/cleverio_pet_feeder_card.js'],
+  entryPoints: ['./www/cleverio-pf100-feeder-card/main.js'],
   bundle: true,
   minify: true,
   format: 'esm',
