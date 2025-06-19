@@ -38,7 +38,7 @@ Find "Cleverio PF100 Feeder Card" in HACS under Frontend and install it.
 Go to **Settings → Dashboards → Resources** and add:
 
 ```yaml
-url: /local/cleverio-pf100-feeder-card/cleverio_pet_feeder_card.js
+url: /local/cleverio-pf100-feeder-card/cleverio-pf100-feeder-card.bundle.js
 type: module
 ```
 
