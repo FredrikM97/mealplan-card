@@ -47,11 +47,9 @@ type: module
 Add the following to your Lovelace dashboard YAML:
 
 ```yaml
-type: 'custom:cleverio_pet_feeder_card'
-title: Pet feeder card
+type: custom:cleverio-pf100-card
+title: Pet Feeder
 sensor: text.pet_feeder_meal_plan
-
-
 ```
 
 ## Configuration
