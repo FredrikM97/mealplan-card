@@ -1,0 +1,15 @@
+{
+  "name": "Cleverio PF100 Feeder Card DevContainer",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "postCreateCommand": "npm install && npm test"
+}

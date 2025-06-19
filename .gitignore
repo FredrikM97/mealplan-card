@@ -1,0 +1,37 @@
+# Node
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+jspm_packages/
+
+# Build output
+coverage/
+dist/
+build/
+www/cleverio-pf100-feeder-card/*.bundle.js
+www/cleverio-pf100-feeder-card/*.bundle.js.map
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+
+# VSCode
+.vscode/
+
+# Misc
+*.tgz
+
+# Test
+*.lcov
+
+# Others
+*.log

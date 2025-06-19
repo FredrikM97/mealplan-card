@@ -1,0 +1,8 @@
+{
+  "name": "Cleverio PF100 Feeder Card",
+  "content_in_root": false,
+  "filename": "cleverio_pet_feeder_card.js",
+  "domains": ["lovelace"],
+  "country": "SE",
+  "homeassistant": "2025.6.0"
+}
