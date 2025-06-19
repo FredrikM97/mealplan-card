@@ -13,7 +13,6 @@ jspm_packages/
 coverage/
 dist/
 build/
-www/cleverio-pf100-feeder-card/*.bundle.js
 www/cleverio-pf100-feeder-card/*.bundle.js.map
 
 # OS
