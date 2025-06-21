@@ -6,13 +6,13 @@
   "scripts": {
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-
     "prebuild": "tsc --outDir dist",
     "build": "npm run prebuild && vite build"
   },
   "devDependencies": {
     "@open-wc/testing": "^4.0.0",
     "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
     "jsdom": "^26.1.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",

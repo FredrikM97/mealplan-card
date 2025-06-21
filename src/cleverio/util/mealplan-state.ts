@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 // Mealplan state utilities (TypeScript)
 export interface FeedingTime {
   time: string;
@@ -41,38 +43,40 @@ export function getTodaysFoodGrams(feedingTimes: FeedingTime[], today: string): 
   });
   return total;
 }
+export function decodeMealPlanData(base64String: string): FeedingTime[] {
+    if (!base64String || base64String === 'unknown') return [];
+    let binary: string;
+    try { binary = atob(base64String); } catch { throw new Error('Invalid base64'); }
+    const bytes = new Uint8Array([...binary].map(char => char.charCodeAt(0)));
+    if (bytes.length % 5 !== 0) throw new Error('Invalid meal plan length');
+    const mealPlan: FeedingTime[] = [];
+    for (let i = 0; i < bytes.length; i += 5) {
+        const [daysBits, hour, minute, portion, status] = bytes.slice(i, i + 5);
+        mealPlan.push({
+            time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
+            daysMask: daysBits,
+            portion: portion || 1,
+            enabled: status === 1
+        });
+    }
+    return mealPlan;
+}
+
 export function encodeMealPlanData(feedingTimes: FeedingTime[]): string {
-  // Each entry: time (4 chars, e.g. 08:00), portion (1 byte), daysMask (1 byte), enabled (1 byte)
-  const arr = feedingTimes.map(t => `${t.time},${t.portion},${t.daysMask},${t.enabled ? 1 : 0}`).join(';');
-  return btoa(arr);
-}
-export function decodeMealPlanData(str: string): FeedingTime[] {
-  try {
-    const arr = atob(str).split(';').filter(Boolean);
-    return arr.map(row => {
-      const [time, portion, daysMask, enabled] = row.split(',');
-      return {
-        time,
-        portion: Number(portion),
-        daysMask: Number(daysMask),
-        enabled: enabled === '1'
-      };
+    const bytes: number[] = [];
+    feedingTimes.forEach(item => {
+        const [hour, minute] = item.time.split(":").map(Number);
+        bytes.push(
+            item.daysMask,
+            hour,
+            minute,
+            Number(item.portion),
+            item.enabled ? 1 : 0
+        );
     });
-  } catch (e) {
-    throw new Error('Invalid base64');
-  }
+    return btoa(String.fromCharCode(...bytes));
 }
-export function encodeMealPlan(feedingTimes: FeedingTime[]): string {
-  // For legacy: encode as base64 of JSON
-  return btoa(JSON.stringify(feedingTimes));
-}
-export function decodeMealPlan(str: string): FeedingTime[] {
-  try {
-    return JSON.parse(atob(str));
-  } catch (e) {
-    throw new Error('Invalid base64');
-  }
-}
+
 export function mealsEqual(a: FeedingTime[], b: FeedingTime[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {

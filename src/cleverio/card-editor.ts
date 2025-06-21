@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, customElement } from 'lit/decorators.js';
 
+@customElement('card-editor')
 export class CardEditor extends LitElement {
   @property({ attribute: false }) accessor config!: { sensor: string; title: string };
 

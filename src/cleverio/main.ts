@@ -1,22 +1,18 @@
 ﻿import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData } from './util/mealplan-state.js';
-import type { FeedingTime } from "./util/mealplan-state";
-
-import './overview.js';
-import { H } from 'vitest/dist/chunks/environment.d.cL3nLXbE.js';
 
 /**
  * Cleverio PF100 Feeder Card - LitElement version, modular, uses <ha-card> and slot.
  */
 @customElement('cleverio-pf100-card')
 export class CleverioPf100Card extends LitElement {
-  @property({ type: Object }) accessor hass: any;
-  @property({ type: Object }) accessor config!: any;
-  @state() accessor _meals: FeedingTime[] = [];
-  @state() accessor _persistedMeals: FeedingTime[] = [];
-  @state() accessor _dialogView: 'schedules' | 'edit' | null = null;
-  @state() accessor _dialogData: any = undefined;
+  @property({ type: Object }) hass;
+  @property({ type: Object }) config;
+  @state() _meals = [];
+  @state() _persistedMeals = [];
+  @state() _dialogView = null; // 'schedules' | 'edit'
+  @state() _dialogData = undefined;
 
   constructor() {
     super();
@@ -66,7 +62,7 @@ export class CleverioPf100Card extends LitElement {
 
   _updateHass() {
     const stateObj = this._stateObj;
-    let loadedMeals: FeedingTime[] = [];
+    let loadedMeals;
     if (stateObj) {
       try {
         loadedMeals = decodeMealPlanData(stateObj.state);

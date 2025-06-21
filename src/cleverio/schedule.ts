@@ -1,9 +1,11 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import { commonCardStyle, commonTableStyle } from './common-styles.js';
 import DaysUtil from './util/days-util.js';
-import { mealsEqual } from './util/mealplan-state';
+import { mealsEqual } from './util/mealplan-state.js';
 
+@customElement('schedule-view')
 export class ScheduleView extends LitElement {
   @property({ type: Array }) accessor meals: any[] = [];
   @property({ type: Array }) accessor _localMeals: any[] = [];

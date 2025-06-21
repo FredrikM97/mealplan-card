@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { property } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { commonCardStyle } from './common-styles.js';
 import DaysUtil from './util/days-util.js';
 
@@ -7,10 +7,11 @@ import DaysUtil from './util/days-util.js';
  * EditView: Pure view for editing a single meal schedule.
  * To be rendered inside parent card's <ha-dialog>, does not use <ha-dialog> directly.
  */
-export class EditView extends LitElement {
-  @property({ type: String }) accessor time = '';
-  @property({ type: Number }) accessor portion = 1;
-  @property({ type: Number }) accessor daysMask = 0;
+@customElement('cleverio-edit-view')
+export class CleverioEditView extends LitElement {
+  @property({ type: String }) public time = '';
+  @property({ type: Number }) public portion = 1;
+  @property({ type: Number }) public daysMask = 0;
 
   static styles = [
     commonCardStyle,
@@ -221,11 +222,5 @@ export class EditView extends LitElement {
       enabled: true,
     };
     this.dispatchEvent(new CustomEvent('save', { detail: { meal }, bubbles: true, composed: true }));
-  }
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'edit-view': EditView;
   }
 }

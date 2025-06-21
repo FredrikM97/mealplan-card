@@ -6,8 +6,6 @@ import {
   getTodaysFoodGrams,
   encodeMealPlanData,
   decodeMealPlanData,
-  encodeMealPlan,
-  decodeMealPlan,
   parseFeedingTime,
   formatFeedingTime
 } from '../../src/cleverio/util/mealplan-state';
@@ -86,25 +84,8 @@ describe('Mealplan State', () => {
     expect(decoded[1].enabled).toBe(false);
   });
 
-  it('encodeMealPlan and decodeMealPlan are inverses', () => {
-    const feedingTimes = [
-      { time: '12:00', daysMask: 0b1111111, portion: 3, enabled: true }
-    ];
-    const encoded = encodeMealPlan(feedingTimes);
-    const decoded = decodeMealPlan(encoded);
-    expect(decoded[0].time).toBe('12:00');
-    expect(decoded[0].portion).toBe(3);
-    expect(decoded[0].enabled).toBe(true);
-  });
-
   it('decodeMealPlanData throws on invalid base64', () => {
     expect(() => decodeMealPlanData('!@#$')).toThrow('Invalid base64');
-  });
-
-  it('decodeMealPlan throws on invalid meal plan length', () => {
-    // base64 for 4 bytes (should be multiple of 5)
-    const bad = btoa(String.fromCharCode(1,2,3,4));
-    expect(() => decodeMealPlan(bad)).toThrow('Invalid base64');
   });
 
   it('parseFeedingTime and formatFeedingTime work as inverses', () => {
@@ -114,5 +95,22 @@ describe('Mealplan State', () => {
     expect(obj.portion).toBe(2);
     expect(obj.days).toEqual(['Monday','Tuesday']);
     expect(formatFeedingTime(obj)).toBe(str);
+  });
+
+  it('decodeMealPlanData decodes real device base64 and encodeMealPlanData re-encodes it correctly', () => {
+    const base64 = 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==';
+    const expected = [
+      { time: '04:00', daysMask: 127, portion: 1, enabled: false },
+      { time: '09:00', daysMask: 127, portion: 2, enabled: true },
+      { time: '15:00', daysMask: 127, portion: 1, enabled: true },
+      { time: '21:00', daysMask: 127, portion: 2, enabled: true },
+      { time: '18:00', daysMask: 8, portion: 1, enabled: false }
+    ];
+    const decoded = decodeMealPlanData(base64);
+    expect(decoded).toEqual(expected);
+    // Re-encode and decode again to check round-trip
+    const reEncoded = encodeMealPlanData(decoded);
+    const roundTrip = decodeMealPlanData(reEncoded);
+    expect(roundTrip).toEqual(expected);
   });
 });

@@ -10,7 +10,8 @@ describe('CleverioEditDialog', () => {
 
 describe('CleverioEditView', () => {
   it('renders with default state and emits save event', async () => {
-    const el = await fixture<HTMLElement>(html`<edit-view></edit-view>`);
+    const el = await fixture<HTMLElement>(html`<cleverio-edit-view></cleverio-edit-view>`);
+    await customElements.whenDefined('cleverio-edit-view');
     await (el as any).updateComplete;
     const timeInput = (el.shadowRoot as ShadowRoot).querySelector('ha-textfield.edit-time') as HTMLInputElement;
     expect(timeInput).to.exist;
