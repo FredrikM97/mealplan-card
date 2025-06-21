@@ -1,4 +1,4 @@
-import { CleverioSchedulesView } from '../src/cleverio/Schedules.js';
+import { CleverioSchedulesView } from '../src/cleverio/schedule.js';
 import { html, fixture, expect, oneEvent } from '@open-wc/testing';
 import DaysUtil from '../src/cleverio/util/days-util.js';
 

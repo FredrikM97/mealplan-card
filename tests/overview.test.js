@@ -1,5 +1,5 @@
 import { fixture, html, expect, oneEvent } from '@open-wc/testing';
-import '../src/cleverio/Overview.js';
+import '../src/cleverio/overviews.js';
 
 describe('CleverioOverviewView', () => {
   it('renders with default title and no meals', async () => {
