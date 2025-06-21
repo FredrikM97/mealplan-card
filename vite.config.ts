@@ -4,7 +4,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 export default defineConfig({
   plugins: [tsconfigPaths()],
   build: {
-    outDir: 'www/cleverio-pf100-feeder-card',
+    outDir: 'www',
     lib: {
       entry: 'dist/cleverio/main.js',
       name: 'CleverioPf100FeederCard',
@@ -24,7 +24,7 @@ export default defineConfig({
       TZ: 'Etc/UTC',
       IS_TEST: 'true',
     },
-    setupFiles: ['./test/setup.ts'],
+    setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.ts'],
     coverage: {
       include: [
