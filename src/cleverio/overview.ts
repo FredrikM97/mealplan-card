@@ -4,8 +4,8 @@ import { commonCardStyle } from './common-styles.js';
 import * as MealUtils from './util/mealplan-state.js';
 import './schedule.js';
 
-@customElement('cleverio-overview-view')
-export class CleverioOverviewView extends LitElement {
+@customElement('overviews-view')
+export class OverviewsView extends LitElement {
   @property({ type: Array }) accessor meals: any[] = [];
   @property({ type: String }) accessor title: string = 'Cleverio Pet Feeder';
 
@@ -43,11 +43,11 @@ export class CleverioOverviewView extends LitElement {
         ${this._dialogOpen
           ? html`
               <ha-dialog open scrimClickAction @closed=${this._onDialogClose.bind(this)}>
-                <cleverio-schedules-view
+                <schedule-view
                   .meals=${this.meals}
                   @meals-changed=${this._onScheduleMealsChanged.bind(this)}
                   @close-dialog=${this._onDialogClose.bind(this)}
-                ></cleverio-schedules-view>
+                ></schedule-view>
               </ha-dialog>
             `
           : ''}

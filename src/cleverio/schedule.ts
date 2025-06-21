@@ -1,14 +1,11 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { commonCardStyle, commonTableStyle } from './common-styles.js';
 import DaysUtil from './util/days-util.js';
 import { mealsEqual } from './util/mealplan-state';
 
-/**
- * SchedulesView: Pure view for displaying and editing meal schedules.
- * To be rendered inside parent card's <ha-dialog>, does not use <ha-dialog> directly.
- */
-export class CleverioSchedulesView extends LitElement {
+@customElement('schedule-view')
+export class ScheduleView extends LitElement {
   @property({ type: Array }) accessor meals: any[] = [];
   @property({ type: Array }) accessor _localMeals: any[] = [];
   @property({ type: String }) accessor _view: 'table' | 'edit' = 'table';
@@ -42,8 +39,19 @@ export class CleverioSchedulesView extends LitElement {
     if (this._view === 'edit') {
       return this._renderEditView();
     }
+    // For test: render a table with rows for each meal
     return html`
-      // ...existing code...
+      <table>
+        <tr><th>Time</th><th>Portion</th><th>Status</th></tr>
+        ${this._localMeals.map((meal, idx) => html`
+          <tr>
+            <td>${meal.time}</td>
+            <td>${meal.portion}</td>
+            <td>${meal.enabled ? 'enabled' : 'disabled'}</td>
+            <td><button @click=${() => this._edit(idx)}>Edit</button></td>
+          </tr>
+        `)}
+      </table>
     `;
   }
 
@@ -75,13 +83,13 @@ export class CleverioSchedulesView extends LitElement {
   _renderEditView() {
     const meal = this._editIdx != null ? this._localMeals[this._editIdx] : { time: '', portion: 1, daysMask: 0, enabled: true };
     return html`
-      <cleverio-edit-view
+      <edit-view
         .time=${meal.time}
         .portion=${meal.portion}
         .daysMask=${meal.daysMask}
         @save=${this._onEditSave}
         @back=${this._onEditBack}
-      ></cleverio-edit-view>
+      ></edit-view>
     `;
   }
 
@@ -103,7 +111,3 @@ export class CleverioSchedulesView extends LitElement {
     this.requestUpdate();
   }
 }
-
-// Rename this file to schedule.ts and update the class and custom element name to follow Home Assistant frontend conventions (kebab-case, lower case).
-// Use modern Lit decorators, e.g.:
-// @property() public domain!: string;
