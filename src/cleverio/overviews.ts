@@ -1,15 +1,15 @@
-﻿import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, PropertyValues } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { commonCardStyle } from './common-styles.js';
 import * as MealUtils from './util/mealplan-state.js';
 import './schedule.js';
 
+@customElement('cleverio-overview-view')
 export class CleverioOverviewView extends LitElement {
-  static get properties() {
-    return {
-      meals: { type: Array },
-      title: { type: String },
-    };
-  }
+  @property({ type: Array }) accessor meals: any[] = [];
+  @property({ type: String }) accessor title: string = 'Cleverio Pet Feeder';
+
+  private _dialogOpen: boolean;
 
   constructor() {
     super();
@@ -21,56 +21,7 @@ export class CleverioOverviewView extends LitElement {
   static styles = [
     commonCardStyle,
     css`
-      .overview-card {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: var(--ha-card-section-margin, 1em);
-        align-items: center;
-        border-radius: var(--ha-card-border-radius, 12px);
-        background: var(--ha-card-background, var(--card-background-color, #fff));
-        border: var(--ha-card-border-width, 1.5px) solid var(--ha-card-border-color, var(--divider-color, #444));
-        box-shadow: none;
-        overflow: hidden;
-      }
-      .overview-title {
-        font-size: 1.5em;
-        font-weight: bold;
-        margin: 0.5em 0;
-        color: var(--primary-text-color);
-        text-align: center;
-        width: 100%;
-      }
-      .overview-section {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5em;
-        width: 100%;
-        align-items: flex-start;
-      }
-      .overview-summary {
-        display: flex;
-        flex-direction: row;
-        gap: 1.5em;
-        align-items: baseline;
-        width: 100%;
-        justify-content: space-between;
-      }
-      .overview-grams { font-weight: bold; }
-      .overview-schedules { font-size: 1.1em; }
-      .overview-active { font-size: 1.1em; margin-top: 0.2em; display: block; }
-      .manage-btn {
-        border-radius: var(--ha-card-border-radius);
-        background: var(--primary-color);
-        color: var(--text-primary-color);
-        border: none;
-        padding: var(--ha-card-button-padding, 0.5em 1em);
-        cursor: pointer;
-        font-weight: bold;
-        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-        align-self: flex-start;
-      }
+      // ...existing code...
     `
   ];
 
@@ -109,11 +60,15 @@ export class CleverioOverviewView extends LitElement {
     this.requestUpdate();
   }
 
-  _onScheduleMealsChanged(e) {
+  _onScheduleMealsChanged(e: CustomEvent) {
     this._dialogOpen = false;
     this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: e.detail.meals }, bubbles: true, composed: true }));
     this.requestUpdate();
   }
 }
 
-customElements.define('cleverio-overview-view', CleverioOverviewView);
+// customElements.define('cleverio-overview-view', CleverioOverviewView);
+
+// Rename this file to overviews.ts and update the class and custom element name to follow Home Assistant frontend conventions (kebab-case, lower case).
+// Use modern Lit decorators, e.g.:
+// @property() public domain!: string;

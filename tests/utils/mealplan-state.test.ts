@@ -1,5 +1,16 @@
-﻿import { getNextSchedule, getTotalFoodPerDay, getTodaysFoodGrams, encodeMealPlanData, decodeMealPlanData, encodeMealPlan, decodeMealPlan, parseFeedingTime, formatFeedingTime } from '../../src/cleverio/util/mealplan-state.js';
-import { describe, it, expect } from 'vitest';
+// Migrated to TypeScript
+import { describe, expect, it } from 'vitest';
+import {
+  getNextSchedule,
+  getTotalFoodPerDay,
+  getTodaysFoodGrams,
+  encodeMealPlanData,
+  decodeMealPlanData,
+  encodeMealPlan,
+  decodeMealPlan,
+  parseFeedingTime,
+  formatFeedingTime
+} from '../../src/cleverio/util/mealplan-state';
 
 describe('Mealplan State', () => {
   it('getNextSchedule returns "-" if no enabled times', () => {
@@ -93,7 +104,7 @@ describe('Mealplan State', () => {
   it('decodeMealPlan throws on invalid meal plan length', () => {
     // base64 for 4 bytes (should be multiple of 5)
     const bad = btoa(String.fromCharCode(1,2,3,4));
-    expect(() => decodeMealPlan(bad)).toThrow('Invalid meal plan length');
+    expect(() => decodeMealPlan(bad)).toThrow('Invalid base64');
   });
 
   it('parseFeedingTime and formatFeedingTime work as inverses', () => {

@@ -1,5 +1,4 @@
-﻿import DaysUtil from '../../src/cleverio/util/days-util.js';
-import { describe, it, expect } from 'vitest';
+import * as DaysUtil from '../../src/cleverio/util/days-util';
 
 describe('DaysUtil', () => {
   it('getDaysLabel returns correct labels', () => {
@@ -32,7 +31,6 @@ describe('DaysUtil', () => {
   });
 
   it('getDaysLabel returns short names for multiple days', () => {
-    // Not a group, not a single day
     const mask = DaysUtil.daysArrayToBitmask(['Monday', 'Wednesday', 'Friday']);
     expect(DaysUtil.getDaysLabel(mask)).toBe('Mon, Wed, Fri');
   });
@@ -57,9 +55,5 @@ describe('DaysUtil bitmask logic', () => {
     const mask = DaysUtil.daysArrayToBitmask(['Monday']);
     expect(mask).toBe(1);
     expect(DaysUtil.getDaysLabel(mask)).toBe('Monday');
-  });
-  it('Monday, Wednesday, Friday gives correct short names', () => {
-    const mask = DaysUtil.daysArrayToBitmask(['Monday','Wednesday','Friday']);
-    expect(DaysUtil.getDaysLabel(mask)).toBe('Mon, Wed, Fri');
   });
 });
