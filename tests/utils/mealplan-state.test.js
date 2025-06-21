@@ -1,4 +1,4 @@
-﻿import { getNextSchedule, getTotalFoodPerDay, getTodaysFoodGrams, encodeMealPlanData, decodeMealPlanData, encodeMealPlan, decodeMealPlan, parseFeedingTime, formatFeedingTime } from '../src/cleverio/util/mealplan-state.js';
+﻿import { getNextSchedule, getTotalFoodPerDay, getTodaysFoodGrams, encodeMealPlanData, decodeMealPlanData, encodeMealPlan, decodeMealPlan, parseFeedingTime, formatFeedingTime } from '../../src/cleverio/util/mealplan-state.js';
 import { describe, it, expect } from 'vitest';
 
 describe('Mealplan State', () => {

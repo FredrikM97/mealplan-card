@@ -1,5 +1,4 @@
 ﻿import { LitElement, html, css } from 'lit';
-import { property, state } from 'lit/decorators.js';
 import { commonCardStyle } from './common-styles.js';
 import DaysUtil from './util/days-util.js';
 
@@ -8,17 +7,19 @@ import DaysUtil from './util/days-util.js';
  * To be rendered inside parent card's <ha-dialog>, does not use <ha-dialog> directly.
  */
 export class CleverioEditView extends LitElement {
-  @property({ type: Object }) accessor meal = { time: '', portion: 1, daysMask: 0, enabled: true };
-  @state() accessor _time = '';
-  @state() accessor _portion = 1;
-  @state() accessor _daysMask = 0;
+  static get properties() {
+    return {
+      time: { type: String },
+      portion: { type: Number },
+      daysMask: { type: Number },
+    };
+  }
 
-  updated(changed) {
-    if (changed.has('meal') && this.meal) {
-      this._time = this.meal.time || '';
-      this._portion = this.meal.portion || 1;
-      this._daysMask = this.meal.daysMask || 0;
-    }
+  constructor() {
+    super();
+    this.time = '';
+    this.portion = 1;
+    this.daysMask = 0;
   }
 
   static styles = [
@@ -179,12 +180,12 @@ export class CleverioEditView extends LitElement {
         <h3 class="edit-title" style="margin-top:0; text-align:left;">Edit Meal</h3>
         <div class="edit-days-row" style="justify-content:flex-start;">
           ${DaysUtil.DAYS.map((day, i) => html`
-            <ha-button outlined class="day-btn${this._daysMask & (1 << i) ? ' selected' : ''}" @click=${e => this._toggleDay(e, i)}>${day.slice(0,2)}</ha-button>
+            <ha-button outlined class="day-btn${this.daysMask & (1 << i) ? ' selected' : ''}" @click=${e => this._toggleDay(e, i)}>${day.slice(0,2)}</ha-button>
           `)}
         </div>
         <div class="edit-fields-row">
           <label>Time:
-            <ha-textfield class="edit-time" type="time" required .value=${this._time} @input=${e => this._time = e.target.value}></ha-textfield>
+            <ha-textfield class="edit-time" type="time" required .value=${this.time} @input=${e => this.time = e.target.value}></ha-textfield>
           </label>
         </div>
         <div class="edit-portion-row">
@@ -193,7 +194,7 @@ export class CleverioEditView extends LitElement {
               Portion:
               <span class="portion-helper-inline">(1 portion = 6g)</span>
             </span>
-            <ha-textfield class="edit-portion" type="number" min="1" required .value=${this._portion} @input=${e => this._portion = Number(e.target.value)}></ha-textfield>
+            <ha-textfield class="edit-portion" type="number" min="1" required .value=${this.portion} @input=${e => this.portion = Number(e.target.value)}></ha-textfield>
           </label>
         </div>
         <span class="suggested-label">Suggested:</span>
@@ -211,11 +212,11 @@ export class CleverioEditView extends LitElement {
 
   _toggleDay(e, i) {
     e.preventDefault();
-    this._daysMask ^= (1 << i);
+    this.daysMask ^= (1 << i);
   }
   _suggestTime(e, t) {
     e.preventDefault();
-    this._time = t;
+    this.time = t;
   }
   _onBack(e) {
     e.preventDefault();
@@ -224,10 +225,9 @@ export class CleverioEditView extends LitElement {
   _onSave(e) {
     e.preventDefault();
     const meal = {
-      ...this.meal,
-      time: this._time,
-      portion: this._portion,
-      daysMask: this._daysMask,
+      time: this.time,
+      portion: this.portion,
+      daysMask: this.daysMask,
       enabled: true,
     };
     this.dispatchEvent(new CustomEvent('save', { detail: { meal }, bubbles: true, composed: true }));

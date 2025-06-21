@@ -26,4 +26,10 @@ export default defineConfig({
       ssr: [/\.([cm]?[jt]sx?|vue)$/],
     },
   },
+  esbuild: {
+    supported: {
+      'decorators': true
+    },
+    target: 'esnext'
+  }
 });

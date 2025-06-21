@@ -1,18 +1,12 @@
 ﻿import { LitElement, html, css } from 'lit';
+import { property } from 'lit/decorators.js';
 
 /**
  * Minimal stub for the Lovelace card editor to avoid import errors.
  * Replace with full editor implementation as needed.
  */
 export class CleverioPf100CardEditor extends LitElement {
-  static properties = {
-    config: { type: Object },
-  };
-
-  constructor() {
-    super();
-    this.config = { sensor: '', title: '' };
-  }
+  @property({ type: Object }) config = { sensor: '', title: '' };
 
   setConfig(config) {
     this.config = { ...config };
@@ -35,7 +29,3 @@ export class CleverioPf100CardEditor extends LitElement {
     `;
   }
 }
-
-customElements.define('cleverio-pf100-card-editor', CleverioPf100CardEditor);
-
-// ...will move and refactor config editor code here...

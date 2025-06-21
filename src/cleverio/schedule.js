@@ -1,5 +1,4 @@
 ﻿import { LitElement, html, css } from 'lit';
-import { property, state } from 'lit/decorators.js';
 import { commonCardStyle, commonTableStyle } from './common-styles.js';
 import DaysUtil from './util/days-util.js';
 import { mealsEqual } from './util/mealplan-state.js';
@@ -10,10 +9,22 @@ import './Edit.js';
  * To be rendered inside parent card's <ha-dialog>, does not use <ha-dialog> directly.
  */
 export class CleverioSchedulesView extends LitElement {
-  @property({ type: Array }) accessor meals = [];
-  @state() accessor _localMeals = [];
-  @state() accessor _view = 'table';
-  @state() accessor _editIdx = null;
+  static get properties() {
+    return {
+      meals: { type: Array },
+      _localMeals: { type: Array },
+      _view: { type: String },
+      _editIdx: { type: Number },
+    };
+  }
+
+  constructor() {
+    super();
+    this.meals = [];
+    this._localMeals = [];
+    this._view = 'table';
+    this._editIdx = null;
+  }
 
   updated(changed) {
     if (changed.has('meals')) {
@@ -132,7 +143,7 @@ export class CleverioSchedulesView extends LitElement {
                     <td>${DaysUtil.getDaysLabel(meal.daysMask || 0)}</td>
                     <td><ha-checkbox class="enabled-checkbox" .checked=${meal.enabled} @change=${e => this._toggleEnabled(idx, e)}></ha-checkbox></td>
                     <td><span class="action-btns">
-                      <button type="button" class="edit-row-btn icon-btn" @click=${() => this._emitEditMeal(idx)} aria-label="Edit schedule">
+                      <button type="button" class="edit-row-btn icon-btn" @click=${() => this._edit(idx)} aria-label="Edit schedule">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg>
                       </button>
                       <button type="button" class="delete-row-btn icon-btn" @click=${() => this._delete(idx)} aria-label="Delete schedule">
@@ -159,8 +170,10 @@ export class CleverioSchedulesView extends LitElement {
     this._localMeals[idx].enabled = e.target.checked;
     this.requestUpdate();
   }
-  _emitEditMeal(idx) {
-    this.dispatchEvent(new CustomEvent('edit-meal', { detail: { meal: this._localMeals[idx] }, bubbles: true, composed: true }));
+  _edit(idx) {
+    this._editIdx = idx;
+    this._view = 'edit';
+    this.requestUpdate();
   }
   _delete(idx) {
     this._localMeals.splice(idx, 1);
@@ -169,12 +182,13 @@ export class CleverioSchedulesView extends LitElement {
   _add() {
     this._editIdx = null;
     this._view = 'edit';
+    this.requestUpdate();
   }
   _cancel() {
     this.dispatchEvent(new CustomEvent('close-dialog', { bubbles: true, composed: true }));
   }
   _save() {
-    this.dispatchEvent(new CustomEvent('save', { detail: { meals: this._localMeals }, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this._localMeals }, bubbles: true, composed: true }));
   }
 
   _renderEditView() {

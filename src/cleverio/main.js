@@ -1,23 +1,20 @@
 ﻿import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData, mealsEqual } from './util/mealplan-state.js';
+import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData } from './util/mealplan-state.js';
 
 import './overviews.js';
-import './schedule.js';
-import './Edit.js';
-import './CardEditor.js';
 
 /**
  * Cleverio PF100 Feeder Card - LitElement version, modular, uses <ha-card> and slot.
  */
 @customElement('cleverio-pf100-card')
 export class CleverioPf100Card extends LitElement {
-  @property({ type: Object }) accessor hass;
-  @property({ type: Object }) accessor config;
-  @state() accessor _meals = [];
-  @state() accessor _persistedMeals = [];
-  @state() accessor _dialogView = null; // 'schedules' | 'edit'
-  @state() accessor _dialogData = undefined;
+  @property({ type: Object }) hass;
+  @property({ type: Object }) config;
+  @state() _meals = [];
+  @state() _persistedMeals = [];
+  @state() _dialogView = null; // 'schedules' | 'edit'
+  @state() _dialogData = undefined;
 
   constructor() {
     super();
@@ -25,8 +22,6 @@ export class CleverioPf100Card extends LitElement {
     this.config = undefined;
     this._meals = [];
     this._persistedMeals = [];
-    this._dialogView = null;
-    this._dialogData = undefined;
   }
 
   setConfig(config) {
@@ -95,77 +90,16 @@ export class CleverioPf100Card extends LitElement {
         <cleverio-overview-view
           .meals=${this._meals}
           .title=${this.config?.title || 'Cleverio Pet Feeder'}
-          @manage-schedules=${this._onManageSchedules}
+          @meals-changed=${this._onMealsChanged}
         ></cleverio-overview-view>
         <slot></slot>
-        ${this._dialogView
-          ? html`
-              <ha-dialog open scrimClickAction @closed=${this._onDialogClose}>
-                ${this._dialogView === 'schedules'
-                  ? html`<cleverio-schedules-view
-                      .meals=${this._meals}
-                      @edit-meal=${this._onEditMeal}
-                      @close-dialog=${this._onDialogClose}
-                      @save=${this._onSaveSchedules}
-                    ></cleverio-schedules-view>`
-                  : this._dialogView === 'edit'
-                  ? html`<cleverio-edit-view
-                      .meal=${this._dialogData}
-                      @back=${this._onEditBack}
-                      @save=${this._onSaveEdit}
-                    ></cleverio-edit-view>`
-                  : ''}
-              </ha-dialog>
-            `
-          : ''}
       </ha-card>
     `;
   }
 
-  _onManageSchedules = () => {
-    this._dialogView = 'schedules';
-    this._dialogData = null;
-  };
-
-  _onEditMeal = (e) => {
-    this._dialogView = 'edit';
-    this._dialogData = e.detail.meal;
-  };
-
-  _onEditBack = () => {
-    this._dialogView = 'schedules';
-    this._dialogData = null;
-  };
-
-  _onDialogClose = () => {
-    this._dialogView = null;
-    this._dialogData = undefined;
-  };
-
-  _onSaveSchedules = (e) => {
+  _onMealsChanged = (e) => {
     this._meals = e.detail.meals;
     this._saveMealsToSensor();
-    this._dialogView = null;
-    this._dialogData = undefined;
-  };
-
-  _onSaveEdit = (e) => {
-    // Add or update meal in _meals
-    const meal = e.detail.meal;
-    let updated = false;
-    this._meals = this._meals.map((m) => {
-      if (m.time === meal.time && m.daysMask === meal.daysMask) {
-        updated = true;
-        return meal;
-      }
-      return m;
-    });
-    if (!updated) {
-      this._meals = [...this._meals, meal];
-    }
-    this._saveMealsToSensor();
-    this._dialogView = null;
-    this._dialogData = undefined;
   };
 
   _saveMealsToSensor() {

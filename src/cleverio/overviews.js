@@ -1,17 +1,21 @@
 ﻿import { LitElement, html, css } from 'lit';
 import { commonCardStyle } from './common-styles.js';
 import * as MealUtils from './util/mealplan-state.js';
+import './schedule.js';
 
 export class CleverioOverviewView extends LitElement {
-  static properties = {
-    meals: { type: Array },
-    title: { type: String },
-  };
+  static get properties() {
+    return {
+      meals: { type: Array },
+      title: { type: String },
+    };
+  }
 
   constructor() {
     super();
     this.meals = [];
     this.title = 'Cleverio Pet Feeder';
+    this._dialogOpen = false;
   }
 
   static styles = [
@@ -83,14 +87,32 @@ export class CleverioOverviewView extends LitElement {
           </div>
           <span class="overview-active">Active schedules: ${enabledCount}</span>
           <div class="overview-grams">Today: ${gramsValue}g (active)</div>
-          <ha-button class="manage-btn" @click=${this._onManageSchedules}>Manage schedules</ha-button>
+          <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>Manage schedules</ha-button>
         </section>
+        ${this._dialogOpen
+          ? html`
+              <ha-dialog open scrimClickAction @closed=${this._onDialogClose.bind(this)}>
+                <cleverio-schedules-view
+                  .meals=${this.meals}
+                  @meals-changed=${this._onScheduleMealsChanged.bind(this)}
+                  @close-dialog=${this._onDialogClose.bind(this)}
+                ></cleverio-schedules-view>
+              </ha-dialog>
+            `
+          : ''}
       </ha-card>
     `;
   }
 
-  _onManageSchedules() {
-    this.dispatchEvent(new CustomEvent('manage-schedules', { bubbles: true, composed: true }));
+  _onDialogClose() {
+    this._dialogOpen = false;
+    this.requestUpdate();
+  }
+
+  _onScheduleMealsChanged(e) {
+    this._dialogOpen = false;
+    this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: e.detail.meals }, bubbles: true, composed: true }));
+    this.requestUpdate();
   }
 }
 
