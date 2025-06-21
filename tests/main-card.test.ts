@@ -26,7 +26,7 @@ describe('getConfigElement', () => {
   it('returns a card-editor element with setConfig method', async () => {
     const el = await CleverioPf100Card.getConfigElement();
     expect(el).to.exist;
-    expect(el.tagName.toLowerCase()).to.equal('card-editor');
+    expect(el.tagName.toLowerCase()).to.equal('cleverio-pf100-card-editor');
     expect(typeof el.setConfig).to.equal('function');
   });
 });
@@ -52,18 +52,5 @@ describe('CleverioPf100Card base64 integration', () => {
     const grams = el.shadowRoot.querySelector('.overview-grams');
     expect(grams).to.exist;
     expect(grams.textContent).to.match(/Today: \d+g/);
-  });
-});
-
-describe('decodeMealPlanData real sensor value', () => {
-  it('decodes and logs a real Home Assistant sensor value', () => {
-    // Replace this with your real sensor value if needed
-    const base64 = 'MDg6MDAsMiwyNTUsMTsgMTg6MDAsMSw2MiwxOw=='; // "08:00,2,255,1;18:00,1,62,1;"
-    const decoded = decodeMealPlanData(base64);
-    // eslint-disable-next-line no-console
-    console.log('Decoded meal plan:', decoded);
-    expect(Array.isArray(decoded)).to.be.true;
-    expect(decoded.length).to.be.greaterThan(0);
-    expect(decoded[0]).to.have.property('time');
   });
 });

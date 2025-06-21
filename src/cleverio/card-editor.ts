@@ -1,14 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 
-@customElement('card-editor')
-export class CardEditor extends LitElement {
+@customElement('cleverio-pf100-card-editor')
+export class CleverioPf100CardEditor extends LitElement {
   @property({ attribute: false }) accessor config!: { sensor: string; title: string };
-
-  constructor() {
-    super();
-    this.config = { sensor: '', title: '' };
-  }
 
   setConfig(config: { sensor: string; title: string }) {
     this.config = { ...config };
@@ -23,10 +18,10 @@ export class CardEditor extends LitElement {
   render() {
     return html`
       <label>Sensor:
-        <input name="sensor" .value=${this.config.sensor || ''} @input=${this._onInput.bind(this)} />
+        <input name="sensor" .value=${this.config?.sensor || ''} @input=${this._onInput.bind(this)} />
       </label>
       <label>Title:
-        <input name="title" .value=${this.config.title || ''} @input=${this._onInput.bind(this)} />
+        <input name="title" .value=${this.config?.title || ''} @input=${this._onInput.bind(this)} />
       </label>
     `;
   }
@@ -34,6 +29,6 @@ export class CardEditor extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'card-editor': CardEditor;
+    'cleverio-pf100-card-editor': CleverioPf100CardEditor;
   }
 }

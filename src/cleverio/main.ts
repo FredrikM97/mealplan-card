@@ -1,26 +1,31 @@
-﻿import { LitElement, html } from 'lit';
+﻿import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData } from './util/mealplan-state.js';
+import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData, getTodaysFoodGrams } from './util/mealplan-state.js';
+import type { FeedingTime } from './util/mealplan-state.js';
+import { commonCardStyle } from './common-styles.js';
+import './schedule.js';
 
 /**
- * Cleverio PF100 Feeder Card - LitElement version, modular, uses <ha-card> and slot.
+ * Cleverio PF100 Feeder Card
  */
 @customElement('cleverio-pf100-card')
 export class CleverioPf100Card extends LitElement {
-  @property({ type: Object }) hass;
-  @property({ type: Object }) config;
-  @state() _meals = [];
-  @state() _persistedMeals = [];
-  @state() _dialogView = null; // 'schedules' | 'edit'
-  @state() _dialogData = undefined;
+  @property({ type: Object }) accessor hass;
+  @property({ type: Object }) accessor config;
+  @state() accessor _meals: FeedingTime[];
+  @state() accessor _persistedMeals: FeedingTime[];
+  @state() accessor _dialogOpen: boolean;
+  @state() accessor _dialogData;
 
   constructor() {
     super();
-    this.hass = undefined;
-    this.config = undefined;
     this._meals = [];
     this._persistedMeals = [];
+    this._dialogOpen = false;
+    this._dialogData = undefined;
   }
+
+  static styles = [commonCardStyle, css``];
 
   setConfig(config) {
     this.config = config;
@@ -83,30 +88,60 @@ export class CleverioPf100Card extends LitElement {
   }
 
   render() {
+    const enabledCount = this._meals.filter(m => m.enabled).length;
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const gramsValue = getTodaysFoodGrams(this._meals.filter(m => m.enabled), today) * 6;
     return html`
-      <ha-card>
-        <cleverio-overview-view
-          .meals=${this._meals}
-          .title=${this.config?.title || 'Cleverio Pet Feeder'}
-          @meals-changed=${this._onMealsChanged}
-        ></cleverio-overview-view>
+      <ha-card class="overview-card ha-card-style">
+        <h2 class="overview-title">${this.config?.title || 'Cleverio Pet Feeder'}</h2>
+        <section class="overview-section">
+          <div class="overview-summary">
+            <span class="overview-schedules">Schedules: ${this._meals.length}</span>
+          </div>
+          <span class="overview-active">Active schedules: ${enabledCount}</span>
+          <div class="overview-grams">Today: ${gramsValue}g (active)</div>
+          <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>Manage schedules</ha-button>
+        </section>
+        ${this._dialogOpen
+          ? html`
+              <ha-dialog open scrimClickAction @closed=${this._onDialogClose.bind(this)}>
+                <schedule-view
+                  .meals=${this._meals}
+                  @meals-changed=${this._onScheduleMealsChanged.bind(this)}
+                  @close-dialog=${this._onDialogClose.bind(this)}
+                ></schedule-view>
+              </ha-dialog>
+            `
+          : ''}
         <slot></slot>
       </ha-card>
     `;
   }
 
-  _onMealsChanged = (e) => {
-    this._meals = e.detail.meals;
-    this._saveMealsToSensor();
-  };
+  _onDialogClose() {
+    this._dialogOpen = false;
+    this.requestUpdate();
+  }
 
   _saveMealsToSensor() {
+    if (!this.hass || !this._sensorID) return;
     const value = encodeMealPlanData(this._meals);
     this.hass.callService('text', 'set_value', {
       entity_id: this._sensorID,
       value,
     });
-    setTimeout(() => this._updateHass(), 500);
+  }
+
+  _onScheduleMealsChanged(e) {
+    this._dialogOpen = false;
+    this._meals = e.detail.meals;
+    this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: e.detail.meals }, bubbles: true, composed: true }));
+    this.requestUpdate();
+  }
+
+  _onMealsChanged = (e) => {
+    this._meals = e.detail.meals;
+    this.requestUpdate();
   }
 
   static async getConfigElement() {

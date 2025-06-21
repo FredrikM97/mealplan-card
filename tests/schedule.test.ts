@@ -3,11 +3,6 @@ import '../src/cleverio/schedule';
 import { describe, it, beforeAll } from 'vitest';
 import { ScheduleView } from '../src/cleverio/schedule';
 
-beforeAll(async () => {
-  await customElements.whenDefined('schedule-view');
-  await customElements.whenDefined('edit-view');
-});
-
 const sampleMeals = [
   { time: '08:00', portion: 2, daysMask: 127, enabled: true },
   { time: '18:00', portion: 1, daysMask: 62, enabled: false }

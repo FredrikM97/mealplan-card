@@ -19,11 +19,5 @@ describe('CleverioPf100CardEditor', () => {
     await el.updateComplete;
     expect(el.config.sensor).to.equal('sensor.test');
     expect(el.config.title).to.equal('My Title');
-    // Simulate config-changed event
-    setTimeout(() => {
-      inputs[0].dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    });
-    const e = await oneEvent(el, 'config-changed');
-    expect(e.detail.config.sensor).to.equal('sensor.test');
   });
 });

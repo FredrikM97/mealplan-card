@@ -9,9 +9,16 @@ import DaysUtil from './util/days-util.js';
  */
 @customElement('cleverio-edit-view')
 export class CleverioEditView extends LitElement {
-  @property({ type: String }) public time = '';
-  @property({ type: Number }) public portion = 1;
-  @property({ type: Number }) public daysMask = 0;
+  @property({ type: String }) accessor time: string;
+  @property({ type: Number }) accessor portion: number;
+  @property({ type: Number }) accessor daysMask: number;
+
+  constructor() {
+    super();
+    this.time = '';
+    this.portion = 1;
+    this.daysMask = 0;
+  }
 
   static styles = [
     commonCardStyle,

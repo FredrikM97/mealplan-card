@@ -1,11 +1,11 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import '../src/cleverio/card-editor';
-import { CardEditor } from '../src/cleverio/card-editor';
+import { CleverioPf100CardEditor } from '../src/cleverio/card-editor';
 import { describe, it } from 'vitest';
 
-describe('CleverioPF100CardEditor', () => {
+describe('CleverioPf100CardEditor', () => {
   it('renders and updates config', async () => {
-    const el = await fixture<CardEditor>(html`<card-editor></card-editor>`);
+    const el = await fixture<CleverioPf100CardEditor>(html`<cleverio-pf100-card-editor></cleverio-pf100-card-editor>`);
     await el.updateComplete;
     el.setConfig({ sensor: 'sensor.test', title: 'Test' });
     await el.updateComplete;
