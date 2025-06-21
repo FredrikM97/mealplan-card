@@ -1,4 +1,4 @@
-// __mocks__/mockCard.js
+﻿// __mocks__/mockCard.js
 export function createMockCard({ feedingTimes = [], modalState = { view: 'overview', index: null, editDays: null } } = {}) {
   let modalActive = false;
   let renderedHtml = '';

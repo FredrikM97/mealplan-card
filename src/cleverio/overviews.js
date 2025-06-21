@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+﻿import { LitElement, html, css } from 'lit';
 import { commonCardStyle } from './common-styles.js';
 import * as MealUtils from './util/mealplan-state.js';
 

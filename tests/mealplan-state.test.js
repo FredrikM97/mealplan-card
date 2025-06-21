@@ -1,4 +1,4 @@
-import { getNextSchedule, getTotalFoodPerDay, getTodaysFoodGrams, encodeMealPlanData, decodeMealPlanData, encodeMealPlan, decodeMealPlan, parseFeedingTime, formatFeedingTime } from '../src/cleverio/util/mealplan-state.js';
+﻿import { getNextSchedule, getTotalFoodPerDay, getTodaysFoodGrams, encodeMealPlanData, decodeMealPlanData, encodeMealPlan, decodeMealPlan, parseFeedingTime, formatFeedingTime } from '../src/cleverio/util/mealplan-state.js';
 import { describe, it, expect } from 'vitest';
 
 describe('Mealplan State', () => {
@@ -101,7 +101,7 @@ describe('Mealplan State', () => {
     const obj = parseFeedingTime(str);
     expect(obj.time).toBe('08:00');
     expect(obj.portion).toBe(2);
-    expect(obj.days).toBe('Monday,Tuesday');
+    expect(obj.days).toEqual(['Monday','Tuesday']);
     expect(formatFeedingTime(obj)).toBe(str);
   });
 });

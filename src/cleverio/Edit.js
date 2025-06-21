@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+﻿import { LitElement, html, css } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { commonCardStyle } from './common-styles.js';
 import DaysUtil from './util/days-util.js';
@@ -8,10 +8,10 @@ import DaysUtil from './util/days-util.js';
  * To be rendered inside parent card's <ha-dialog>, does not use <ha-dialog> directly.
  */
 export class CleverioEditView extends LitElement {
-  @property({ type: Object }) meal = { time: '', portion: 1, daysMask: 0, enabled: true };
-  @state() _time = '';
-  @state() _portion = 1;
-  @state() _daysMask = 0;
+  @property({ type: Object }) accessor meal = { time: '', portion: 1, daysMask: 0, enabled: true };
+  @state() accessor _time = '';
+  @state() accessor _portion = 1;
+  @state() accessor _daysMask = 0;
 
   updated(changed) {
     if (changed.has('meal') && this.meal) {

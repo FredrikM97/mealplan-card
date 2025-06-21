@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+﻿import { LitElement, html, css } from 'lit';
 
 /**
  * Minimal stub for the Lovelace card editor to avoid import errors.

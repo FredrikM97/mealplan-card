@@ -1,4 +1,4 @@
-import { fixture, html, expect, oneEvent } from '@open-wc/testing';
+﻿import { fixture, html, expect, oneEvent } from '@open-wc/testing';
 import '../src/cleverio/overviews.js';
 
 describe('CleverioOverviewView', () => {

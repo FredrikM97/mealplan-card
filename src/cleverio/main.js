@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+﻿import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData, mealsEqual } from './util/mealplan-state.js';
 
@@ -12,12 +12,22 @@ import './CardEditor.js';
  */
 @customElement('cleverio-pf100-card')
 export class CleverioPf100Card extends LitElement {
-  @property({ type: Object }) hass;
-  @property({ type: Object }) config;
-  @state() _meals = [];
-  @state() _persistedMeals = [];
-  @state() _dialogView = null; // 'schedules' | 'edit'
-  @state() _dialogData = undefined;
+  @property({ type: Object }) accessor hass;
+  @property({ type: Object }) accessor config;
+  @state() accessor _meals = [];
+  @state() accessor _persistedMeals = [];
+  @state() accessor _dialogView = null; // 'schedules' | 'edit'
+  @state() accessor _dialogData = undefined;
+
+  constructor() {
+    super();
+    this.hass = undefined;
+    this.config = undefined;
+    this._meals = [];
+    this._persistedMeals = [];
+    this._dialogView = null;
+    this._dialogData = undefined;
+  }
 
   setConfig(config) {
     this.config = config;

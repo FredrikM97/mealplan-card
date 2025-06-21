@@ -9,14 +9,14 @@ export default defineConfig({
     coverage: {
       reporter: ['text', 'html'],
       include: [
-        'www/cleverio-pf100-feeder-card/**/*.js',
+        'src/**/*.js',
       ],
       exclude: [
         '**/node_modules/**',
         '**/coverage/**',
         '**/wicg-inert/dist/**',
       ],
-      all: false,
+      all: true,
     },
     deps: {
       inline: [/@lit/, /lit/, /@open-wc/, /@webcomponents/],
