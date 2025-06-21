@@ -1,8 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 
-@customElement('cleverio-pf100-card-editor')
-export class CleverioPf100CardEditor extends LitElement {
+export class CardEditor extends LitElement {
   @property({ attribute: false }) accessor config!: { sensor: string; title: string };
 
   constructor() {
@@ -34,6 +33,6 @@ export class CleverioPf100CardEditor extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'cleverio-pf100-card-editor': CleverioPf100CardEditor;
+    'card-editor': CardEditor;
   }
 }

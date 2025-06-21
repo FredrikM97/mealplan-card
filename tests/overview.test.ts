@@ -9,7 +9,7 @@ const sampleMeals = [
 
 describe('overviews', () => {
   it('renders with default title and no meals', async () => {
-    const el = await fixture<HTMLElement>(html`<overviews-view></overviews-view>`);
+    const el = await fixture<HTMLElement>(html`<cleverio-overview-view></cleverio-overview-view>`);
     await (el as any).updateComplete;
     const title = (el.shadowRoot as ShadowRoot).querySelector('.overview-title');
     expect(title).to.exist;
@@ -17,7 +17,7 @@ describe('overviews', () => {
   });
 
   it('shows dialog and schedule view when manage button is clicked', async () => {
-    const el = await fixture<any>(html`<overviews-view .meals=${sampleMeals}></overviews-view>`);
+    const el = await fixture<any>(html`<cleverio-overview-view .meals=${sampleMeals}></cleverio-overview-view>`);
     await el.updateComplete;
     const btn = el.shadowRoot.querySelector('.manage-btn');
     btn.click();
@@ -30,7 +30,7 @@ describe('overviews', () => {
   });
 
   it('closes dialog when close event is fired', async () => {
-    const el = await fixture<any>(html`<overviews-view .meals=${sampleMeals}></overviews-view>`);
+    const el = await fixture<any>(html`<cleverio-overview-view .meals=${sampleMeals}></cleverio-overview-view>`);
     await el.updateComplete;
     const btn = el.shadowRoot.querySelector('.manage-btn');
     btn.click();

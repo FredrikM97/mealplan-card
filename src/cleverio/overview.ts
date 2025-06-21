@@ -1,10 +1,9 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { commonCardStyle } from './common-styles.js';
 import * as MealUtils from './util/mealplan-state.js';
 import './schedule.js';
 
-@customElement('overviews-view')
 export class OverviewsView extends LitElement {
   @property({ type: Array }) accessor meals: any[] = [];
   @property({ type: String }) accessor title: string = 'Cleverio Pet Feeder';
