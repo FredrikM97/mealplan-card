@@ -8,12 +8,13 @@ export default defineConfig({
     lib: {
       entry: 'dist/cleverio/main.js',
       name: 'CleverioPf100FeederCard',
-      fileName: 'cleverio-pf100-feeder-card'
+      fileName: 'cleverio-pf100-feeder-card',
+      formats: ['es']
     },
     rollupOptions: {
-      external: [],
       output: {
-        globals: {}
+        inlineDynamicImports: true,
+        manualChunks: undefined
       }
     }
   },
@@ -28,14 +29,15 @@ export default defineConfig({
     coverage: {
       include: [
         'src/**/*.js',
-        'src/**/*.ts'
+        'src/**/*.ts',
+        'src/**/*.mjs',
+        'src/**/*.vue',
+        'src/**/*.jsx',
+        'src/**/*.tsx'
       ],
       reporter: ['text', 'html'],
       provider: 'v8',
       reportsDirectory: 'coverage'
     }
-  },
-  resolve: {
-    extensions: ['.ts', '.js'],
-  },
+  }
 });
