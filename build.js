@@ -1,12 +1,11 @@
-// Build script for Cleverio PF100 Feeder Card using esbuild
 import { build } from 'esbuild';
 
 build({
-  entryPoints: ['./src/cleverio/main.js'],
+  entryPoints: ['./src/cleverio/main.ts'], // Use .ts if you write TypeScript
   bundle: true,
   minify: true,
   format: 'esm',
-  outfile: 'cleverio-pf100-feeder-card.bundle.js',
+  outfile: 'cleverio-pf100-feeder-card/cleverio-pf100-feeder-card.bundle.js',
   target: ['es2020'],
   sourcemap: true,
   logLevel: 'info'

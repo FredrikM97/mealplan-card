@@ -4,9 +4,7 @@
   "features": {},
   "customizations": {
     "vscode": {
-      "settings": {
-        "files.encoding": "utf8"
-      },
+      "settings": {},
       "extensions": [
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode"

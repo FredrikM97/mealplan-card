@@ -21,6 +21,6 @@
     "skipLibCheck": true,
     "types": ["vitest"]
   },
-  "include": ["src/**/*.ts", "src/**/*.js", "tests/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts", "src/**/*.js"],
+  "exclude": ["node_modules", "dist", "tests", "www/cleverio-pf100-feeder-card"]
 }
