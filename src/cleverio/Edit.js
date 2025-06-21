@@ -1,22 +1,17 @@
 import { LitElement, html, css } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { commonCardStyle } from './common-styles.js';
-import DaysUtil from './utils/days-util.js';
+import DaysUtil from './util/days-util.js';
 
+/**
+ * EditView: Pure view for editing a single meal schedule.
+ * To be rendered inside parent card's <ha-dialog>, does not use <ha-dialog> directly.
+ */
 export class CleverioEditView extends LitElement {
-  static properties = {
-    meal: { type: Object },
-    _time: { state: true },
-    _portion: { state: true },
-    _daysMask: { state: true },
-  };
-
-  constructor() {
-    super();
-    this.meal = { time: '', portion: 1, daysMask: 0, enabled: true };
-    this._time = '';
-    this._portion = 1;
-    this._daysMask = 0;
-  }
+  @property({ type: Object }) meal = { time: '', portion: 1, daysMask: 0, enabled: true };
+  @state() _time = '';
+  @state() _portion = 1;
+  @state() _daysMask = 0;
 
   updated(changed) {
     if (changed.has('meal') && this.meal) {
@@ -27,7 +22,7 @@ export class CleverioEditView extends LitElement {
   }
 
   static styles = [
-    css([commonCardStyle]),
+    commonCardStyle,
     css`
       .edit-form {
         max-width: 320px;
@@ -35,7 +30,6 @@ export class CleverioEditView extends LitElement {
         display: flex;
         flex-direction: column;
         gap: var(--ha-card-section-margin, 1em);
-        /* Remove border, background, border-radius to avoid double border */
         border: none;
         background: none;
         border-radius: 0;
@@ -80,7 +74,6 @@ export class CleverioEditView extends LitElement {
         border-color: var(--primary-color);
         box-shadow: 0 0 0 2px #2196f344;
       }
-      /* Remove the checkmark span entirely */
       .day-check { display: none !important; }
       .edit-fields-row {
         display: flex;
@@ -100,8 +93,8 @@ export class CleverioEditView extends LitElement {
         gap: 0.2em;
         position: relative;
       }
-      .edit-form input[type="time"],
-      .edit-form input[type="number"] {
+      ha-textfield[type="time"],
+      ha-textfield[type="number"] {
         max-width: 10em;
         width: 100%;
         height: 2.4em;
@@ -115,15 +108,13 @@ export class CleverioEditView extends LitElement {
         outline: none;
         transition: border 0.2s, background 0.2s;
       }
-      .edit-form input[type="time"]:focus,
-      .edit-form input[type="number"]:focus {
+      ha-textfield[type="time"]:focus,
+      ha-textfield[type="number"]:focus {
         border: 1.5px solid var(--primary-color);
         background: var(--input-background-color, var(--ha-card-background));
       }
       .edit-portion { width: 100%; min-width: 0; }
-      .portion-helper {
-        display: none;
-      }
+      .portion-helper { display: none; }
       .portion-helper-inline {
         font-size: 0.95em;
         color: var(--secondary-text-color, #888);
@@ -146,7 +137,7 @@ export class CleverioEditView extends LitElement {
         margin-bottom: 1em;
         margin-left: 0.2em;
       }
-      .suggested-time-btn {
+      ha-button.suggested-time-btn {
         border-radius: var(--ha-card-border-radius, 8px);
         border: 2px solid var(--divider-color, #888);
         background: var(--card-background-color, #eee);
@@ -164,13 +155,13 @@ export class CleverioEditView extends LitElement {
         min-width: 3.2em;
         height: 2.2em;
       }
-      .suggested-time-btn:active, .suggested-time-btn:focus {
+      ha-button.suggested-time-btn:active, ha-button.suggested-time-btn:focus {
         border-color: var(--primary-color);
         background: var(--primary-color);
         color: var(--text-primary-color);
       }
       menu { display: flex; gap: 1em; justify-content: flex-end; margin-top: 1em; }
-      .edit-save-btn, .back-to-list-btn {
+      ha-button.edit-save-btn, ha-button.back-to-list-btn {
         border-radius: var(--ha-card-border-radius, 8px);
         background: var(--primary-color);
         color: var(--text-primary-color);
@@ -188,12 +179,12 @@ export class CleverioEditView extends LitElement {
         <h3 class="edit-title" style="margin-top:0; text-align:left;">Edit Meal</h3>
         <div class="edit-days-row" style="justify-content:flex-start;">
           ${DaysUtil.DAYS.map((day, i) => html`
-            <button type="button" class="day-btn${this._daysMask & (1 << i) ? ' selected' : ''}" @click=${e => this._toggleDay(e, i)}>${day.slice(0,2)}</button>
+            <ha-button outlined class="day-btn${this._daysMask & (1 << i) ? ' selected' : ''}" @click=${e => this._toggleDay(e, i)}>${day.slice(0,2)}</ha-button>
           `)}
         </div>
         <div class="edit-fields-row">
           <label>Time:
-            <input class="edit-time" type="time" required .value=${this._time} @input=${e => this._time = e.target.value}>
+            <ha-textfield class="edit-time" type="time" required .value=${this._time} @input=${e => this._time = e.target.value}></ha-textfield>
           </label>
         </div>
         <div class="edit-portion-row">
@@ -202,17 +193,17 @@ export class CleverioEditView extends LitElement {
               Portion:
               <span class="portion-helper-inline">(1 portion = 6g)</span>
             </span>
-            <input class="edit-portion" type="number" min="1" required .value=${this._portion} @input=${e => this._portion = Number(e.target.value)}>
+            <ha-textfield class="edit-portion" type="number" min="1" required .value=${this._portion} @input=${e => this._portion = Number(e.target.value)}></ha-textfield>
           </label>
         </div>
         <span class="suggested-label">Suggested:</span>
         <div class="suggested-times-btn-row">
-          ${['07:00','12:00','18:00'].map(t => html`<button type="button" class="suggested-time-btn" @click=${e => this._suggestTime(e, t)}>${t}</button>`)}
+          ${['07:00','12:00','18:00'].map(t => html`<ha-button outlined class="suggested-time-btn" @click=${e => this._suggestTime(e, t)}>${t}</ha-button>`)}
         </div>
         <div class="edit-divider"></div>
         <menu>
-          <button type="button" class="button back-to-list-btn" @click=${this._onBack}>Back</button>
-          <button type="submit" class="button edit-save-btn">Save</button>
+          <ha-button class="back-to-list-btn" @click=${this._onBack}>Back</ha-button>
+          <ha-button class="edit-save-btn" type="submit">Save</ha-button>
         </menu>
       </form>
     `;
@@ -242,5 +233,3 @@ export class CleverioEditView extends LitElement {
     this.dispatchEvent(new CustomEvent('save', { detail: { meal }, bubbles: true, composed: true }));
   }
 }
-
-customElements.define('cleverio-edit-view', CleverioEditView);

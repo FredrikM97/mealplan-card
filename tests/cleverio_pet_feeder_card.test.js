@@ -1,6 +1,6 @@
-import '../www/cleverio-pf100-feeder-card/main.js';
-import { encodeMealPlanData, decodeMealPlanData } from '../www/cleverio-pf100-feeder-card/utils/mealplan-state.js';
-import DaysUtil from '../www/cleverio-pf100-feeder-card/utils/days-util.js';
+import '../src/cleverio/main.js';
+import { encodeMealPlanData, decodeMealPlanData } from '../src/cleverio/util/mealplan-state.js';
+import DaysUtil from '../src/cleverio/util/days-util.js';
 
 describe("CleverioPF100Card", () => {
   let card;

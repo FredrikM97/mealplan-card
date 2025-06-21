@@ -1,5 +1,5 @@
 import { html, fixture, expect } from '@open-wc/testing';
-import '../www/cleverio-pf100-feeder-card/cleverio-pf100-card-editor.js';
+import '../src/cleverio/CardEditor.js';
 
 describe('CleverioPF100CardEditor', () => {
   it('renders with default config', async () => {

@@ -1,24 +1,19 @@
 import { LitElement, html, css } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { commonCardStyle, commonTableStyle } from './common-styles.js';
-import DaysUtil from './utils/days-util.js';
-import { mealsEqual } from './utils/mealplan-state.js';
-import './edit.js';
+import DaysUtil from './util/days-util.js';
+import { mealsEqual } from './util/mealplan-state.js';
+import './Edit.js';
 
-export class CleverioSchedulesDialog extends LitElement {
-  static properties = {
-    meals: { type: Array },
-    _localMeals: { state: true },
-    _view: { state: true },
-    _editIdx: { state: true },
-  };
-
-  constructor() {
-    super();
-    this.meals = [];
-    this._localMeals = [];
-    this._view = 'table';
-    this._editIdx = null;
-  }
+/**
+ * SchedulesView: Pure view for displaying and editing meal schedules.
+ * To be rendered inside parent card's <ha-dialog>, does not use <ha-dialog> directly.
+ */
+export class CleverioSchedulesView extends LitElement {
+  @property({ type: Array }) meals = [];
+  @state() _localMeals = [];
+  @state() _view = 'table';
+  @state() _editIdx = null;
 
   updated(changed) {
     if (changed.has('meals')) {
@@ -29,29 +24,9 @@ export class CleverioSchedulesDialog extends LitElement {
   }
 
   static styles = [
-    css([commonCardStyle]),
-    css([commonTableStyle]),
+    commonCardStyle,
+    commonTableStyle,
     css`
-      dialog.schedules-dialog {
-        max-width: 420px;
-        min-width: 280px;
-        width: 100%;
-        margin: 0;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-        border-radius: var(--ha-card-border-radius, 12px);
-        background: var(--ha-card-background, var(--card-background-color, #fff));
-        border: var(--ha-card-border-width, 1.5px) solid var(--ha-card-border-color, var(--divider-color, #e0e0e0));
-        box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,0.08));
-        overflow: hidden;
-      }
-      dialog.schedules-dialog.edit-dialog-narrow {
-        max-width: 340px;
-        min-width: 220px;
-      }
       .schedules-title {
         font-size: 1.15em;
         margin: 0.5em 0 0.5em 0;
@@ -135,7 +110,7 @@ export class CleverioSchedulesDialog extends LitElement {
       return this._renderEditView();
     }
     return html`
-      <dialog class="schedules-dialog ha-card-style" open>
+      <div class="schedules-view ha-card-style">
         <h3 class="schedules-title">Scheduled Meals</h3>
         <table class="popup-meal-table ha-table-style">
           <thead>
@@ -155,9 +130,9 @@ export class CleverioSchedulesDialog extends LitElement {
                     <td>${meal.time}</td>
                     <td>${meal.portion}</td>
                     <td>${DaysUtil.getDaysLabel(meal.daysMask || 0)}</td>
-                    <td><input type="checkbox" class="enabled-checkbox" .checked=${meal.enabled} @input=${e => this._toggleEnabled(idx, e)}></td>
+                    <td><ha-checkbox class="enabled-checkbox" .checked=${meal.enabled} @change=${e => this._toggleEnabled(idx, e)}></ha-checkbox></td>
                     <td><span class="action-btns">
-                      <button type="button" class="edit-row-btn icon-btn" @click=${() => this._edit(idx)} aria-label="Edit schedule">
+                      <button type="button" class="edit-row-btn icon-btn" @click=${() => this._emitEditMeal(idx)} aria-label="Edit schedule">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg>
                       </button>
                       <button type="button" class="delete-row-btn icon-btn" @click=${() => this._delete(idx)} aria-label="Delete schedule">
@@ -176,7 +151,7 @@ export class CleverioSchedulesDialog extends LitElement {
         <div class="save-helper" style="color:${mealsEqual(this._localMeals, this.meals) ? 'var(--secondary-text-color, #888)' : 'var(--error-color, #e53935)'};">
           ${mealsEqual(this._localMeals, this.meals) ? 'No changes to save.' : 'You have unsaved changes.'}
         </div>
-      </dialog>
+      </div>
     `;
   }
 
@@ -184,9 +159,8 @@ export class CleverioSchedulesDialog extends LitElement {
     this._localMeals[idx].enabled = e.target.checked;
     this.requestUpdate();
   }
-  _edit(idx) {
-    this._editIdx = idx;
-    this._view = 'edit';
+  _emitEditMeal(idx) {
+    this.dispatchEvent(new CustomEvent('edit-meal', { detail: { meal: this._localMeals[idx] }, bubbles: true, composed: true }));
   }
   _delete(idx) {
     this._localMeals.splice(idx, 1);
@@ -206,13 +180,11 @@ export class CleverioSchedulesDialog extends LitElement {
   _renderEditView() {
     const meal = this._editIdx != null ? this._localMeals[this._editIdx] : { time: '', portion: 1, daysMask: 0, enabled: true };
     return html`
-      <dialog class="schedules-dialog ha-card-style edit-dialog-narrow" open>
-        <cleverio-edit-view
-          .meal=${meal}
-          @save=${this._onEditSave}
-          @back=${this._onEditBack}
-        ></cleverio-edit-view>
-      </dialog>
+      <cleverio-edit-view
+        .meal=${meal}
+        @save=${this._onEditSave}
+        @back=${this._onEditBack}
+      ></cleverio-edit-view>
     `;
   }
 
@@ -234,5 +206,3 @@ export class CleverioSchedulesDialog extends LitElement {
     this.requestUpdate();
   }
 }
-
-customElements.define('cleverio-schedules-dialog', CleverioSchedulesDialog);

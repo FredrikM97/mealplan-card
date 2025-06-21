@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { commonCardStyle } from './common-styles.js';
-import * as MealUtils from './utils/mealplan-state.js';
+import * as MealUtils from './util/mealplan-state.js';
 
 export class CleverioOverviewView extends LitElement {
   static properties = {
@@ -15,11 +15,11 @@ export class CleverioOverviewView extends LitElement {
   }
 
   static styles = [
-    css([commonCardStyle]),
+    commonCardStyle,
     css`
       .overview-card {
         width: 100%;
-        height: 100%; /* Only main card fills grid cell */
+        height: 100%;
         display: flex;
         flex-direction: column;
         gap: var(--ha-card-section-margin, 1em);
@@ -83,7 +83,7 @@ export class CleverioOverviewView extends LitElement {
           </div>
           <span class="overview-active">Active schedules: ${enabledCount}</span>
           <div class="overview-grams">Today: ${gramsValue}g (active)</div>
-          <button class="manage-btn" @click=${this._onManageSchedules}>Manage schedules</button>
+          <ha-button class="manage-btn" @click=${this._onManageSchedules}>Manage schedules</ha-button>
         </section>
       </ha-card>
     `;

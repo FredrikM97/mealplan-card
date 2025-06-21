@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config';
+import vue from '@vitejs/plugin-vue';
+import lit from '@vitejs/plugin-lit';
 
 export default defineConfig({
+  plugins: [vue(), lit()],
   test: {
     environment: 'jsdom',
     globals: true,
@@ -17,13 +20,6 @@ export default defineConfig({
         '**/wicg-inert/dist/**',
       ],
       all: false,
-    },
-    deps: {
-      inline: [/@lit/, /lit/, /@open-wc/, /@webcomponents/],
-    },
-    transformMode: {
-      web: [/\.([cm]?[jt]sx?|vue)$/],
-      ssr: [/\.([cm]?[jt]sx?|vue)$/],
     },
   },
 });

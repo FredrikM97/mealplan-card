@@ -1,4 +1,4 @@
-import DaysUtil from '../www/cleverio-pf100-feeder-card/utils/days-util.js';
+import DaysUtil from '../src/cleverio/util/days-util.js';
 import { describe, it, expect } from 'vitest';
 
 describe('DaysUtil bitmask logic', () => {
