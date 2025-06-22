@@ -6,7 +6,6 @@
   "scripts": {
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-
     "prebuild": "tsc --outDir dist",
     "build": "npm run prebuild && vite build"
   },
@@ -18,5 +17,8 @@
     "vite": "^6.3.5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@kipk/load-ha-components": "^1.0.3"
   }
 }
