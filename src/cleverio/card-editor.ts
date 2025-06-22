@@ -3,7 +3,7 @@ import { property, customElement } from 'lit/decorators.js';
 
 @customElement('cleverio-card-editor')
 export class CleverioCardEditor extends LitElement {
-  @property({ attribute: false }) accessor config!: { sensor: string; title: string };
+  @property({ attribute: false }) accessor config = { sensor: '', title: '' };
 
   setConfig(config: { sensor: string; title: string }) {
     this.config = { ...config };

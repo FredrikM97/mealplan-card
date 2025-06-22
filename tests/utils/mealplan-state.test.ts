@@ -21,9 +21,11 @@ describe('Mealplan State', () => {
       { time: '10:00', daysMask: 0b1000001, portion: 1, enabled: true },
     ];
     const totals = getTotalFoodPerDay(feedingTimes);
-    expect(totals['Monday']).toBe(1);
-    expect(totals['Tuesday']).toBe(2);
-    expect(totals['Saturday']).toBe(2); // fixed: should be 2
+    // 0=Monday, 1=Tuesday, ..., 6=Sunday
+    expect(totals[0]).toBe(1); // Monday
+    expect(totals[1]).toBe(2); // Tuesday
+    expect(totals[5]).toBe(2); // Saturday (bitmask includes Saturday)
+    expect(totals[6]).toBe(1); // Sunday
   });
 
   it('getTotalFoodPerDay returns all zeros for empty input', () => {
@@ -44,8 +46,9 @@ describe('Mealplan State', () => {
       { time: '08:00', daysMask: 0b0111110, portion: 2, enabled: true },
       { time: '10:00', daysMask: 0b1000001, portion: 1, enabled: true },
     ];
-    expect(getTodaysFoodGrams(feedingTimes, 'Monday')).toBe(1);
-    expect(getTodaysFoodGrams(feedingTimes, 'Tuesday')).toBe(2);
+    expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(1); // Monday
+    expect(getTodaysFoodGrams(feedingTimes, 1)).toBe(2); // Tuesday
+    expect(getTodaysFoodGrams(feedingTimes, 6)).toBe(1); // Sunday
   });
 
   it('getNextSchedule returns first enabled time', () => {
@@ -61,14 +64,14 @@ describe('Mealplan State', () => {
     const feedingTimes = [
       { time: '08:00', daysMask: 0b0000000, portion: 2, enabled: true },
     ];
-    expect(getTodaysFoodGrams(feedingTimes, 'Monday')).toBe(0);
+    expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(0); // Monday
   });
 
   it('getTodaysFoodGrams ignores disabled times', () => {
     const feedingTimes = [
       { time: '08:00', daysMask: 0b1111111, portion: 2, enabled: false },
     ];
-    expect(getTodaysFoodGrams(feedingTimes, 'Monday')).toBe(0);
+    expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(0); // Monday
   });
 
   it('encodeMealPlanData and decodeMealPlanData are inverses', () => {

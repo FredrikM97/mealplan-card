@@ -25,7 +25,6 @@ export const commonTableStyle = css`
     border-collapse: separate;
     border-spacing: 0;
     box-shadow: none;
-    width: 100%;
     font-size: 0.95em;
     table-layout: fixed;
     transition: background 0.2s, color 0.2s, box-shadow 0.2s;

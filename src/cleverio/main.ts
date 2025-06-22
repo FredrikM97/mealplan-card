@@ -104,18 +104,31 @@ export class CleverioPf100Card extends LitElement {
       return html`<div>Loading Home Assistant components...</div>`;
     }
     const enabledCount = this._meals.filter(m => m.enabled).length;
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    const gramsValue = getTodaysFoodGrams(this._meals.filter(m => m.enabled), today) * 6;
+    const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const dayIdx = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(todayStr);
+    const gramsValue = getTodaysFoodGrams(this._meals.filter(m => m.enabled), dayIdx) * 6;
     return html`
       <ha-card class="overview-card ha-card-style">
         <h2 class="overview-title">${this.config?.title || 'Cleverio Pet Feeder'}</h2>
         <section class="overview-section">
-          <div class="overview-summary">
-            <span class="overview-schedules">Schedules: ${this._meals.length}</span>
+          <div class="overview-summary" style="display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap;">
+            <ha-chip>
+              <ha-icon icon="mdi:calendar-clock"></ha-icon>
+              ${localize('schedules')}: ${this._meals.length}
+            </ha-chip>
+            <ha-chip>
+              <ha-icon icon="mdi:check-circle-outline"></ha-icon>
+              ${localize('active_schedules')}: ${enabledCount}
+            </ha-chip>
+            <ha-chip>
+              <ha-icon icon="mdi:food-drumstick"></ha-icon>
+              ${localize('today')}: ${gramsValue}g
+            </ha-chip>
           </div>
-          <span class="overview-active">Active schedules: ${enabledCount}</span>
-          <div class="overview-grams">Today: ${gramsValue}g (active)</div>
-          <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>Manage schedules</ha-button>
+          <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>
+            <ha-icon icon="mdi:table-edit"></ha-icon>
+            ${localize('manage_schedules')}
+          </ha-button>
         </section>
         ${this._dialogOpen
           ? html`
@@ -162,7 +175,7 @@ export class CleverioPf100Card extends LitElement {
 
   static async getConfigElement() {
     await import('./card-editor');
-    return document.createElement('card-editor');
+    return document.createElement('cleverio-card-editor');
   }
 
   static getStubConfig() {

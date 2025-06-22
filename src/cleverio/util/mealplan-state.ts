@@ -14,30 +14,25 @@ export function getNextSchedule(feedingTimes: FeedingTime[]): string {
   enabled.sort((a, b) => a.time.localeCompare(b.time));
   return enabled[0].time;
 }
-export function getTotalFoodPerDay(feedingTimes: FeedingTime[]): Record<string, number> {
-  const totals: Record<string, number> = {
-    'Monday': 0, 'Tuesday': 0, 'Wednesday': 0, 'Thursday': 0, 'Friday': 0, 'Saturday': 0, 'Sunday': 0
-  };
+// Returns an array of total food per day, index 0=Monday, 6=Sunday
+export function getTotalFoodPerDay(feedingTimes: FeedingTime[]): number[] {
+  const totals = Array(7).fill(0);
   feedingTimes.forEach(t => {
     if (!t.enabled) return;
     for (let i = 0; i < 7; i++) {
       if (t.daysMask & (1 << i)) {
-        const day = [
-          'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-        ][i];
-        totals[day] += t.portion;
+        totals[i] += t.portion;
       }
     }
   });
   return totals;
 }
-export function getTodaysFoodGrams(feedingTimes: FeedingTime[], today: string): number {
+// Returns total food for a given day index (0=Monday, 6=Sunday)
+export function getTodaysFoodGrams(feedingTimes: FeedingTime[], dayIdx: number): number {
   let total = 0;
   feedingTimes.forEach(t => {
     if (!t.enabled) return;
-    if (t.daysMask & (1 << [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-    ].indexOf(today))) {
+    if (t.daysMask & (1 << dayIdx)) {
       total += t.portion;
     }
   });
@@ -77,15 +72,6 @@ export function encodeMealPlanData(feedingTimes: FeedingTime[]): string {
     return btoa(String.fromCharCode(...bytes));
 }
 
-export function mealsEqual(a: FeedingTime[], b: FeedingTime[]): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i].time !== b[i].time || a[i].portion !== b[i].portion || a[i].daysMask !== b[i].daysMask || a[i].enabled !== b[i].enabled) {
-      return false;
-    }
-  }
-  return true;
-}
 export function parseFeedingTime(str: string): { time: string; portion: number; days: string[] } {
   // Expects format: '08:00,2,Monday,Tuesday'
   const [time, portion, ...days] = str.split(',');

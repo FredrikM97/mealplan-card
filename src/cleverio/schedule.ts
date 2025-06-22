@@ -1,26 +1,28 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { loadHaComponents } from '@kipk/load-ha-components';
-import { commonCardStyle, commonTableStyle } from './common-styles';
+import { commonCardStyle } from './common-styles';
 import {localize} from './locales/localize';
 import './edit';
+import './day-selector';
+import type { FeedingTime } from './util/mealplan-state';
 
 console.log('[cleverio-schedule-view] Module loaded');
 
 @customElement('cleverio-schedule-view')
 export class ScheduleView extends LitElement {
-  @property({ type: Array }) accessor meals: any[] = [];
-  @property({ type: Array }) accessor _localMeals: any[] = [];
-  @property({ type: String }) accessor _view: 'table' | 'edit' = 'table';
-  @property({ type: Number }) accessor _editIdx: number | null = null;
-  @property({ type: Boolean }) private _haComponentsReady = false;
+  @property({ type: Array }) accessor meals: FeedingTime[] = [];
+  @property({ type: Array }) accessor _localMeals: FeedingTime[] = [];
+  @property({ type: Boolean }) accessor _haComponentsReady = false;
+  @property({ type: Boolean }) private _editDialogOpen = false;
+  @property({ type: String }) private _mode: 'table' | 'edit' = 'table';
+  protected _editIdx: number | null = null;
 
   constructor() {
     super();
     this.meals = [];
     this._localMeals = [];
-    this._view = 'table';
-    this._editIdx = null;
+    this._editDialogOpen = false;
     console.log('[cleverio-schedule-view] Constructor');
   }
 
@@ -28,7 +30,7 @@ export class ScheduleView extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
     console.log('[cleverio-schedule-view] connectedCallback');
-    await loadHaComponents(['ha-data-table', 'ha-switch', 'ha-button']);
+    await loadHaComponents(['ha-data-table', 'ha-switch', 'ha-button', 'ha-icon']);
     this._haComponentsReady = true;
     console.log('[cleverio-schedule-view] HA components loaded');
   }
@@ -37,100 +39,156 @@ export class ScheduleView extends LitElement {
   updated(changed: PropertyValues) {
     if (changed.has('meals')) {
       this._localMeals = this.meals.map(m => ({ ...m }));
-      this._view = 'table';
-      this._editIdx = null;
+      this._editDialogOpen = false;
       console.log('[cleverio-schedule-view] Meals updated', this._localMeals);
     }
   }
 
   static styles = [
     commonCardStyle,
-    commonTableStyle,
     css`
-      .ha-actions-row ha-button.ha-primary {
-        background: var(--primary-color, #03a9f4) !important;
-        color: var(--text-primary-color, #fff) !important;
-      }
-      .ha-actions-row ha-button.ha-primary:active,
-      .ha-actions-row ha-button.ha-primary:focus {
-        filter: brightness(0.95);
-      }
-      .ha-table-style th, .ha-table-style td {
-        font-size: 0.92em;
-        padding: 0.18em 0.15em;
-        min-width: 0;
-        max-width: 120px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .ha-table-style th.enabled-col, .ha-table-style td.enabled-col {
-        min-width: 32px !important;
-        max-width: 38px !important;
-        width: 38px !important;
-        text-align: center;
-      }
-      .ha-table-style th.actions-col, .ha-table-style td.actions-col {
-        min-width: 70px !important;
-        max-width: 90px !important;
-        width: 80px !important;
-        text-align: center;
+      .ha-actions-row {
+        display: flex;
+        gap: 0.5em;
+        justify-content: flex-end;
+        margin: 1em 0 0 0;
       }
       .ha-table-wrapper {
-        width: 100%;
-        max-width: 100vw;
-        overflow-x: auto;
         margin: 0 auto 1em auto;
+      }
+      .days-row {
+        display: flex;
+        gap: 1px;
+        flex-wrap: wrap;
+        align-items: center;
+        white-space: normal;
+        word-break: break-word;
+      }
+      .day-cell {
+        height: 1.7em;
+        line-height: 1.7em;
+        text-align: center;
+        border-radius: 6px;
+        background: var(--card-background-color, #f0f0f0);
+        color: #8a8a8a;
+        font-weight: 600;
+        font-size: 0.95em;
+        margin: 0 1px;
+        transition: background 0.2s, color 0.2s;
+      }
+      .day-cell.selected {
+        background: var(--primary-color, #03a9f4);
+        color: var(--text-primary-color, #fff);
+      }
+      .switch-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 4px;
+        padding-bottom: 4px;
+      }
+      .ha-table-style td, .ha-table-style th {
+        padding: 0 4px;
+        vertical-align: middle;
+        border: none;
+      }
+      .ha-table-style td.enabled-cell, .ha-table-style th.enabled-cell {
+        width: 60px;
+        min-width: 60px;
+        max-width: 70px;
+        text-align: center;
+        padding: 0;
+      }
+      .ha-table-style td.enabled-cell ha-switch {
+        margin: 0 auto;
+        display: block;
+      }
+      :host ::ng-deep .mdc-data-table__cell,
+      :host ::ng-deep .mdc-data-table__header-cell {
+        box-sizing: content-box !important;
       }
     `
   ];
 
   render() {
-    console.log('[cleverio-schedule-view] render', { _view: this._view, _editIdx: this._editIdx });
-    if (this._view === 'edit') {
-      return this._renderEditView();
-    }
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
+    if (this._mode === 'edit') {
+      return html`
+        <cleverio-edit-view
+          .data=${this._editIdx !== null && this._editIdx !== undefined ? { ...this._localMeals[this._editIdx] } : { time: '', portion: 1, daysMask: 0, enabled: true }}
+          @edit-save=${this._onEditSave}
+          @back=${this._onEditBack}
+        ></cleverio-edit-view>
+      `;
+    }
     // ha-data-table columns as an object, not array, and add a compact days column
     const columns = {
-      time: { title: localize('time'), sortable: true, minWidth: '60px', maxWidth: '80px' },
-      portion: { title: localize('portion'), sortable: true, minWidth: '40px', maxWidth: '60px' },
+      time: { title: localize('time'), sortable: true, minWidth: '80px'},
+      portion: { title: localize('portion'), sortable: true, minWidth: '80px'},
       days: {
-        title: localize('days'), sortable: false, minWidth: '80px', maxWidth: '110px',
+        title: localize('days'),
+        sortable: false,
+        minWidth: '130px',
         template: (row: any) => html`
-          <div style="display:flex; gap:1px; flex-wrap:wrap;">
-            ${['M','T','W','T','F','S','S'].map((d, i) => html`
-              <span style="display:inline-block; width:1.2em; text-align:center; border-radius:8px; background:${row.daysMask & (1<<i) ? 'var(--primary-color, #03a9f4)' : 'var(--card-background-color, #eee)'}; color:${row.daysMask & (1<<i) ? 'var(--text-primary-color, #fff)' : '#888'}; font-weight:bold;">${d}</span>
-            `)}
-          </div>`
+          <cleverio-day-selector .selectedDaysMask=${row.daysMask} .editable=${false}></cleverio-day-selector>`
       },
-      enabled: { title: html`<span style="font-size:0.9em;">${localize('enabled')}</span>`, sortable: false, minWidth: '32px', maxWidth: '38px', width: '38px', className: 'enabled-col', template: (row: any) => html`
-        <ha-switch .checked=${row.enabled} @change=${(e: Event) => this._toggleEnabled(row._idx, e)} title="Enable/disable schedule"></ha-switch>
-      ` },
-      actions: { title: html`<span style="font-size:0.9em;">${localize('actions')}</span>`, sortable: false, minWidth: '70px', maxWidth: '90px', width: '80px', className: 'actions-col', template: (row: any) => html`
-        <ha-button @click=${() => this._edit(row._idx)}>Edit</ha-button>
-        <ha-button @click=${() => this._delete(row._idx)} style="margin-left:0.2em; background: var(--error-color, #b71c1c); color: #fff;">Delete</ha-button>
-      ` }
+      enabled: {
+        title: html`<span style="font-size:0.9em;">${localize('enabled')}</span>`,
+        sortable: false,
+        minWidth: '60px',
+        maxWidth: '70px',
+        cellClass: 'enabled-cell',
+        template: (row: any) => html`
+            <ha-switch .checked=${row.enabled} @change=${(e: Event) => this._toggleEnabled(row._idx, e)} title="Enable/disable schedule"></ha-switch>
+        `
+      },
+      actions: {
+        title: html`<span style="font-size:0.9em;">${localize('actions')}</span>`,
+        sortable: false,
+        minWidth: '100px',
+        template: (row: any) => html`
+          <ha-icon
+            icon="mdi:pencil"
+            @click=${() => this._openEditDialog(row._idx)}
+            title="Edit"
+            style="cursor:pointer;margin-right:8px;"
+            tabindex="0"
+            role="button"
+          ></ha-icon>
+          <ha-icon
+            icon="mdi:delete"
+            @click=${() => this._delete(row._idx)}
+            title="Delete"
+            style="color: var(--error-color, #b71c1c); cursor:pointer;"
+            tabindex="0"
+            role="button"
+          ></ha-icon>
+        `
+      }
     };
-    // rows as array of objects with _idx
     const rows = this._localMeals.map((m, i) => ({ ...m, _idx: i }));
+    const fakeHass = { locale: { language: 'en', country: 'US' } };
     return html`
       <div class="ha-table-wrapper">
         <ha-data-table
+          .hass=${fakeHass}
           .localizeFunc=${localize}
           .columns=${columns}
           .data=${rows}
           class="ha-table-style"
-          style="width:100%; min-width:420px; max-width:600px; margin:auto;"
           auto-height
         ></ha-data-table>
       </div>
       <div class="ha-actions-row">
-        <ha-button @click=${this._add.bind(this)}>Add</ha-button>
+        <ha-button @click=${this._openAddDialog.bind(this)}>Add</ha-button>
         <ha-button @click=${this._cancel.bind(this)}>Cancel</ha-button>
-        <ha-button class="ha-primary" @click=${this._save.bind(this)}>${localize('save')}</ha-button>
+        <ha-button class="ha-primary" @click=${() => {
+          // Only emit meals-changed, do not update table or switch view
+          this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this._localMeals }, bubbles: true, composed: true }));
+          console.log('[cleverio-schedule-view] _save', { meals: this._localMeals });
+        }}>${localize('save')}</ha-button>
       </div>
     `;
   }
@@ -141,24 +199,42 @@ export class ScheduleView extends LitElement {
     console.log('[cleverio-schedule-view] _toggleEnabled', { idx, enabled: this._localMeals[idx].enabled });
   }
 
-  _edit(idx: number) {
+  _openEditDialog(idx: number) {
+    this._mode = 'edit';
     this._editIdx = idx;
-    this._view = 'edit';
     this.requestUpdate();
-    console.log('[cleverio-schedule-view] _edit', { idx });
+  }
+
+  _openAddDialog() {
+    this._mode = 'edit';
+    this._editIdx = null;
+    this.requestUpdate();
+  }
+
+  _onEditBack() {
+    this._mode = 'table';
+    this._editIdx = null;
+    this.requestUpdate();
+  }
+
+  _onEditSave(e: CustomEvent) {
+    const meal = e.detail.meal;
+    if (this._editIdx !== null && this._editIdx !== undefined) {
+      this._localMeals[this._editIdx] = meal;
+    } else {
+      this._localMeals = [...this._localMeals, meal];
+    }
+    this._mode = 'table';
+    this._editIdx = null;
+    this.requestUpdate();
+    // Do NOT emit meals-changed or update public meals property here.
+    console.log('[cleverio-schedule-view] _onEditSave', { meal });
   }
 
   _delete(idx: number) {
     this._localMeals.splice(idx, 1);
     this.requestUpdate();
     console.log('[cleverio-schedule-view] _delete', { idx });
-  }
-
-  _add() {
-    this._editIdx = null;
-    this._view = 'edit';
-    this.requestUpdate();
-    console.log('[cleverio-schedule-view] _add');
   }
 
   _cancel() {
@@ -169,39 +245,5 @@ export class ScheduleView extends LitElement {
   _save() {
     this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this._localMeals }, bubbles: true, composed: true }));
     console.log('[cleverio-schedule-view] _save', { meals: this._localMeals });
-  }
-
-  _renderEditView() {
-    const meal = this._editIdx != null && this._localMeals[this._editIdx]
-      ? this._localMeals[this._editIdx]
-      : { time: '', portion: 1, daysMask: 0, enabled: true };
-    console.log('[cleverio-schedule-view] _renderEditView', { meal, _editIdx: this._editIdx });
-    return html`
-      <cleverio-edit-view
-        .data=${meal}
-        @save=${this._onEditSave}
-        @back=${this._onEditBack}
-      ></cleverio-edit-view>
-    `;
-  }
-
-  _onEditSave(e: CustomEvent) {
-    const meal = e.detail.meal;
-    if (this._editIdx != null) {
-      this._localMeals[this._editIdx] = meal;
-    } else {
-      this._localMeals = [...this._localMeals, meal];
-    }
-    this._view = 'table';
-    this._editIdx = null;
-    this.requestUpdate();
-    console.log('[cleverio-schedule-view] _onEditSave', { meal });
-  }
-
-  _onEditBack() {
-    this._view = 'table';
-    this._editIdx = null;
-    this.requestUpdate();
-    console.log('[cleverio-schedule-view] _onEditBack');
   }
 }
