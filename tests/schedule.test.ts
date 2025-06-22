@@ -81,7 +81,7 @@ describe('cleverio-schedule-view', () => {
     // Simulate save from edit view
     const newMeal = { ...sampleMeals[0], portion: 99 };
     if (editView) {
-      editView.dispatchEvent(new CustomEvent('save', { detail: { meal: newMeal }, bubbles: true, composed: true }));
+      editView.dispatchEvent(new CustomEvent('edit-save', { detail: { meal: newMeal }, bubbles: true, composed: true }));
     }
     await el.updateComplete;
     // Edit dialog should be closed
@@ -101,10 +101,11 @@ describe('cleverio-schedule-view', () => {
     el._localEdit.time = '';
     let eventFired = false;
     el.addEventListener('save', () => { eventFired = true; });
-    const form = el.shadowRoot.querySelector('form');
-    form.dispatchEvent(new Event('submit', { bubbles: true, composed: true, cancelable: true }));
+    const saveBtn = el.shadowRoot.querySelector('.save-btn');
+    expect(saveBtn).to.exist;
+    saveBtn.click();
     await el.updateComplete;
-    expect(el._error).to.include('valid time');
+    expect((el._error ?? '')).to.include('valid time');
     expect(eventFired).to.be.false;
   });
 
@@ -115,10 +116,11 @@ describe('cleverio-schedule-view', () => {
     el._localEdit.portion = 0;
     let eventFired = false;
     el.addEventListener('save', () => { eventFired = true; });
-    const form = el.shadowRoot.querySelector('form');
-    form.dispatchEvent(new Event('submit', { bubbles: true, composed: true, cancelable: true }));
+    const saveBtn = el.shadowRoot.querySelector('.save-btn');
+    expect(saveBtn).to.exist;
+    saveBtn.click();
     await el.updateComplete;
-    expect(el._error).to.include('Portion');
+    expect((el._error ?? '')).to.include('Portion');
     expect(eventFired).to.be.false;
   });
 
@@ -136,7 +138,7 @@ describe('cleverio-schedule-view', () => {
     // Simulate save from edit view
     const newMeal = { ...sampleMeals[0], portion: 77 };
     if (editView) {
-      editView.dispatchEvent(new CustomEvent('save', { detail: { meal: newMeal }, bubbles: true, composed: true }));
+      editView.dispatchEvent(new CustomEvent('edit-save', { detail: { meal: newMeal }, bubbles: true, composed: true }));
     }
     await el.updateComplete;
     // Edit dialog should be closed (edit view removed)
@@ -160,7 +162,7 @@ describe('cleverio-schedule-view', () => {
     // Simulate save from edit view
     const newMeal = { ...sampleMeals[0], portion: 99 };
     if (editView) {
-      editView.dispatchEvent(new CustomEvent('save', { detail: { meal: newMeal }, bubbles: true, composed: true }));
+      editView.dispatchEvent(new CustomEvent('edit-save', { detail: { meal: newMeal }, bubbles: true, composed: true }));
     }
     await el.updateComplete;
     // Should return to schedule view (editView removed, table present)
@@ -183,8 +185,11 @@ describe('cleverio-schedule-view', () => {
     el._delete(0);
     await el.updateComplete;
     expect(el._localMeals.length).to.equal(1);
-    // _delete does not emit meals-changed, but let's call _save to check
-    el._save();
+    // _delete does not emit meals-changed, but let's simulate Save button click to check
+    const saveBtn = el.shadowRoot!.querySelector('.ha-primary');
+    expect(saveBtn).to.exist;
+    if (saveBtn) saveBtn.dispatchEvent(new Event('click', { bubbles: true, composed: true }));
+    await el.updateComplete;
     expect(eventFired).to.be.true;
   });
 

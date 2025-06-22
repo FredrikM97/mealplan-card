@@ -7,40 +7,33 @@ import './edit';
 import './day-selector';
 import type { FeedingTime } from './util/mealplan-state';
 
-console.log('[cleverio-schedule-view] Module loaded');
-
 @customElement('cleverio-schedule-view')
 export class ScheduleView extends LitElement {
   @property({ type: Array }) accessor meals: FeedingTime[] = [];
   @property({ type: Array }) accessor _localMeals: FeedingTime[] = [];
   @property({ type: Boolean }) accessor _haComponentsReady = false;
-  @property({ type: Boolean }) private _editDialogOpen = false;
-  @property({ type: String }) private _mode: 'table' | 'edit' = 'table';
-  protected _editIdx: number | null = null;
+  private _editIdx: number | null = null;
   @state() private _hasUnsavedChanges = false;
+  @property({ type: String }) private _mode: 'table' | 'edit' = 'table';
 
   constructor() {
     super();
     this.meals = [];
     this._localMeals = [];
-    this._editDialogOpen = false;
     console.log('[cleverio-schedule-view] Constructor');
   }
 
   // Load Ha components when connected
   async connectedCallback() {
     super.connectedCallback();
-    console.log('[cleverio-schedule-view] connectedCallback');
     await loadHaComponents(['ha-data-table', 'ha-switch', 'ha-button', 'ha-icon']);
     this._haComponentsReady = true;
-    console.log('[cleverio-schedule-view] HA components loaded');
   }
 
   // Watch for changes in meals
   updated(changed: PropertyValues) {
     if (changed.has('meals')) {
       this._localMeals = this.meals.map(m => ({ ...m }));
-      this._editDialogOpen = false;
       this._hasUnsavedChanges = false;
       console.log('[cleverio-schedule-view] Meals updated', this._localMeals);
     }
@@ -149,15 +142,14 @@ export class ScheduleView extends LitElement {
       days: {
         title: localize('days'),
         sortable: false,
-        minWidth: '130px',
+        minWidth: '125px',
         template: (row: any) => html`
           <cleverio-day-selector .selectedDaysMask=${row.daysMask} .editable=${false}></cleverio-day-selector>`
       },
       enabled: {
         title: html`<span style="font-size:0.9em;">${localize('enabled')}</span>`,
         sortable: false,
-        minWidth: '60px',
-        maxWidth: '70px',
+        minWidth: '70px',
         cellClass: 'enabled-cell',
         template: (row: any) => html`
           <div class="switch-flex"><ha-switch .checked=${row.enabled} @change=${(e: Event) => this._toggleEnabled(row._idx, e)} title="Enable/disable schedule"></ha-switch></div>
@@ -206,12 +198,11 @@ export class ScheduleView extends LitElement {
         <ha-button class="ha-primary" @click=${() => {
           this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this._localMeals }, bubbles: true, composed: true }));
           this._hasUnsavedChanges = false;
-          console.log('[cleverio-schedule-view] _save', { meals: this._localMeals });
         }}>
           ${localize('save')}
         </ha-button>
       </div>
-      ${this._hasUnsavedChanges ? html`<div class="save-note">You have unsaved changes. Press Save to persist changes to Home Assistant.</div>` : ''}
+      ${this._hasUnsavedChanges ? html`<div class="save-note">Unsaved changes</div>` : ''}
     `;
   }
 
@@ -226,7 +217,6 @@ export class ScheduleView extends LitElement {
     this._localMeals[idx].enabled = (e.target as HTMLInputElement).checked;
     this.requestUpdate();
     this._markUnsaved();
-    console.log('[cleverio-schedule-view] _toggleEnabled', { idx, enabled: this._localMeals[idx].enabled });
   }
 
   _openEditDialog(idx: number) {
@@ -259,18 +249,15 @@ export class ScheduleView extends LitElement {
     this.requestUpdate();
     this._markUnsaved();
     // Do NOT emit meals-changed or update public meals property here.
-    console.log('[cleverio-schedule-view] _onEditSave', { meal });
   }
 
   _delete(idx: number) {
     this._localMeals.splice(idx, 1);
     this.requestUpdate();
     this._markUnsaved();
-    console.log('[cleverio-schedule-view] _delete', { idx });
   }
 
   _cancel() {
     this.dispatchEvent(new CustomEvent('close-dialog', { bubbles: true, composed: true }));
-    console.log('[cleverio-schedule-view] _cancel');
   }
 }

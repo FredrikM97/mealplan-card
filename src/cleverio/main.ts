@@ -17,7 +17,6 @@ export class CleverioPf100Card extends LitElement {
   @state() accessor _meals: FeedingTime[];
   @state() accessor _persistedMeals: FeedingTime[];
   @state() accessor _dialogOpen: boolean;
-  @state() accessor _dialogData;
   @property({ type: Boolean }) private _haComponentsReady = false;
 
   constructor() {
@@ -25,7 +24,6 @@ export class CleverioPf100Card extends LitElement {
     this._meals = [];
     this._persistedMeals = [];
     this._dialogOpen = false;
-    this._dialogData = undefined;
   }
 
   static styles = [
@@ -70,7 +68,6 @@ export class CleverioPf100Card extends LitElement {
 
  
   async connectedCallback() {
-    await loadCardTranslations(); // Only loads once, even if called multiple times
     await loadHaComponents(['ha-button', 'ha-data-table']);
     this._haComponentsReady = true;
     super.connectedCallback();
@@ -229,8 +226,4 @@ export class CleverioPf100Card extends LitElement {
     }
     return {};
   }
-}
-
-function loadTranslations() {
-  throw new Error('Function not implemented.');
 }
