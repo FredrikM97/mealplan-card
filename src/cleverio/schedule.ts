@@ -1,5 +1,5 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { commonCardStyle } from './common-styles';
 import {localize} from './locales/localize';
@@ -17,6 +17,7 @@ export class ScheduleView extends LitElement {
   @property({ type: Boolean }) private _editDialogOpen = false;
   @property({ type: String }) private _mode: 'table' | 'edit' = 'table';
   protected _editIdx: number | null = null;
+  @state() private _hasUnsavedChanges = false;
 
   constructor() {
     super();
@@ -40,6 +41,7 @@ export class ScheduleView extends LitElement {
     if (changed.has('meals')) {
       this._localMeals = this.meals.map(m => ({ ...m }));
       this._editDialogOpen = false;
+      this._hasUnsavedChanges = false;
       console.log('[cleverio-schedule-view] Meals updated', this._localMeals);
     }
   }
@@ -93,15 +95,32 @@ export class ScheduleView extends LitElement {
         border: none;
       }
       .ha-table-style td.enabled-cell, .ha-table-style th.enabled-cell {
-        width: 60px;
-        min-width: 60px;
-        max-width: 70px;
+        width: 70px;
+        min-width: 70px;
+        max-width: 80px;
         text-align: center;
         padding: 0;
+        overflow: visible;
+        position: relative;
+        vertical-align: middle;
+      }
+      .switch-flex {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        min-height: 40px;
       }
       .ha-table-style td.enabled-cell ha-switch {
-        margin: 0 auto;
-        display: block;
+        min-width: 48px;
+        min-height: 32px;
+        max-width: 100%;
+        z-index: 1;
+        position: relative;
+        margin: 0;
+      }
+      .ha-table-style td.enabled-cell {
+        background: transparent;
       }
       :host ::ng-deep .mdc-data-table__cell,
       :host ::ng-deep .mdc-data-table__header-cell {
@@ -141,7 +160,7 @@ export class ScheduleView extends LitElement {
         maxWidth: '70px',
         cellClass: 'enabled-cell',
         template: (row: any) => html`
-            <ha-switch .checked=${row.enabled} @change=${(e: Event) => this._toggleEnabled(row._idx, e)} title="Enable/disable schedule"></ha-switch>
+          <div class="switch-flex"><ha-switch .checked=${row.enabled} @change=${(e: Event) => this._toggleEnabled(row._idx, e)} title="Enable/disable schedule"></ha-switch></div>
         `
       },
       actions: {
@@ -185,17 +204,28 @@ export class ScheduleView extends LitElement {
         <ha-button @click=${this._openAddDialog.bind(this)}>Add</ha-button>
         <ha-button @click=${this._cancel.bind(this)}>Cancel</ha-button>
         <ha-button class="ha-primary" @click=${() => {
-          // Only emit meals-changed, do not update table or switch view
           this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this._localMeals }, bubbles: true, composed: true }));
+          this._hasUnsavedChanges = false;
           console.log('[cleverio-schedule-view] _save', { meals: this._localMeals });
-        }}>${localize('save')}</ha-button>
+        }}>
+          ${localize('save')}
+        </ha-button>
       </div>
+      ${this._hasUnsavedChanges ? html`<div class="save-note">You have unsaved changes. Press Save to persist changes to Home Assistant.</div>` : ''}
     `;
+  }
+
+  _markUnsaved() {
+    // Compare localMeals to meals for unsaved changes
+    const orig = JSON.stringify(this.meals);
+    const local = JSON.stringify(this._localMeals);
+    this._hasUnsavedChanges = orig !== local;
   }
 
   _toggleEnabled(idx: number, e: Event) {
     this._localMeals[idx].enabled = (e.target as HTMLInputElement).checked;
     this.requestUpdate();
+    this._markUnsaved();
     console.log('[cleverio-schedule-view] _toggleEnabled', { idx, enabled: this._localMeals[idx].enabled });
   }
 
@@ -227,6 +257,7 @@ export class ScheduleView extends LitElement {
     this._mode = 'table';
     this._editIdx = null;
     this.requestUpdate();
+    this._markUnsaved();
     // Do NOT emit meals-changed or update public meals property here.
     console.log('[cleverio-schedule-view] _onEditSave', { meal });
   }
@@ -234,16 +265,12 @@ export class ScheduleView extends LitElement {
   _delete(idx: number) {
     this._localMeals.splice(idx, 1);
     this.requestUpdate();
+    this._markUnsaved();
     console.log('[cleverio-schedule-view] _delete', { idx });
   }
 
   _cancel() {
     this.dispatchEvent(new CustomEvent('close-dialog', { bubbles: true, composed: true }));
     console.log('[cleverio-schedule-view] _cancel');
-  }
-
-  _save() {
-    this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this._localMeals }, bubbles: true, composed: true }));
-    console.log('[cleverio-schedule-view] _save', { meals: this._localMeals });
   }
 }

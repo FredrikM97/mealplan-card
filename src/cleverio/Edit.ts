@@ -13,7 +13,60 @@ export class CleverioEditView extends LitElement {
   @state() private _error: string | null = null;
 
   static styles = css`
-    /* your styles here */
+    .edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2em;
+      padding: 1.2em 0.5em 0.5em 0.5em;
+      min-width: 260px;
+      max-width: 350px;
+      margin: 0 auto;
+    }
+    .error {
+      color: var(--error-color, #b71c1c);
+      background: #fff0f0;
+      border-radius: 4px;
+      padding: 0.5em 0.8em;
+      margin-bottom: 0.5em;
+      font-size: 0.98em;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3em;
+    }
+    label {
+      font-size: 1em;
+      font-weight: 500;
+      margin-bottom: 0.1em;
+      color: var(--primary-text-color, #333);
+    }
+    .helper {
+      font-size: 0.92em;
+      color: #888;
+      margin-top: -0.2em;
+      margin-bottom: 0.2em;
+    }
+    .predefined-times {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em;
+      margin: 0.5em 0 0.5em 0;
+      justify-content: flex-start;
+    }
+    .edit-actions {
+      display: flex;
+      flex-direction: row;
+      gap: 1em;
+      justify-content: flex-end;
+      margin-top: 1.2em;
+    }
+    .edit-actions ha-button:first-child {
+      order: 1;
+    }
+    .edit-actions .save-btn {
+      order: 2;
+    }
   `;
 
   constructor() {
@@ -40,30 +93,39 @@ export class CleverioEditView extends LitElement {
     const editData = this._localEdit;
     const predefinedTimes = ['06:00', '08:00', '12:00', '15:00', '18:00', '21:00'];
     return html`
-      <form @submit=${(e: Event) => e.preventDefault()}>
+      <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
         ${this._error ? html`<div class="error">${this._error}</div>` : ''}
         <cleverio-day-selector
           .selectedDaysMask=${editData.daysMask}
           .editable=${true}
           @days-changed=${(e: CustomEvent) => this._onDaysChanged(e)}
         ></cleverio-day-selector>
+        <div class="form-group">
+          <label for="edit-time">Time</label>
+          <input
+            id="edit-time"
+            class="edit-time"
+            type="time"
+            .value=${editData.time}
+            @input=${(e: Event) => (editData.time = (e.target as HTMLInputElement).value)}
+          />
+        </div>
+        <div class="form-group">
+          <label for="edit-portion">Portion</label>
+          <input
+            id="edit-portion"
+            type="number"
+            min="1"
+            .value=${editData.portion}
+            @input=${(e: Event) => (editData.portion = parseInt((e.target as HTMLInputElement).value, 10))}
+          />
+          <div class="helper">1 portion = 6 grams</div>
+        </div>
         <div class="predefined-times">
           ${predefinedTimes.map(time => html`
             <ha-button type="button" @click=${() => { editData.time = time; this.requestUpdate(); }}>${time}</ha-button>
           `)}
         </div>
-        <input
-          class="edit-time"
-          type="time"
-          .value=${editData.time}
-          @input=${(e: Event) => (editData.time = (e.target as HTMLInputElement).value)}
-        />
-        <input
-          type="number"
-          min="1"
-          .value=${editData.portion}
-          @input=${(e: Event) => (editData.portion = parseInt((e.target as HTMLInputElement).value, 10))}
-        />
         <div class="edit-actions">
           <ha-button type="button" @click=${() => this.dispatchEvent(new CustomEvent('back', { bubbles: true, composed: true }))}>Back</ha-button>
           <ha-button class="ha-primary save-btn" type="button" @click=${this._onEditSave}>Save</ha-button>

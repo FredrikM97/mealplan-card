@@ -147,3 +147,40 @@ describe('CleverioPf100Card legacy methods', () => {
     expect(result).to.be.an('array');
   });
 });
+
+describe('CleverioPf100Card integration', () => {
+  it('encodes value and calls hass.callService when schedule Save is pressed', async () => {
+    const base64 = 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==';
+    const config = { sensor: 'sensor.test', title: 'Test Card' };
+    const hass = { callService: vi.fn(), states: { 'sensor.test': { state: base64, attributes: {} } } };
+    const el = await fixture<any>(html`<cleverio-pf100-card .config=${config} .hass=${hass}></cleverio-pf100-card>`);
+    el._haComponentsReady = true;
+    await el.updateComplete;
+    // Open dialog
+    el._dialogOpen = true;
+    await el.updateComplete;
+    // Find schedule view
+    const dialog = el.shadowRoot.querySelector('ha-dialog');
+    expect(dialog).to.exist;
+    const schedule = dialog.querySelector('cleverio-schedule-view');
+    expect(schedule).to.exist;
+    // Simulate meals change (as if Save was pressed)
+    const newMeals = [{ time: '10:00', portion: 2, daysMask: 127, enabled: true }];
+    schedule.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: newMeals }, bubbles: true, composed: true }));
+    await el.updateComplete;
+    // Check that callService was called
+    expect(hass.callService.mock.calls.length).to.be.greaterThan(0);
+    const call = hass.callService.mock.calls.find(c => c[0] === 'text' && c[1] === 'set_value');
+    expect(call, 'callService should be called with text.set_value').to.exist;
+    if (!call) throw new Error('callService not called with text.set_value');
+    expect(call[2]).to.have.property('entity_id', 'sensor.test');
+    expect(call[2]).to.have.property('value');
+    expect(typeof call[2].value).to.equal('string');
+    // Value should be base64 (not plain JSON)
+    const sentValue = call[2].value;
+    // Should decode to valid JSON array
+    const decoded = decodeMealPlanData(sentValue);
+    expect(Array.isArray(decoded)).to.be.true;
+    expect(decoded[0].time).to.equal('10:00');
+  });
+});

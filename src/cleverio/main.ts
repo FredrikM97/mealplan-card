@@ -28,7 +28,33 @@ export class CleverioPf100Card extends LitElement {
     this._dialogData = undefined;
   }
 
-  static styles = [commonCardStyle, css``];
+  static styles = [
+    commonCardStyle,
+    css`
+      .overview-summary-row {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        margin-bottom: 0.5em;
+      }
+      .overview-summary {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+      .overview-actions-row {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        margin-bottom: 0.5em;
+      }
+      .manage-btn {
+        margin-top: 0.2em;
+      }
+    `
+  ];
 
   setConfig(config) {
     this.config = config;
@@ -111,24 +137,28 @@ export class CleverioPf100Card extends LitElement {
       <ha-card class="overview-card ha-card-style">
         <h2 class="overview-title">${this.config?.title || 'Cleverio Pet Feeder'}</h2>
         <section class="overview-section">
-          <div class="overview-summary" style="display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap;">
-            <ha-chip>
-              <ha-icon icon="mdi:calendar-clock"></ha-icon>
-              ${localize('schedules')}: ${this._meals.length}
-            </ha-chip>
-            <ha-chip>
-              <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-              ${localize('active_schedules')}: ${enabledCount}
-            </ha-chip>
-            <ha-chip>
-              <ha-icon icon="mdi:food-drumstick"></ha-icon>
-              ${localize('today')}: ${gramsValue}g
-            </ha-chip>
+          <div class="overview-summary-row">
+            <div class="overview-summary">
+              <ha-chip>
+                <ha-icon icon="mdi:calendar-clock"></ha-icon>
+                ${localize('schedules')}: ${this._meals.length}
+              </ha-chip>
+              <ha-chip>
+                <ha-icon icon="mdi:check-circle-outline"></ha-icon>
+                ${localize('active_schedules')}: ${enabledCount}
+              </ha-chip>
+              <ha-chip>
+                <ha-icon icon="mdi:food-drumstick"></ha-icon>
+                ${localize('today')}: ${gramsValue}g
+              </ha-chip>
+            </div>
           </div>
-          <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>
-            <ha-icon icon="mdi:table-edit"></ha-icon>
-            ${localize('manage_schedules')}
-          </ha-button>
+          <div class="overview-actions-row">
+            <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>
+              <ha-icon icon="mdi:table-edit"></ha-icon>
+              ${localize('manage_schedules')}
+            </ha-button>
+          </div>
         </section>
         ${this._dialogOpen
           ? html`
@@ -164,6 +194,8 @@ export class CleverioPf100Card extends LitElement {
   _onScheduleMealsChanged(e) {
     this._dialogOpen = false;
     this._meals = e.detail.meals;
+    // Persist encoded value to Home Assistant
+    this._saveMealsToSensor();
     this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: e.detail.meals }, bubbles: true, composed: true }));
     this.requestUpdate();
   }
