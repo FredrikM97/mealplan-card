@@ -2,10 +2,10 @@
 import { customElement, property, state } from 'lit/decorators.js';
 import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData, getTodaysFoodGrams } from './util/mealplan-state.js';
 import type { FeedingTime } from './util/mealplan-state.js';
-import { commonCardStyle } from './common-styles.js';
 import './schedule';
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { loadTranslations as loadCardTranslations, localize } from './locales/localize';
+import { Day } from './util/days-util';
 
 /**
  * Cleverio PF100 Feeder Card
@@ -17,6 +17,7 @@ export class CleverioPf100Card extends LitElement {
   @state() accessor _meals: FeedingTime[];
   @state() accessor _persistedMeals: FeedingTime[];
   @state() accessor _dialogOpen: boolean;
+  @state() accessor _dialogData;
   @property({ type: Boolean }) private _haComponentsReady = false;
 
   constructor() {
@@ -24,35 +25,10 @@ export class CleverioPf100Card extends LitElement {
     this._meals = [];
     this._persistedMeals = [];
     this._dialogOpen = false;
+    this._dialogData = undefined;
   }
 
-  static styles = [
-    commonCardStyle,
-    css`
-      .overview-summary-row {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        margin-bottom: 0.5em;
-      }
-      .overview-summary {
-        display: flex;
-        gap: 0.5em;
-        align-items: center;
-        flex-wrap: wrap;
-        width: 100%;
-      }
-      .overview-actions-row {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        margin-bottom: 0.5em;
-      }
-      .manage-btn {
-        margin-top: 0.2em;
-      }
-    `
-  ];
+  static styles = [css``];
 
   setConfig(config) {
     this.config = config;
@@ -68,7 +44,8 @@ export class CleverioPf100Card extends LitElement {
 
  
   async connectedCallback() {
-    await loadHaComponents(['ha-button', 'ha-data-table']);
+    await loadCardTranslations(); // Only loads once, even if called multiple times
+    await loadHaComponents(['ha-button', 'ha-data-table']); // Remove ha-card-header
     this._haComponentsReady = true;
     super.connectedCallback();
     this.requestUpdate();
@@ -127,36 +104,35 @@ export class CleverioPf100Card extends LitElement {
       return html`<div>Loading Home Assistant components...</div>`;
     }
     const enabledCount = this._meals.filter(m => m.enabled).length;
-    const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    const dayIdx = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(todayStr);
-    const gramsValue = getTodaysFoodGrams(this._meals.filter(m => m.enabled), dayIdx) * 6;
+    // Use JS getDay() and Day enum for robust day handling
+    const jsDay = new Date().getDay(); // 0=Sunday, 1=Monday, ...
+    const dayEnum = [Day.Sunday, Day.Monday, Day.Tuesday, Day.Wednesday, Day.Thursday, Day.Friday, Day.Saturday][jsDay];
+    const gramsValue = getTodaysFoodGrams(this._meals.filter(m => m.enabled), jsDay) * 6;
     return html`
-      <ha-card class="overview-card ha-card-style">
-        <h2 class="overview-title">${this.config?.title || 'Cleverio Pet Feeder'}</h2>
-        <section class="overview-section">
-          <div class="overview-summary-row">
-            <div class="overview-summary">
-              <ha-chip>
-                <ha-icon icon="mdi:calendar-clock"></ha-icon>
-                ${localize('schedules')}: ${this._meals.length}
-              </ha-chip>
-              <ha-chip>
-                <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-                ${localize('active_schedules')}: ${enabledCount}
-              </ha-chip>
-              <ha-chip>
-                <ha-icon icon="mdi:food-drumstick"></ha-icon>
-                ${localize('today')}: ${gramsValue}g
-              </ha-chip>
-            </div>
-          </div>
-          <div class="overview-actions-row">
-            <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>
-              <ha-icon icon="mdi:table-edit"></ha-icon>
-              ${localize('manage_schedules')}
-            </ha-button>
-          </div>
-        </section>
+      <ha-card>
+        <div style="padding: 16px 16px 0 16px;">
+          <h2 style="margin:0 0 8px 0;">${this.config?.title || 'Cleverio Pet Feeder'}</h2>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 0 16px 8px 16px;">
+          <ha-chip class="overview-schedules">
+            <ha-icon icon="mdi:calendar-clock"></ha-icon>
+            ${localize('schedules')}: ${this._meals.length}
+          </ha-chip>
+          <ha-chip class="overview-active">
+            <ha-icon icon="mdi:check-circle-outline"></ha-icon>
+            ${localize('active_schedules')}: ${enabledCount}
+          </ha-chip>
+          <ha-chip class="overview-grams">
+            <ha-icon icon="mdi:food-drumstick"></ha-icon>
+            ${localize('today')}: ${gramsValue}g
+          </ha-chip>
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin: 0 16px 16px 16px;">
+          <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>
+            <ha-icon icon="mdi:table-edit"></ha-icon>
+            ${localize('manage_schedules')}
+          </ha-button>
+        </div>
         ${this._dialogOpen
           ? html`
               <ha-dialog open scrimClickAction @closed=${this._onDialogClose.bind(this)}>
@@ -191,8 +167,6 @@ export class CleverioPf100Card extends LitElement {
   _onScheduleMealsChanged(e) {
     this._dialogOpen = false;
     this._meals = e.detail.meals;
-    // Persist encoded value to Home Assistant
-    this._saveMealsToSensor();
     this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: e.detail.meals }, bubbles: true, composed: true }));
     this.requestUpdate();
   }
@@ -226,4 +200,8 @@ export class CleverioPf100Card extends LitElement {
     }
     return {};
   }
+}
+
+function loadTranslations() {
+  throw new Error('Function not implemented.');
 }

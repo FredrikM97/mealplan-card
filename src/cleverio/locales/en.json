@@ -13,5 +13,9 @@
   "status": "Status",
   "actions": "Actions",
   "delete": "Delete",
-  "add_meal": "Add Meal"
+  "add_meal": "Add Meal",
+  "schedules": "Schedules",
+  "active_schedules": "Active Schedules",
+  "today": "Today",
+  "manage_schedules": "Manage Schedules"
 }
