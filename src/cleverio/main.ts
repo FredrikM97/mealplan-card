@@ -3,7 +3,9 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData, getTodaysFoodGrams } from './util/mealplan-state.js';
 import type { FeedingTime } from './util/mealplan-state.js';
 import { commonCardStyle } from './common-styles.js';
-import './schedule.js';
+import './schedule';
+import { loadHaComponents } from '@kipk/load-ha-components';
+import { loadTranslations as loadCardTranslations, localize } from './locales/localize';
 
 /**
  * Cleverio PF100 Feeder Card
@@ -16,6 +18,7 @@ export class CleverioPf100Card extends LitElement {
   @state() accessor _persistedMeals: FeedingTime[];
   @state() accessor _dialogOpen: boolean;
   @state() accessor _dialogData;
+  @property({ type: Boolean }) private _haComponentsReady = false;
 
   constructor() {
     super();
@@ -37,6 +40,15 @@ export class CleverioPf100Card extends LitElement {
     if (changedProps.has('hass')) {
       this._updateHass();
     }
+  }
+
+ 
+  async connectedCallback() {
+    await loadCardTranslations(); // Only loads once, even if called multiple times
+    await loadHaComponents(['ha-button', 'ha-data-table']);
+    this._haComponentsReady = true;
+    super.connectedCallback();
+    this.requestUpdate();
   }
 
   get _sensorID() {
@@ -88,6 +100,9 @@ export class CleverioPf100Card extends LitElement {
   }
 
   render() {
+    if (!this._haComponentsReady) {
+      return html`<div>Loading Home Assistant components...</div>`;
+    }
     const enabledCount = this._meals.filter(m => m.enabled).length;
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
     const gramsValue = getTodaysFoodGrams(this._meals.filter(m => m.enabled), today) * 6;
@@ -105,11 +120,12 @@ export class CleverioPf100Card extends LitElement {
         ${this._dialogOpen
           ? html`
               <ha-dialog open scrimClickAction @closed=${this._onDialogClose.bind(this)}>
-                <schedule-view
+                <cleverio-schedule-view
                   .meals=${this._meals}
+                  .localize=${localize}
                   @meals-changed=${this._onScheduleMealsChanged.bind(this)}
                   @close-dialog=${this._onDialogClose.bind(this)}
-                ></schedule-view>
+                ></cleverio-schedule-view>
               </ha-dialog>
             `
           : ''}
@@ -146,7 +162,7 @@ export class CleverioPf100Card extends LitElement {
 
   static async getConfigElement() {
     await import('./card-editor');
-    return document.createElement('cleverio-pf100-card-editor');
+    return document.createElement('card-editor');
   }
 
   static getStubConfig() {
@@ -168,4 +184,8 @@ export class CleverioPf100Card extends LitElement {
     }
     return {};
   }
+}
+
+function loadTranslations() {
+  throw new Error('Function not implemented.');
 }
