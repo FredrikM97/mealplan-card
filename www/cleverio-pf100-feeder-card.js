@@ -1081,31 +1081,31 @@ let B = (N = class extends b {
           ></ha-icon>
         `
       }
-    }, s = this._localMeals.map((n, a) => ({ ...n, _idx: a }));
+    }, s = this._localMeals.map((n, a) => ({ ...n, _idx: a })), i = { locale: { language: "en", country: "US" } };
     return p`
-      <div class="ha-table-wrapper">
-        <ha-data-table
-          .hass=${{ locale: { language: "en", country: "US" } }}
-          .localizeFunc=${y}
-          .columns=${t}
-          .data=${s}
-          class="ha-table-style"
-          auto-height
-        ></ha-data-table>
-      </div>
-      <div class="ha-actions-row">
-        <ha-button @click=${this._openAddDialog.bind(this)}>Add</ha-button>
-        <ha-button @click=${this._cancel.bind(this)}>Cancel</ha-button>
-        <ha-button class="ha-primary" @click=${this._save.bind(this)}>${y("save")}</ha-button>
-      </div>
+      ${this._editDialogOpen ? "" : p`
+        <div class="ha-table-wrapper">
+          <ha-data-table
+            .hass=${i}
+            .localizeFunc=${y}
+            .columns=${t}
+            .data=${s}
+            class="ha-table-style"
+            auto-height
+          ></ha-data-table>
+        </div>
+        <div class="ha-actions-row">
+          <ha-button @click=${this._openAddDialog.bind(this)}>Add</ha-button>
+          <ha-button @click=${this._cancel.bind(this)}>Cancel</ha-button>
+          <ha-button class="ha-primary" @click=${this._save.bind(this)}>${y("save")}</ha-button>
+        </div>
+      `}
       ${this._editDialogOpen ? p`
-        <ha-dialog open scrimClickAction @closed=${this._closeEditDialog.bind(this)}>
-          <cleverio-edit-view
-            .data=${this._editIdx !== null && this._editIdx !== void 0 ? { ...this._localMeals[this._editIdx] } : { time: "", portion: 1, daysMask: 0, enabled: !0 }}
-            @edit-save=${this._onEditSave}
-            @back=${this._closeEditDialog}
-          ></cleverio-edit-view>
-        </ha-dialog>
+        <cleverio-edit-view
+          .data=${this._editIdx !== null && this._editIdx !== void 0 ? { ...this._localMeals[this._editIdx] } : { time: "", portion: 1, daysMask: 0, enabled: !0 }}
+          @edit-save=${this._onEditSave}
+          @back=${this._closeEditDialog}
+        ></cleverio-edit-view>
       ` : ""}
     `;
   }
