@@ -78,16 +78,16 @@ const { is: Qe, defineProperty: Xe, getOwnPropertyDescriptor: Ye, getOwnProperty
       }
   }
   return t;
-} }, we = (o, e) => !Qe(o, e), ke = { attribute: !0, type: String, converter: de, reflect: !1, useDefault: !1, hasChanged: we };
+} }, we = (o, e) => !Qe(o, e), Te = { attribute: !0, type: String, converter: de, reflect: !1, useDefault: !1, hasChanged: we };
 Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), x.litPropertyMetadata ?? (x.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
-let T = class extends HTMLElement {
+let k = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ?? (this.l = [])).push(e);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(e, t = ke) {
+  static createProperty(e, t = Te) {
     if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
       const s = Symbol(), i = this.getPropertyDescriptor(e, s, t);
       i !== void 0 && Xe(this.prototype, e, i);
@@ -105,7 +105,7 @@ let T = class extends HTMLElement {
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? ke;
+    return this.elementProperties.get(e) ?? Te;
   }
   static _$Ei() {
     if (this.hasOwnProperty(W("elementProperties"))) return;
@@ -281,18 +281,18 @@ let T = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[W("elementProperties")] = /* @__PURE__ */ new Map(), T[W("finalized")] = /* @__PURE__ */ new Map(), _e == null || _e({ ReactiveElement: T }), (x.reactiveElementVersions ?? (x.reactiveElementVersions = [])).push("2.1.0");
+k.elementStyles = [], k.shadowRootOptions = { mode: "open" }, k[W("elementProperties")] = /* @__PURE__ */ new Map(), k[W("finalized")] = /* @__PURE__ */ new Map(), _e == null || _e({ ReactiveElement: k }), (x.reactiveElementVersions ?? (x.reactiveElementVersions = [])).push("2.1.0");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const V = globalThis, he = V.trustedTypes, Te = he ? he.createPolicy("lit-html", { createHTML: (o) => o }) : void 0, Be = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Fe = "?" + A, ot = `<${Fe}>`, P = document, J = () => P.createComment(""), K = (o) => o === null || typeof o != "object" && typeof o != "function", Ee = Array.isArray, nt = (o) => Ee(o) || typeof (o == null ? void 0 : o[Symbol.iterator]) == "function", ge = `[ 	
+const V = globalThis, he = V.trustedTypes, ke = he ? he.createPolicy("lit-html", { createHTML: (o) => o }) : void 0, Be = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Fe = "?" + A, ot = `<${Fe}>`, P = document, J = () => P.createComment(""), K = (o) => o === null || typeof o != "object" && typeof o != "function", Ee = Array.isArray, nt = (o) => Ee(o) || typeof (o == null ? void 0 : o[Symbol.iterator]) == "function", ge = `[ 	
 \f\r]`, F = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Ue = /-->/g, De = />/g, S = RegExp(`>|${ge}(?:([^\\s"'>=/]+)(${ge}*=${ge}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), Re = /'/g, je = /"/g, We = /^(?:script|style|textarea|title)$/i, at = (o) => (e, ...t) => ({ _$litType$: o, strings: e, values: t }), p = at(1), z = Symbol.for("lit-noChange"), u = Symbol.for("lit-nothing"), He = /* @__PURE__ */ new WeakMap(), M = P.createTreeWalker(P, 129);
 function Ve(o, e) {
   if (!Ee(o) || !o.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return Te !== void 0 ? Te.createHTML(e) : e;
+  return ke !== void 0 ? ke.createHTML(e) : e;
 }
 const rt = (o, e) => {
   const t = o.length - 1, s = [];
@@ -524,7 +524,7 @@ const ut = (o, e, t) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const O = globalThis;
-class b extends T {
+class b extends k {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -601,7 +601,7 @@ function $(o) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function k(o) {
+function T(o) {
   return $({ ...o, state: !0, attribute: !1 });
 }
 function Ne(o) {
@@ -983,13 +983,13 @@ ae([
   $({ type: Object })
 ], q.prototype, "data", null);
 ae([
-  k()
+  T()
 ], q.prototype, "_haComponentsReady", void 0);
 ae([
-  k()
+  T()
 ], q.prototype, "_localEdit", void 0);
 ae([
-  k()
+  T()
 ], q.prototype, "_error", void 0);
 q = ae([
   ne("cleverio-edit-view")
@@ -1102,7 +1102,7 @@ let B = (N = class extends b {
         <ha-dialog open scrimClickAction @closed=${this._closeEditDialog.bind(this)}>
           <cleverio-edit-view
             .data=${this._editIdx !== null && this._editIdx !== void 0 ? { ...this._localMeals[this._editIdx] } : { time: "", portion: 1, daysMask: 0, enabled: !0 }}
-            @save=${this._onEditSave}
+            @edit-save=${this._onEditSave}
             @back=${this._closeEditDialog}
           ></cleverio-edit-view>
         </ha-dialog>
@@ -1365,7 +1365,7 @@ let w = (I = class extends b {
     });
   }
   _onScheduleMealsChanged(t) {
-    this._dialogOpen = !1, this._meals = t.detail.meals, this.dispatchEvent(new CustomEvent("meals-changed", { detail: { meals: t.detail.meals }, bubbles: !0, composed: !0 })), this.requestUpdate();
+    this._dialogOpen = !1, this._meals = t.detail.meals, this._saveMealsToSensor(), this.requestUpdate();
   }
   static async getConfigElement() {
     return await Promise.resolve().then(() => Et), document.createElement("cleverio-card-editor");
@@ -1391,16 +1391,16 @@ C([
   $({ type: Object })
 ], w.prototype, "config", null);
 C([
-  k()
+  T()
 ], w.prototype, "_meals", null);
 C([
-  k()
+  T()
 ], w.prototype, "_persistedMeals", null);
 C([
-  k()
+  T()
 ], w.prototype, "_dialogOpen", null);
 C([
-  k()
+  T()
 ], w.prototype, "_dialogData", null);
 C([
   $({ type: Boolean })

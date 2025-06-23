@@ -167,7 +167,7 @@ export class CleverioPf100Card extends LitElement {
   _onScheduleMealsChanged(e) {
     this._dialogOpen = false;
     this._meals = e.detail.meals;
-    this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: e.detail.meals }, bubbles: true, composed: true }));
+    this._saveMealsToSensor();
     this.requestUpdate();
   }
 

@@ -166,7 +166,7 @@ export class ScheduleView extends LitElement {
         <ha-dialog open scrimClickAction @closed=${this._closeEditDialog.bind(this)}>
           <cleverio-edit-view
             .data=${this._editIdx !== null && this._editIdx !== undefined ? { ...this._localMeals[this._editIdx] } : { time: '', portion: 1, daysMask: 0, enabled: true }}
-            @save=${this._onEditSave}
+            @edit-save=${this._onEditSave}
             @back=${this._closeEditDialog}
           ></cleverio-edit-view>
         </ha-dialog>
