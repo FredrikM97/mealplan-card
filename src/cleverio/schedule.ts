@@ -57,35 +57,11 @@ export class ScheduleView extends LitElement {
 
   static styles = [
     css`
-      /* Schedule Table Styles */
-      .schedule-table-wrapper {
-        margin: 0 auto 0.2em auto;
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        overflow-x: auto;
-      }
-      ha-dialog {
-        width: 100%;
-        max-width: 100vw;
-        box-sizing: border-box;
-      }
-      .schedule-table-style td, .schedule-table-style th {
-        padding: 0 4px;
-        vertical-align: middle;
-        border: none;
-      }
-      :host ::ng-deep .mdc-data-table__cell,
-      :host ::ng-deep .mdc-data-table__header-cell {
-        box-sizing: content-box !important;
-      }
-      /* Edit Dialog Styles */
       .edit-form {
         display: flex;
         flex-direction: column;
         gap: 1em;
         width: 100%;
-        max-width: 100%;
         box-sizing: border-box;
       }
       .edit-form-group {
@@ -120,18 +96,23 @@ export class ScheduleView extends LitElement {
           <cleverio-day-selector .selectedDaysMask=${row.daysMask} .editable=${false}></cleverio-day-selector>`
       },
       enabled: {
-        title: html`<span style="font-size:0.9em;">${localize('enabled')}</span>`,
-        sortable: false,
-        minWidth: '80px',
-        minHeight: '100px',
+        title: localize('enabled'),
+        sortable: true,
+        minWidth: '60px',
         template: (row: any) => html`
-            <ha-switch .checked=${row.enabled} @change=${(e: Event) => this._toggleEnabled(row._idx, e)} title="Enable/disable schedule"></ha-switch>
+          <div style="display: flex; align-items: center; justify-content: center; height: 48px;">
+            <ha-switch
+              .checked=${row.enabled}
+              @change=${(e: Event) => this._toggleEnabled(row._idx, e)}
+              title="Enable/disable schedule"
+            ></ha-switch>
+          </div>
         `
       },
       actions: {
         title: localize('actions'),
         sortable: false,
-        minWidth: '80px',
+        minWidth: '140px',
         template: (row: any) => html`
           <ha-icon-button @click=${() => this._openEditDialog(row._idx)} title="Edit">
             <ha-icon icon="mdi:pencil"></ha-icon>
@@ -146,7 +127,7 @@ export class ScheduleView extends LitElement {
     const fakeHass = { locale: { language: 'en', country: 'US' } };
     const predefinedTimes = ['06:00', '08:00', '12:00', '15:00', '18:00', '21:00'];
     return html`
-      <ha-dialog open scrimClickAction style="--mdc-dialog-min-width: unset; min-width: unset; width: fit-content; max-width: 98vw;" heading= ${this._editDialogReallyOpen ? 'Edit Feeding Time' : localize('manage_schedules')}>
+      <ha-dialog open scrimClickAction  heading= ${this._editDialogReallyOpen ? 'Edit Feeding Time' : localize('manage_schedules')}>
       
         ${this._editDialogReallyOpen
           ? html`
