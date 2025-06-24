@@ -7,9 +7,9 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "prebuild": "tsc --outDir dist",
+    "prebuild": "tsc --outDir target",
     "build": "npm run clean && npm run prebuild && vite build",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf target"
   },
   "devDependencies": {
     "@open-wc/testing": "^4.0.0",

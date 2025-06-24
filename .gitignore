@@ -37,4 +37,4 @@ Thumbs.db
 
 .github/instructions/*
 cleverio-pf100-feeder-card.bundle.js.map
-dist
+target

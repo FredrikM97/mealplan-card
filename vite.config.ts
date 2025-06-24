@@ -6,11 +6,11 @@ export default defineConfig({
     tsconfigPaths()
   ],
   build: {
-    outDir: 'www',
+    outDir: 'dist',
     lib: {
-      entry: 'dist/cleverio/main.js',
+      entry: 'target/cleverio/main.js',
       name: 'CleverioPf100FeederCard',
-      fileName: 'cleverio-pf100-feeder-card',
+      fileName: 'cleverio-pf100-feeder-card.bundle',
       formats: ['es']
     },
     rollupOptions: {
