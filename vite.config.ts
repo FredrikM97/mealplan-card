@@ -6,7 +6,7 @@ export default defineConfig({
     tsconfigPaths()
   ],
   build: {
-    outDir: 'dist',
+    outDir: '',
     lib: {
       entry: 'target/cleverio/main.js',
       name: 'CleverioPf100FeederCard',
