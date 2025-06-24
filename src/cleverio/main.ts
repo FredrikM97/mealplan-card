@@ -30,7 +30,26 @@ export class CleverioPf100Card extends LitElement {
     this._dialogData = undefined;
   }
 
-  static styles = [css``];
+  static styles = [
+    css`
+      .overview-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin: 0 16px 8px 16px;
+        box-sizing: border-box;
+        padding-right: 8px;
+      }
+      @media (max-width: 600px) {
+        .overview-row {
+          flex-direction: column;
+          gap: 4px;
+          margin: 0 4px 8px 4px;
+        }
+      }
+    `
+  ];
 
   setConfig(config) {
     this.config = config;
@@ -105,31 +124,21 @@ export class CleverioPf100Card extends LitElement {
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
-    const enabledCount = this._meals.filter(m => m.enabled).length;
-    // Use JS getDay() and Day enum for robust day handling
-    const jsDay = new Date().getDay(); // 0=Sunday, 1=Monday, ...
-    const dayEnum = [Day.Sunday, Day.Monday, Day.Tuesday, Day.Wednesday, Day.Thursday, Day.Friday, Day.Saturday][jsDay];
-    const gramsValue = getTodaysFoodGrams(this._meals.filter(m => m.enabled), jsDay) * 6;
     return html`
-      <ha-card>
-        <div style="padding: 16px 16px 0 16px;">
-          <h2 style="margin:0 0 8px 0;">${this.config?.title || 'Cleverio Pet Feeder'}</h2>
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 0 16px 8px 16px;">
+      <ha-card header=${this.config?.title || 'Cleverio Pet Feeder'} style="height: 100%;">
+        <div class="overview-row">
           <ha-chip class="overview-schedules">
             <ha-icon icon="mdi:calendar-clock"></ha-icon>
-            ${localize('schedules')}: ${this._meals.length}
+            ${localize('schedules')}: <span style="white-space:nowrap;">${this._meals.length}</span>
           </ha-chip>
           <ha-chip class="overview-active">
             <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-            ${localize('active_schedules')}: ${enabledCount}
+            ${localize('active_schedules')}: <span style="white-space:nowrap;">${this._meals.filter(m => m.enabled).length}</span>
           </ha-chip>
           <ha-chip class="overview-grams">
             <ha-icon icon="mdi:food-drumstick"></ha-icon>
-            ${localize('today')}: ${gramsValue}g
+            ${localize('today')}: <span style="white-space:nowrap;">${getTodaysFoodGrams(this._meals.filter(m => m.enabled), new Date().getDay()) * 6}g</span>
           </ha-chip>
-        </div>
-        <div style="display: flex; justify-content: flex-end; margin: 0 16px 16px 16px;">
           <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>
             <ha-icon icon="mdi:table-edit"></ha-icon>
             ${localize('manage_schedules')}
@@ -137,29 +146,35 @@ export class CleverioPf100Card extends LitElement {
         </div>
         ${this._dialogOpen
           ? html`
-              <ha-dialog open scrimClickAction @closed=${this._onDialogClose.bind(this)}>
-                <cleverio-schedule-view
-                  .meals=${this._meals}
-                  .localize=${localize}
-                  @meals-changed=${this._onScheduleMealsChanged.bind(this)}
-                  @close-dialog=${this._onDialogClose.bind(this)}
-                  @footer-buttons-changed=${this._onFooterButtonsChanged.bind(this)}
-                  id="scheduleView"
-                ></cleverio-schedule-view>
-                <div slot="footer">
-                  ${this.footerButtonsTemplate}
-                </div>
-              </ha-dialog>
+              <cleverio-schedule-view
+                .meals=${this._meals}
+                .localize=${localize}
+                @meals-changed=${this._onScheduleMealsChanged.bind(this)}
+                @close-dialog=${this._onDialogClose.bind(this)}
+                @footer-buttons-changed=${this._onFooterButtonsChanged.bind(this)}
+                id="scheduleView"
+              ></cleverio-schedule-view>
             `
           : ''}
         <slot></slot>
       </ha-card>
     `;
   }
+  static async getConfigElement() {
+    await import('./card-editor');
+    return document.createElement('cleverio-card-editor');
+  }
 
-  _onDialogClose() {
-    this._dialogOpen = false;
-    this.requestUpdate();
+  // Legacy methods for test compatibility
+  getNextSchedule() {
+    return this._meals ? (this._meals.length ? this._meals[0].time : '-') : '-';
+  }
+
+  getTotalFoodPerDay() {
+    if (typeof getTotalFoodPerDay === 'function') {
+      return getTotalFoodPerDay(this._meals || []);
+    }
+    return {};
   }
 
   _saveMealsToSensor() {
@@ -178,38 +193,13 @@ export class CleverioPf100Card extends LitElement {
     this.requestUpdate();
   }
 
-  _onMealsChanged = (e) => {
-    this._meals = e.detail.meals;
+  _onDialogClose() {
+    this._dialogOpen = false;
     this.requestUpdate();
   }
 
   _onFooterButtonsChanged(e) {
     this.footerButtonsTemplate = e.detail.template;
-  }
-
-  static async getConfigElement() {
-    await import('./card-editor');
-    return document.createElement('cleverio-card-editor');
-  }
-
-  static getStubConfig() {
-    return { sensor: '', title: 'Cleverio Pet Feeder' };
-  }
-
-  static getCardSize(config) {
-    return 2;
-  }
-
-  // Legacy methods for test compatibility
-  getNextSchedule() {
-    return this._meals ? (this._meals.length ? this._meals[0].time : '-') : '-';
-  }
-
-  getTotalFoodPerDay() {
-    if (typeof getTotalFoodPerDay === 'function') {
-      return getTotalFoodPerDay(this._meals || []);
-    }
-    return {};
   }
 }
 

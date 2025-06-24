@@ -57,40 +57,20 @@ export class ScheduleView extends LitElement {
 
   static styles = [
     css`
-      .ha-actions-row {
-        display: flex;
-        gap: 0.5em;
-        justify-content: flex-end;
-        margin: 0 0 0.1em 0;
-      }
-      .ha-table-wrapper {
+      /* Schedule Table Styles */
+      .schedule-table-wrapper {
         margin: 0 auto 0.2em auto;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: auto;
       }
-      .days-row {
-        display: flex;
-        gap: 1px;
-        flex-wrap: wrap;
-        align-items: center;
-        white-space: normal;
-        word-break: break-word;
+      ha-dialog {
+        width: 100%;
+        max-width: 100vw;
+        box-sizing: border-box;
       }
-      .day-cell {
-        height: 1.7em;
-        line-height: 1.7em;
-        text-align: center;
-        border-radius: 6px;
-        background: var(--card-background-color, #f0f0f0);
-        color: #8a8a8a;
-        font-weight: 600;
-        font-size: 0.95em;
-        margin: 0 1px;
-        transition: background 0.2s, color 0.2s;
-      }
-      .day-cell.selected {
-        background: var(--primary-color, #03a9f4);
-        color: var(--text-primary-color, #fff);
-      }
-      .ha-table-style td, .ha-table-style th {
+      .schedule-table-style td, .schedule-table-style th {
         padding: 0 4px;
         vertical-align: middle;
         border: none;
@@ -99,22 +79,26 @@ export class ScheduleView extends LitElement {
       :host ::ng-deep .mdc-data-table__header-cell {
         box-sizing: content-box !important;
       }
+      /* Edit Dialog Styles */
       .edit-form {
         display: flex;
         flex-direction: column;
         gap: 1em;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
       }
-      .form-group {
+      .edit-form-group {
         display: flex;
         flex-direction: column;
         gap: 0.5em;
       }
-      .predefined-times {
+      .edit-predefined-times {
         display: flex;
         gap: 0.5em;
         flex-wrap: wrap;
       }
-      .error {
+      .edit-error {
         color: red;
         font-size: 0.9em;
       }
@@ -147,7 +131,7 @@ export class ScheduleView extends LitElement {
       actions: {
         title: localize('actions'),
         sortable: false,
-        minWidth: '60px',
+        minWidth: '80px',
         template: (row: any) => html`
           <ha-icon-button @click=${() => this._openEditDialog(row._idx)} title="Edit">
             <ha-icon icon="mdi:pencil"></ha-icon>
@@ -162,10 +146,8 @@ export class ScheduleView extends LitElement {
     const fakeHass = { locale: { language: 'en', country: 'US' } };
     const predefinedTimes = ['06:00', '08:00', '12:00', '15:00', '18:00', '21:00'];
     return html`
-      <ha-dialog open scrimClickAction>
-        <div slot="heading">
-          ${this._editDialogReallyOpen ? 'Edit Feeding Time' : localize('manage_schedules')}
-        </div>
+      <ha-dialog open scrimClickAction style="--mdc-dialog-min-width: unset; min-width: unset; width: fit-content; max-width: 98vw;" heading= ${this._editDialogReallyOpen ? 'Edit Feeding Time' : localize('manage_schedules')}>
+      
         ${this._editDialogReallyOpen
           ? html`
               <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
@@ -175,7 +157,7 @@ export class ScheduleView extends LitElement {
                   .editable=${true}
                   @days-changed=${(e: CustomEvent) => this._onEditDaysChanged(e)}
                 ></cleverio-day-selector>
-                <div class="form-group">
+                <div class="edit-form-group">
                   <label for="edit-time">Time</label>
                   <input
                     id="edit-time"
@@ -185,7 +167,7 @@ export class ScheduleView extends LitElement {
                     @input=${(e: Event) => this._onEditTimeInput(e)}
                   />
                 </div>
-                <div class="form-group">
+                <div class="edit-form-group">
                   <label for="edit-portion">Portion</label>
                   <input
                     id="edit-portion"
@@ -196,7 +178,7 @@ export class ScheduleView extends LitElement {
                   />
                   <div class="helper">1 portion = 6 grams</div>
                 </div>
-                <div class="predefined-times">
+                <div class="edit-predefined-times">
                   ${predefinedTimes.map(time => html`
                     <ha-button type="button" @click=${() => this._onEditPredefinedTime(time)}>${time}</ha-button>
                   `)}
@@ -204,13 +186,13 @@ export class ScheduleView extends LitElement {
               </form>
             `
           : html`
-              <div class="ha-table-wrapper">
+              <div class="schedule-table-wrapper">
                 <ha-data-table
                   .hass=${fakeHass}
                   .localizeFunc=${localize}
                   .columns=${columns}
                   .data=${rows}
-                  class="ha-table-style"
+                  class="schedule-table-style"
                   auto-height
                 ></ha-data-table>
               </div>
