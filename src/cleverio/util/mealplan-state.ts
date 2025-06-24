@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-// Mealplan state utilities (TypeScript)
+// Mealplan state utilities 
 export interface FeedingTime {
   time: string;
   portion: number;

@@ -2,7 +2,6 @@ import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { loadHaComponents } from '@kipk/load-ha-components';
 import {localize} from './locales/localize';
-import './edit';
 import './day-selector';
 import type { FeedingTime } from './util/mealplan-state';
 

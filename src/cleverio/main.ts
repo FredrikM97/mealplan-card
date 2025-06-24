@@ -165,18 +165,6 @@ export class CleverioPf100Card extends LitElement {
     return document.createElement('cleverio-card-editor');
   }
 
-  // Legacy methods for test compatibility
-  getNextSchedule() {
-    return this._meals ? (this._meals.length ? this._meals[0].time : '-') : '-';
-  }
-
-  getTotalFoodPerDay() {
-    if (typeof getTotalFoodPerDay === 'function') {
-      return getTotalFoodPerDay(this._meals || []);
-    }
-    return {};
-  }
-
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
     const value = encodeMealPlanData(this._meals);

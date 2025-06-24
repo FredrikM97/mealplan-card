@@ -21,6 +21,3 @@ export function bitmaskToDays(mask: number): Day[] {
 export function daysToBitmask(days: Day[]): number {
   return days.reduce((mask, day) => mask | day, 0);
 }
-
-// Removed DAYS, getUIDays, getDayBit, and getDaysLabel. Handle day names and labels via translation (e.g., en.json) in the UI layer instead.
-// Remove daysArrayToBitmask and bitmaskToDaysArray, as we should use Day enum bitmaps directly and avoid hardcoded string mapping.

@@ -41,18 +41,16 @@ describe('schedule', () => {
     (el as any)._openEditDialog(0);
     await el.updateComplete;
     await nextFrame();
-    const editView = el.shadowRoot!.querySelector('cleverio-edit-view');
-    expect(editView).to.exist;
-    // Simulate save event
-    if (editView) {
-      editView.dispatchEvent(new CustomEvent('save', {
-        bubbles: true,
-        composed: true,
-        detail: { meal: sampleMeals[0] }
-      }));
+    // Check for the edit form instead of <cleverio-edit-view>
+    const editForm = el.shadowRoot!.querySelector('.edit-form');
+    expect(editForm).to.exist;
+    // Simulate save event by clicking the Save button
+    const saveButton = el.shadowRoot!.querySelector('ha-button[slot="primaryAction"]');
+    if (saveButton) {
+      (saveButton as HTMLElement).click();
       await el.updateComplete;
       await nextFrame();
-      expect(el.shadowRoot!.querySelector('cleverio-edit-view')).to.not.exist;
+      expect(el.shadowRoot!.querySelector('.edit-form')).to.not.exist;
     }
   }, 2000);
 });
