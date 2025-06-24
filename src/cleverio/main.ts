@@ -19,6 +19,8 @@ export class CleverioPf100Card extends LitElement {
   @state() accessor _dialogOpen: boolean;
   @state() accessor _dialogData;
   @property({ type: Boolean }) private _haComponentsReady = false;
+  @state() accessor _footerButtons = [];
+  @state() footerButtonsTemplate = null;
 
   constructor() {
     super();
@@ -141,7 +143,12 @@ export class CleverioPf100Card extends LitElement {
                   .localize=${localize}
                   @meals-changed=${this._onScheduleMealsChanged.bind(this)}
                   @close-dialog=${this._onDialogClose.bind(this)}
+                  @footer-buttons-changed=${this._onFooterButtonsChanged.bind(this)}
+                  id="scheduleView"
                 ></cleverio-schedule-view>
+                <div slot="footer">
+                  ${this.footerButtonsTemplate}
+                </div>
               </ha-dialog>
             `
           : ''}
@@ -174,6 +181,10 @@ export class CleverioPf100Card extends LitElement {
   _onMealsChanged = (e) => {
     this._meals = e.detail.meals;
     this.requestUpdate();
+  }
+
+  _onFooterButtonsChanged(e) {
+    this.footerButtonsTemplate = e.detail.template;
   }
 
   static async getConfigElement() {

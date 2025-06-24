@@ -17,5 +17,7 @@
   "schedules": "Schedules",
   "active_schedules": "Active Schedules",
   "today": "Today",
-  "manage_schedules": "Manage Schedules"
+  "manage_schedules": "Manage Schedules",
+  "unsaved_changes": "Unsaved changes",
+  "unsaved_changes_hint": "You have unsaved changes. Don’t forget to save!"
 }
