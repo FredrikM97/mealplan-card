@@ -69,7 +69,6 @@ export class CleverioPf100Card extends LitElement {
     await loadHaComponents(['ha-button', 'ha-data-table']); // Remove ha-card-header
     this._haComponentsReady = true;
     super.connectedCallback();
-    this.requestUpdate();
   }
 
   get _sensorID() {
@@ -95,7 +94,6 @@ export class CleverioPf100Card extends LitElement {
   }
 
   _updateConfig() {
-    this.requestUpdate();
   }
 
   _updateHass() {
@@ -117,7 +115,6 @@ export class CleverioPf100Card extends LitElement {
       this._persistedMeals = [];
       this._meals = [];
     }
-    this.requestUpdate();
   }
 
   render() {
@@ -139,7 +136,7 @@ export class CleverioPf100Card extends LitElement {
             <ha-icon icon="mdi:food-drumstick"></ha-icon>
             ${localize('today')}: <span style="white-space:nowrap;">${getTodaysFoodGrams(this._meals.filter(m => m.enabled), new Date().getDay()) * 6}g</span>
           </ha-chip>
-          <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; this.requestUpdate(); }}>
+          <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; }}>
             <ha-icon icon="mdi:table-edit"></ha-icon>
             ${localize('manage_schedules')}
           </ha-button>
@@ -178,12 +175,10 @@ export class CleverioPf100Card extends LitElement {
     this._dialogOpen = false;
     this._meals = e.detail.meals;
     this._saveMealsToSensor();
-    this.requestUpdate();
   }
 
   _onDialogClose() {
     this._dialogOpen = false;
-    this.requestUpdate();
   }
 
   _onFooterButtonsChanged(e) {

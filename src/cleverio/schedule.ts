@@ -97,35 +97,29 @@ export class ScheduleView extends LitElement {
   ];
 
   _toggleEnabled(idx: number, e: Event) {
-    this.viewMeals[idx].enabled = (e.target as HTMLInputElement).checked;
-    this.requestUpdate();
+    const checked = (e.target as HTMLInputElement).checked;
+    this.viewMeals = this.viewMeals.map((m, i) => i === idx ? { ...m, enabled: checked } : m);
   }
 
   _openEditDialog(idx: number) {
     this.editDialogOpen = true;
     this.editIdx = idx;
-    this.viewMeals = this.meals.map(m => ({ ...m }));
     this.editForm = { ...this.viewMeals[idx] };
     this.editError = null;
-    this.requestUpdate();
   }
   _openAddDialog() {
     this.editDialogOpen = true;
     this.editIdx = null;
-    this.viewMeals = this.meals.map(m => ({ ...m }));
     this.editForm = { time: '', portion: 1, daysMask: 0, enabled: true };
     this.editError = null;
-    this.requestUpdate();
   }
   _closeEditDialog() {
     this.editDialogOpen = false;
     this.editForm = null;
-    this.requestUpdate();
   }
 
   _delete(idx: number) {
-    this.viewMeals.splice(idx, 1);
-    this.requestUpdate();
+    this.viewMeals = this.viewMeals.filter((_, i) => i !== idx);
   }
   _cancel() {
     this.dispatchEvent(new CustomEvent('close-dialog', { bubbles: true, composed: true }));
@@ -255,23 +249,20 @@ export class ScheduleView extends LitElement {
     // Validation
     if (!this.editForm.time || !/^[0-2]\d:[0-5]\d$/.test(this.editForm.time)) {
       this.editError = 'Please enter a valid time.';
-      this.requestUpdate();
       return;
     }
     if (!this.editForm.portion || this.editForm.portion < 1) {
       this.editError = 'Portion must be at least 1.';
-      this.requestUpdate();
       return;
     }
     this.editError = null;
     if (this.editIdx !== null) {
       // Update existing
-      this.viewMeals[this.editIdx] = { ...this.editForm };
+      this.viewMeals = this.viewMeals.map((m, i) => i === this.editIdx ? { ...this.editForm! } : m);
     } else {
       // Add new
-      this.viewMeals.push({ ...this.editForm });
+      this.viewMeals = [...this.viewMeals, { ...this.editForm! }];
     }
-    this.requestUpdate();
     this._closeEditDialog();
   }
 }
