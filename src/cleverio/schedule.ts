@@ -6,57 +6,73 @@ import './edit';
 import './day-selector';
 import type { FeedingTime } from './util/mealplan-state';
 
-console.log('[cleverio-schedule-view] Module loaded');
-
 @customElement('cleverio-schedule-view')
 export class ScheduleView extends LitElement {
   @property({ type: Array }) accessor meals: FeedingTime[] = [];
-  @property({ type: Array }) accessor _localMeals: FeedingTime[] = [];
-  @property({ type: Boolean }) accessor _haComponentsReady = false;
-  @property({ type: Boolean }) private _editDialogOpen = false;
-  @state() private _editDialogReallyOpen: boolean = false;
-  @state() private _editForm: FeedingTime | null = null;
-  @state() private _editError: string | null = null;
-  private _editIdx: number | null = null;
+  @state() private viewMeals: FeedingTime[] = [];
+  @state() private editForm: FeedingTime | null = null;
+  @state() private editError: string | null = null;
+  @state() private editDialogOpen: boolean = false;
+  private editIdx: number | null = null;
+  @property({ type: Boolean }) accessor haComponentsReady = false;
 
   constructor() {
     super();
     this.meals = [];
-    this._localMeals = [];
-    this._editDialogOpen = false;
-    this._editDialogReallyOpen = false;
-    console.log('[cleverio-schedule-view] Constructor');
+    this.viewMeals = [];
   }
 
   // Load Ha components when connected
   async connectedCallback() {
     super.connectedCallback();
-    console.log('[cleverio-schedule-view] connectedCallback');
     await loadHaComponents(['ha-data-table', 'ha-switch', 'ha-button', 'ha-icon']);
-    this._haComponentsReady = true;
-    console.log('[cleverio-schedule-view] HA components loaded');
+    this.haComponentsReady = true;
   }
 
   // Watch for changes in meals
   updated(changed: PropertyValues) {
     if (changed.has('meals')) {
-      this._localMeals = this.meals.map(m => ({ ...m }));
-      this._editDialogOpen = false;
-      this._editDialogReallyOpen = false;
-      console.log('[cleverio-schedule-view] Meals updated', this._localMeals);
+      this.viewMeals = this.meals.map(m => ({ ...m }));
+      this.editDialogOpen = false;
     }
   }
 
   // Helper to check if there are unsaved changes
   private get _hasUnsavedChanges(): boolean {
     // Compare _localMeals and meals deeply
-    const a = JSON.stringify(this._localMeals);
+    const a = JSON.stringify(this.viewMeals);
     const b = JSON.stringify(this.meals);
     return a !== b;
   }
 
   static styles = [
     css`
+      ha-dialog {
+        min-width: unset !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        box-sizing: border-box;
+      }
+      .schedule-table-wrapper {
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: auto;
+      }
+      .edit-mode .days-row {
+        justify-content: center;
+        margin: 0 auto;
+        gap: 8px;
+      }
+      .edit-mode .day-cell {
+        width: 2.6em;
+        height: 2.6em;
+        line-height: 2.6em;
+        font-size: 1.25em;
+        margin: 0 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
       .edit-form {
         display: flex;
         flex-direction: column;
@@ -81,8 +97,47 @@ export class ScheduleView extends LitElement {
     `
   ];
 
+  _toggleEnabled(idx: number, e: Event) {
+    this.viewMeals[idx].enabled = (e.target as HTMLInputElement).checked;
+    this.requestUpdate();
+  }
+
+  _openEditDialog(idx: number) {
+    this.editDialogOpen = true;
+    this.editIdx = idx;
+    this.viewMeals = this.meals.map(m => ({ ...m }));
+    this.editForm = { ...this.viewMeals[idx] };
+    this.editError = null;
+    this.requestUpdate();
+  }
+  _openAddDialog() {
+    this.editDialogOpen = true;
+    this.editIdx = null;
+    this.viewMeals = this.meals.map(m => ({ ...m }));
+    this.editForm = { time: '', portion: 1, daysMask: 0, enabled: true };
+    this.editError = null;
+    this.requestUpdate();
+  }
+  _closeEditDialog() {
+    this.editDialogOpen = false;
+    this.editForm = null;
+    this.requestUpdate();
+  }
+
+  _delete(idx: number) {
+    this.viewMeals.splice(idx, 1);
+    this.requestUpdate();
+  }
+  _cancel() {
+    this.dispatchEvent(new CustomEvent('close-dialog', { bubbles: true, composed: true }));
+  }
+  _save() {
+    this.meals = this.viewMeals.map(m => ({ ...m }));
+    this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this.viewMeals }, bubbles: true, composed: true }));
+  }
+
   render() {
-    if (!this._haComponentsReady) {
+    if (!this.haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
     const columns = {
@@ -93,7 +148,11 @@ export class ScheduleView extends LitElement {
         sortable: false,
         minWidth: '130px',
         template: (row: any) => html`
-          <cleverio-day-selector .selectedDaysMask=${row.daysMask} .editable=${false}></cleverio-day-selector>`
+          <cleverio-day-selector
+            .selectedDaysMask=${row.daysMask}
+            .editable=${false}
+          ></cleverio-day-selector>
+        `
       },
       enabled: {
         title: localize('enabled'),
@@ -123,20 +182,20 @@ export class ScheduleView extends LitElement {
         `
       }
     };
-    const rows = this._localMeals.map((m, i) => ({ ...m, _idx: i }));
-    const fakeHass = { locale: { language: 'en', country: 'US' } };
+    const rows = this.viewMeals.map((m, i) => ({ ...m, _idx: i }));
     const predefinedTimes = ['06:00', '08:00', '12:00', '15:00', '18:00', '21:00'];
     return html`
-      <ha-dialog open scrimClickAction  heading= ${this._editDialogReallyOpen ? 'Edit Feeding Time' : localize('manage_schedules')}>
+      <ha-dialog open scrimClickAction  heading= ${this.editDialogOpen ? 'Edit Feeding Time' : localize('manage_schedules')}>
       
-        ${this._editDialogReallyOpen
+        ${this.editDialogOpen
           ? html`
               <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
-                ${this._editError ? html`<div class="error">${this._editError}</div>` : ''}
+                ${this.editError ? html`<div class="error">${this.editError}</div>` : ''}
                 <cleverio-day-selector
-                  .selectedDaysMask=${this._editForm?.daysMask ?? 0}
+                  class="edit-mode"
+                  .selectedDaysMask=${this.editForm?.daysMask ?? 0}
                   .editable=${true}
-                  @days-changed=${(e: CustomEvent) => this._onEditDaysChanged(e)}
+                  @days-changed=${(e: CustomEvent) => { this.editForm!.daysMask = e.detail.daysMask; this.requestUpdate(); }}
                 ></cleverio-day-selector>
                 <div class="edit-form-group">
                   <label for="edit-time">Time</label>
@@ -144,8 +203,8 @@ export class ScheduleView extends LitElement {
                     id="edit-time"
                     class="edit-time"
                     type="time"
-                    .value=${this._editForm?.time ?? ''}
-                    @input=${(e: Event) => this._onEditTimeInput(e)}
+                    .value=${this.editForm?.time ?? ''}
+                    @input=${(e: Event) => { this.editForm!.time = (e.target as HTMLInputElement).value; this.requestUpdate(); }}
                   />
                 </div>
                 <div class="edit-form-group">
@@ -154,14 +213,14 @@ export class ScheduleView extends LitElement {
                     id="edit-portion"
                     type="number"
                     min="1"
-                    .value=${this._editForm?.portion ?? 1}
-                    @input=${(e: Event) => this._onEditPortionInput(e)}
+                    .value=${this.editForm?.portion ?? 1}
+                    @input=${(e: Event) => { this.editForm!.portion = parseInt((e.target as HTMLInputElement).value, 10); this.requestUpdate(); }}
                   />
                   <div class="helper">1 portion = 6 grams</div>
                 </div>
                 <div class="edit-predefined-times">
                   ${predefinedTimes.map(time => html`
-                    <ha-button type="button" @click=${() => this._onEditPredefinedTime(time)}>${time}</ha-button>
+                    <ha-button type="button" @click=${() => { this.editForm!.time = time; this.requestUpdate(); }}>${time}</ha-button>
                   `)}
                 </div>
               </form>
@@ -169,7 +228,6 @@ export class ScheduleView extends LitElement {
           : html`
               <div class="schedule-table-wrapper">
                 <ha-data-table
-                  .hass=${fakeHass}
                   .localizeFunc=${localize}
                   .columns=${columns}
                   .data=${rows}
@@ -178,7 +236,7 @@ export class ScheduleView extends LitElement {
                 ></ha-data-table>
               </div>
             `}
-        ${this._editDialogReallyOpen
+        ${this.editDialogOpen
           ? html`
               <ha-button slot="secondaryAction" @click=${this._closeEditDialog.bind(this)}>Back</ha-button>
               <ha-button slot="primaryAction" class="ha-primary" @click=${this._onEditSave.bind(this)}>Save</ha-button>
@@ -192,107 +250,29 @@ export class ScheduleView extends LitElement {
     `;
   }
 
-  _toggleEnabled(idx: number, e: Event) {
-    this._localMeals[idx].enabled = (e.target as HTMLInputElement).checked;
-    this.requestUpdate();
-    console.log('[cleverio-schedule-view] _toggleEnabled', { idx, enabled: this._localMeals[idx].enabled });
-  }
-
-  _openEditDialog(idx: number) {
-    this._editDialogOpen = true;
-    this._editDialogReallyOpen = true;
-    this._editIdx = idx;
-    this._editForm = { ...this._localMeals[idx] };
-    this._editError = null;
-    this.requestUpdate();
-  }
-
-  _openAddDialog() {
-    this._editDialogOpen = true;
-    this._editDialogReallyOpen = true;
-    this._editIdx = null;
-    this._editForm = { time: '', portion: 1, daysMask: 0, enabled: true };
-    this._editError = null;
-    this.requestUpdate();
-  }
-
-  _closeEditDialog() {
-    this._editDialogOpen = false;
-    this._editDialogReallyOpen = false;
-    this._editIdx = null;
-    this._editForm = null;
-    this._editError = null;
-    this.requestUpdate();
-  }
-
-  _onEditDaysChanged(e: CustomEvent) {
-    if (this._editForm) {
-      this._editForm.daysMask = e.detail.daysMask;
-      this.requestUpdate();
-    }
-  }
-
-  _onEditTimeInput(e: Event) {
-    if (this._editForm) {
-      this._editForm.time = (e.target as HTMLInputElement).value;
-      this.requestUpdate();
-    }
-  }
-
-  _onEditPortionInput(e: Event) {
-    if (this._editForm) {
-      this._editForm.portion = parseInt((e.target as HTMLInputElement).value, 10);
-      this.requestUpdate();
-    }
-  }
-
-  _onEditPredefinedTime(time: string) {
-    if (this._editForm) {
-      this._editForm.time = time;
-      this.requestUpdate();
-    }
-  }
-
   _onEditSave(e?: Event) {
     if (e) e.preventDefault();
-    if (!this._editForm) return;
+    if (!this.editForm) return;
     // Validation
-    if (!this._editForm.time || !/^[0-2]\d:[0-5]\d$/.test(this._editForm.time)) {
-      this._editError = 'Please enter a valid time.';
+    if (!this.editForm.time || !/^[0-2]\d:[0-5]\d$/.test(this.editForm.time)) {
+      this.editError = 'Please enter a valid time.';
       this.requestUpdate();
       return;
     }
-    if (!this._editForm.portion || this._editForm.portion < 1) {
-      this._editError = 'Portion must be at least 1.';
+    if (!this.editForm.portion || this.editForm.portion < 1) {
+      this.editError = 'Portion must be at least 1.';
       this.requestUpdate();
       return;
     }
-    this._editError = null;
-    if (this._editIdx !== null) {
+    this.editError = null;
+    if (this.editIdx !== null) {
       // Update existing
-      this.meals[this._editIdx] = { ...this._editForm };
-      console.log('[cleverio-schedule-view] Updated meal', this.meals[this._editIdx]);
+      this.viewMeals[this.editIdx] = { ...this.editForm };
     } else {
       // Add new
-      this.meals.push({ ...this._editForm });
-      console.log('[cleverio-schedule-view] Added new meal', this.meals[this.meals.length - 1]);
+      this.viewMeals.push({ ...this.editForm });
     }
-    this._closeEditDialog();
-  }
-
-  _delete(idx: number) {
-    this._localMeals.splice(idx, 1);
     this.requestUpdate();
-    console.log('[cleverio-schedule-view] _delete', { idx });
-  }
-
-  _cancel() {
-    this.dispatchEvent(new CustomEvent('close-dialog', { bubbles: true, composed: true }));
-    console.log('[cleverio-schedule-view] _cancel');
-  }
-
-  _save() {
-    this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this._localMeals }, bubbles: true, composed: true }));
-    console.log('[cleverio-schedule-view] _save', { meals: this._localMeals });
+    this._closeEditDialog();
   }
 }
