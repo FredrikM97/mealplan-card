@@ -1,6 +1,12 @@
 import { LitElement, html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 
+declare global {
+  interface Window {
+    customCards?: any[];
+  }
+}
+
 @customElement('cleverio-card-editor')
 export class CleverioCardEditor extends LitElement {
   @property({ attribute: false }) accessor config = { sensor: '', title: '' };
@@ -24,9 +30,10 @@ export class CleverioCardEditor extends LitElement {
     `;
   }
 }
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'cleverio-card-editor': CleverioCardEditor;
-  }
-}
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "cleverio-pf100-card",
+  name: "Cleverio Feeder Card",
+  preview: false, 
+  description: "Cleverio PF100 feeder card to decode/encode base64 meal_plan"
+});
