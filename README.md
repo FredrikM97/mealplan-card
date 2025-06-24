@@ -1,15 +1,21 @@
 # Cleverio PF100 Feeder Card
 
-A custom Lovelace card for the Cleverio PF100 Pet Feeder, allowing you to monitor and control your feeder directly from Home Assistant.
+A HACS card for the Cleverio PF100 Pet Feeder, allowing you to monitor and control your feeder directly from Home Assistant.
 
 ---
 
 <!-- Card Preview Placeholder -->
 <p align="center">
-  <img src=".github/card-preview.png" alt="Card preview" width="400"/>
+  <img width="400" alt="Screenshot 2025-06-24 at 15 09 09" src="https://github.com/user-attachments/assets/e5b04377-59ed-4064-82cc-864caf07d10d" />
+  <img width="400" alt="Screenshot 2025-06-24 at 15 05 07" src="https://github.com/user-attachments/assets/3cd0ef3a-62f4-4d86-a5ae-6854de67eba9" />
+  <img width="400" alt="Screenshot 2025-06-24 at 15 04 20" src="https://github.com/user-attachments/assets/4a61a152-2245-41b7-bcf9-5bb0467edc87" />
   <br>
-  <i>Card preview (replace this image with a screenshot of your card)</i>
+  <i>Card preview</i>
 </p>
+
+
+
+
 
 [![Add to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=cleverio-pf100-feeder-card)
 
@@ -32,15 +38,6 @@ Click the **Add to HACS** button above, or manually add this repository as a cus
 ### 2. Install the Card
 
 Find "Cleverio PF100 Feeder Card" in HACS under Frontend and install it.
-
-### 3. Add as a Lovelace Resource
-
-Go to **Settings → Dashboards → Resources** and add:
-
-```yaml
-url: /local/cleverio-pf100-feeder-card/cleverio-pf100-feeder-card.bundle.js
-type: module
-```
 
 ### 4. Use the Card in Your Dashboard
 
