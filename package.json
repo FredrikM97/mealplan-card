@@ -1,17 +1,26 @@
 {
-  "name": "cleverio-pf100-feeder-card-tests",
+  "name": "cleverio-pf100-feeder-card",
   "version": "1.0.0",
-  "description": "Unit tests for Cleverio PF100 Feeder Card",
+  "description": "Cleverio PF100 Feeder Card for Home Assistant",
   "type": "module",
   "scripts": {
-    "test": "vitest",
-    "build": "node build.js"
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "prebuild": "tsc --outDir dist",
+    "build": "npm run clean && npm run prebuild && vite build",
+    "clean": "rm -rf dist"
   },
   "devDependencies": {
+    "@open-wc/testing": "^4.0.0",
     "@vitest/coverage-v8": "^3.2.4",
     "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@kipk/load-ha-components": "^1.0.3"
   }
 }

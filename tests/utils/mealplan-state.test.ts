@@ -1,5 +1,14 @@
-import { getNextSchedule, getTotalFoodPerDay, getTodaysFoodGrams, encodeMealPlanData, decodeMealPlanData, encodeMealPlan, decodeMealPlan, parseFeedingTime, formatFeedingTime } from '../www/cleverio-pf100-feeder-card/utils/mealplan-state.js';
-import { describe, it, expect } from 'vitest';
+// Migrated to TypeScript
+import { describe, expect, it } from 'vitest';
+import {
+  getNextSchedule,
+  getTotalFoodPerDay,
+  getTodaysFoodGrams,
+  encodeMealPlanData,
+  decodeMealPlanData,
+  parseFeedingTime,
+  formatFeedingTime
+} from '../../src/cleverio/util/mealplan-state';
 
 describe('Mealplan State', () => {
   it('getNextSchedule returns "-" if no enabled times', () => {
@@ -12,9 +21,11 @@ describe('Mealplan State', () => {
       { time: '10:00', daysMask: 0b1000001, portion: 1, enabled: true },
     ];
     const totals = getTotalFoodPerDay(feedingTimes);
-    expect(totals['Monday']).toBe(1);
-    expect(totals['Tuesday']).toBe(2);
-    expect(totals['Saturday']).toBe(2); // fixed: should be 2
+    // 0=Monday, 1=Tuesday, ..., 6=Sunday
+    expect(totals[0]).toBe(1); // Monday
+    expect(totals[1]).toBe(2); // Tuesday
+    expect(totals[5]).toBe(2); // Saturday (bitmask includes Saturday)
+    expect(totals[6]).toBe(1); // Sunday
   });
 
   it('getTotalFoodPerDay returns all zeros for empty input', () => {
@@ -35,8 +46,9 @@ describe('Mealplan State', () => {
       { time: '08:00', daysMask: 0b0111110, portion: 2, enabled: true },
       { time: '10:00', daysMask: 0b1000001, portion: 1, enabled: true },
     ];
-    expect(getTodaysFoodGrams(feedingTimes, 'Monday')).toBe(1);
-    expect(getTodaysFoodGrams(feedingTimes, 'Tuesday')).toBe(2);
+    expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(1); // Monday
+    expect(getTodaysFoodGrams(feedingTimes, 1)).toBe(2); // Tuesday
+    expect(getTodaysFoodGrams(feedingTimes, 6)).toBe(1); // Sunday
   });
 
   it('getNextSchedule returns first enabled time', () => {
@@ -52,14 +64,14 @@ describe('Mealplan State', () => {
     const feedingTimes = [
       { time: '08:00', daysMask: 0b0000000, portion: 2, enabled: true },
     ];
-    expect(getTodaysFoodGrams(feedingTimes, 'Monday')).toBe(0);
+    expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(0); // Monday
   });
 
   it('getTodaysFoodGrams ignores disabled times', () => {
     const feedingTimes = [
       { time: '08:00', daysMask: 0b1111111, portion: 2, enabled: false },
     ];
-    expect(getTodaysFoodGrams(feedingTimes, 'Monday')).toBe(0);
+    expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(0); // Monday
   });
 
   it('encodeMealPlanData and decodeMealPlanData are inverses', () => {
@@ -75,25 +87,8 @@ describe('Mealplan State', () => {
     expect(decoded[1].enabled).toBe(false);
   });
 
-  it('encodeMealPlan and decodeMealPlan are inverses', () => {
-    const feedingTimes = [
-      { time: '12:00', daysMask: 0b1111111, portion: 3, enabled: true }
-    ];
-    const encoded = encodeMealPlan(feedingTimes);
-    const decoded = decodeMealPlan(encoded);
-    expect(decoded[0].time).toBe('12:00');
-    expect(decoded[0].portion).toBe(3);
-    expect(decoded[0].enabled).toBe(true);
-  });
-
   it('decodeMealPlanData throws on invalid base64', () => {
     expect(() => decodeMealPlanData('!@#$')).toThrow('Invalid base64');
-  });
-
-  it('decodeMealPlan throws on invalid meal plan length', () => {
-    // base64 for 4 bytes (should be multiple of 5)
-    const bad = btoa(String.fromCharCode(1,2,3,4));
-    expect(() => decodeMealPlan(bad)).toThrow('Invalid meal plan length');
   });
 
   it('parseFeedingTime and formatFeedingTime work as inverses', () => {
@@ -101,7 +96,24 @@ describe('Mealplan State', () => {
     const obj = parseFeedingTime(str);
     expect(obj.time).toBe('08:00');
     expect(obj.portion).toBe(2);
-    expect(obj.days).toBe('Monday,Tuesday');
+    expect(obj.days).toEqual(['Monday','Tuesday']);
     expect(formatFeedingTime(obj)).toBe(str);
+  });
+
+  it('decodeMealPlanData decodes real device base64 and encodeMealPlanData re-encodes it correctly', () => {
+    const base64 = 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==';
+    const expected = [
+      { time: '04:00', daysMask: 127, portion: 1, enabled: false },
+      { time: '09:00', daysMask: 127, portion: 2, enabled: true },
+      { time: '15:00', daysMask: 127, portion: 1, enabled: true },
+      { time: '21:00', daysMask: 127, portion: 2, enabled: true },
+      { time: '18:00', daysMask: 8, portion: 1, enabled: false }
+    ];
+    const decoded = decodeMealPlanData(base64);
+    expect(decoded).toEqual(expected);
+    // Re-encode and decode again to check round-trip
+    const reEncoded = encodeMealPlanData(decoded);
+    const roundTrip = decodeMealPlanData(reEncoded);
+    expect(roundTrip).toEqual(expected);
   });
 });
