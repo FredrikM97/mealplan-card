@@ -178,8 +178,8 @@ export class ScheduleView extends LitElement {
     const rows = this.viewMeals.map((m, i) => ({ ...m, _idx: i }));
     const predefinedTimes = ['06:00', '08:00', '12:00', '15:00', '18:00', '21:00'];
     return html`
-      <ha-dialog open scrimClickAction  heading= ${this.editDialogOpen ? 'Edit Feeding Time' : localize('manage_schedules')}>
-      
+      <ha-dialog open scrimClickAction  heading= ${this.editDialogOpen ? localize('edit_feeding_time') : localize('manage_schedules')}>
+
         ${this.editDialogOpen
           ? html`
               <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
@@ -191,7 +191,7 @@ export class ScheduleView extends LitElement {
                   @days-changed=${(e: CustomEvent) => { this.editForm!.daysMask = e.detail.daysMask; this.requestUpdate(); }}
                 ></cleverio-day-selector>
                 <div class="edit-form-group">
-                  <label for="edit-time">Time</label>
+                  <label for="edit-time">${localize('time')}</label>
                   <input
                     id="edit-time"
                     class="edit-time"
@@ -231,13 +231,13 @@ export class ScheduleView extends LitElement {
             `}
         ${this.editDialogOpen
           ? html`
-              <ha-button slot="secondaryAction" @click=${this._closeEditDialog.bind(this)}>Back</ha-button>
-              <ha-button slot="primaryAction" class="ha-primary" @click=${this._onEditSave.bind(this)}>Save</ha-button>
+              <ha-button slot="secondaryAction" @click=${this._closeEditDialog.bind(this)}>${localize('back')}</ha-button>
+              <ha-button slot="primaryAction" class="ha-primary" @click=${this._onEditSave.bind(this)}>${localize('save')}</ha-button>
             `
           : html`
-              <ha-button slot="secondaryAction" @click=${this._openAddDialog.bind(this)}>Add</ha-button>
-              <ha-button slot="secondaryAction" @click=${this._cancel.bind(this)}>Cancel</ha-button>
-              <ha-button slot="primaryAction" class="ha-primary" @click=${this._save.bind(this)} ?disabled=${!this._hasUnsavedChanges}>Save</ha-button>
+              <ha-button slot="secondaryAction" @click=${this._openAddDialog.bind(this)}>${localize('add_meal')}</ha-button>
+              <ha-button slot="secondaryAction" @click=${this._cancel.bind(this)}>${localize('cancel')}</ha-button>
+              <ha-button slot="primaryAction" class="ha-primary" @click=${this._save.bind(this)} ?disabled=${!this._hasUnsavedChanges}>${localize('save')}</ha-button>
             `}
       </ha-dialog>
     `;

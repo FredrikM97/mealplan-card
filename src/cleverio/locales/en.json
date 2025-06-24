@@ -19,7 +19,8 @@
   "today": "Today",
   "manage_schedules": "Manage Schedules",
   "unsaved_changes": "Unsaved changes",
-  "unsaved_changes_hint": "You have unsaved changes. Don’t forget to save!",
+  "unsaved_changes_hint": "You have unsaved changes. Don't forget to save!",
   "days_short": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  "days_full": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+  "days_full": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+  "avg_week": "Avg/week"
 }

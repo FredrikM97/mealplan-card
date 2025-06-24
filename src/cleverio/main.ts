@@ -4,8 +4,7 @@ import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData, getTodaysFo
 import type { FeedingTime } from './util/mealplan-state.js';
 import './schedule';
 import { loadHaComponents } from '@kipk/load-ha-components';
-import { loadTranslations as loadCardTranslations, localize } from './locales/localize';
-import { Day } from './util/days-util';
+import {localize, setLanguage } from './locales/localize';
 
 /**
  * Cleverio PF100 Feeder Card
@@ -65,7 +64,8 @@ export class CleverioPf100Card extends LitElement {
 
  
   async connectedCallback() {
-    await loadCardTranslations(); // Only loads once, even if called multiple times
+    console.log("What language",this.hass.language);
+    await setLanguage(this.hass.language); // Only loads once, even if called multiple times
     await loadHaComponents(['ha-button', 'ha-data-table']); // Remove ha-card-header
     this._haComponentsReady = true;
     super.connectedCallback();
@@ -135,6 +135,16 @@ export class CleverioPf100Card extends LitElement {
           <ha-chip class="overview-grams">
             <ha-icon icon="mdi:food-drumstick"></ha-icon>
             ${localize('today')}: <span style="white-space:nowrap;">${getTodaysFoodGrams(this._meals.filter(m => m.enabled), new Date().getDay()) * 6}g</span>
+          </ha-chip>
+          <ha-chip class="overview-average">
+            <ha-icon icon="mdi:scale-balance"></ha-icon>
+            ${localize('avg_week')}: <span style="white-space:nowrap;">
+              ${(() => {
+                const totals = getTotalFoodPerDay(this._meals.filter(m => m.enabled));
+                const avg = totals.reduce((a, b) => a + b, 0) / 7;
+                return (avg * 6).toFixed(1);
+              })()}g
+            </span>
           </ha-chip>
           <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; }}>
             <ha-icon icon="mdi:table-edit"></ha-icon>

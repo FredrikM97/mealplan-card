@@ -1,22 +1,14 @@
-let translations: { [key: string]: string } = {};
-let loaded = false;
+import en from './en.json';
+import sv from './sv.json';
 
-export async function loadTranslations() {
-  if (loaded) return; // Only load once
-  try {
-    const url = new URL('./en.json', import.meta.url).href;
-    const response = await fetch(url);
-    if (response.ok) {
-      translations = await response.json();
-      loaded = true;
-    } else {
-      console.error('Failed to load translations', response.status);
-    }
-  } catch (e) {
-    console.error('Failed to load translations', e);
-  }
+const translations: Record<string, any> = { en, sv };
+
+let currentLang = 'en';
+
+export function setLanguage(lang: string) {
+  currentLang = translations[lang] ? lang : 'en';
 }
 
-export function localize(key: string): string {
-  return translations[key] || key;
+export function localize(key: string): any {
+  return translations[currentLang]?.[key] || translations['en'][key] || key;
 }

@@ -20,7 +20,8 @@
     "strict": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
-    "types": ["vitest"]
+    "types": ["vitest"],
+    "resolveJsonModule": true
   },
   "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": ["node_modules", "dist", "tests", "www/cleverio-pf100-feeder-card"]

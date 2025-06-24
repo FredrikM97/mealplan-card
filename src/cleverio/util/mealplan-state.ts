@@ -1,5 +1,3 @@
-import { describe, it, expect } from 'vitest';
-
 // Mealplan state utilities 
 export interface FeedingTime {
   time: string;
