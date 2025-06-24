@@ -52,8 +52,6 @@ export class CleverioPf100Card extends LitElement {
 
   setConfig(config) {
     this.config = config;
-    this._checkConfig();
-    this._updateConfig();
   }
 
   updated(changedProps) {
@@ -64,7 +62,6 @@ export class CleverioPf100Card extends LitElement {
 
  
   async connectedCallback() {
-    console.log("What language",this.hass.language);
     await setLanguage(this.hass.language); // Only loads once, even if called multiple times
     await loadHaComponents(['ha-button', 'ha-data-table']); // Remove ha-card-header
     this._haComponentsReady = true;
@@ -85,15 +82,6 @@ export class CleverioPf100Card extends LitElement {
 
   get _name() {
     return this._attributes.friendly_name || this._sensorID;
-  }
-
-  _checkConfig() {
-    if (!this.config?.sensor) {
-      throw new Error('Please define a sensor!');
-    }
-  }
-
-  _updateConfig() {
   }
 
   _updateHass() {
