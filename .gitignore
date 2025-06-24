@@ -11,7 +11,6 @@ jspm_packages/
 
 # Build output
 coverage/
-dist/
 build/
 www/cleverio-pf100-feeder-card/*.bundle.js.map
 
@@ -36,5 +35,4 @@ Thumbs.db
 *.log
 
 .github/instructions/*
-cleverio-pf100-feeder-card.bundle.js.map
 target
