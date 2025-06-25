@@ -1,6 +1,6 @@
 # Cleverio PF100 Feeder Card
 
-A HACS card for the Cleverio PF100 Pet Feeder, allowing you to monitor and control your feeder directly from Home Assistant.
+A HACS card for the Cleverio PF100 Pet Feeder, allowing you to monitor and control your feeder directly from Home Assistant. It can work for other feeders if a meal_plan or similar that is encoded in same base64 format. However, there is currently no list of other supported devices. Feel free to send a message or add a issue/pr so we can populate a list of supported devices. This setup is supported by the https://github.com/make-all/tuya-local.
 
 ---
 
@@ -28,6 +28,18 @@ A HACS card for the Cleverio PF100 Pet Feeder, allowing you to monitor and contr
 - Add, edit, and delete feeding times with day and portion selection
 - Works with the Cleverio PF100 sensor (including MakeAll/Tuya Local integrations)
 - Easy integration with Home Assistant dashboards
+
+## How it works
+
+The card expects a base64 string (example: 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA=='). This string is decoded and allow any edits onto it in the format.
+```
+      { time: '04:00', daysMask: 127, portion: 1, enabled: false },
+      { time: '09:00', daysMask: 127, portion: 2, enabled: true },
+      { time: '15:00', daysMask: 127, portion: 1, enabled: true },
+      { time: '21:00', daysMask: 127, portion: 2, enabled: true },
+      { time: '18:00', daysMask: 8, portion: 1, enabled: false }
+```
+When the user have made changes and pressed the save on schedule view the config is updated and sent to the tuya cloud. The implementation reduces the delay for actions compared to smartlife and allow seemless integration with home assistant for tuya feeders with a meal_plan configuration.
 
 ## Installation
 
