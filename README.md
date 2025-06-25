@@ -41,13 +41,7 @@ Find "Cleverio PF100 Feeder Card" in HACS under Frontend and install it.
 
 ### 4. Use the Card in Your Dashboard
 
-Add the following to your Lovelace dashboard YAML:
-
-```yaml
-type: custom:cleverio-pf100-card
-title: Pet Feeder
-sensor: text.pet_feeder_meal_plan
-```
+Search for Cleverio Pet Feeder in the card selector view.
 
 ## Configuration
 
