@@ -19,8 +19,7 @@ export class ScheduleView extends LitElement {
     // Only update if changed (deep compare)
     const changed = JSON.stringify(oldMeals) !== JSON.stringify(newMeals);
     this._meals = newMeals;
-    if (changed) {
-      // Deep clone to avoid mutation issues
+    if (changed && !this.editDialogOpen && !this._hasUnsavedChanges) {
       this.viewMeals = newMeals.map(meal => ({ ...meal }));
       this.requestUpdate('meals', oldMeals);
     }
