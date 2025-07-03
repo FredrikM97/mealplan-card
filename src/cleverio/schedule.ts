@@ -32,7 +32,6 @@ export class ScheduleView extends LitElement {
   updated(changed: PropertyValues) {
     if (changed.has('meals')) {
       this.viewMeals = this.meals.map(m => ({ ...m }));
-      this.editDialogOpen = false;
     }
   }
 
@@ -126,7 +125,7 @@ export class ScheduleView extends LitElement {
   }
   _save() {
     this.meals = this.viewMeals.map(m => ({ ...m }));
-    this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this.viewMeals }, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('save-schedule', { detail: { meals: this.viewMeals }, bubbles: true, composed: true }));
   }
 
   render() {

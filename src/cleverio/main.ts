@@ -144,7 +144,7 @@ export class CleverioPf100Card extends LitElement {
               <cleverio-schedule-view
                 .meals=${this._meals}
                 .localize=${localize}
-                @meals-changed=${this._onScheduleMealsChanged.bind(this)}
+                @save-schedule=${this._onScheduleMealsChanged.bind(this)}
                 @close-dialog=${this._onDialogClose.bind(this)}
                 @footer-buttons-changed=${this._onFooterButtonsChanged.bind(this)}
                 id="scheduleView"
@@ -170,9 +170,9 @@ export class CleverioPf100Card extends LitElement {
   }
 
   _onScheduleMealsChanged(e) {
-    this._dialogOpen = false;
     this._meals = e.detail.meals;
     this._saveMealsToSensor();
+    this._dialogOpen = false;
   }
 
   _onDialogClose() {

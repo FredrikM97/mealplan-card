@@ -80,7 +80,7 @@ const { is: Be, defineProperty: We, getOwnPropertyDescriptor: qe, getOwnProperty
   return t;
 } }, $e = (o, e) => !Be(o, e), xe = { attribute: !0, type: String, converter: ne, reflect: !1, useDefault: !1, hasChanged: $e };
 Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), C.litPropertyMetadata ?? (C.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
-let T = class extends HTMLElement {
+let D = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ?? (this.l = [])).push(e);
   }
@@ -281,7 +281,7 @@ let T = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[B("elementProperties")] = /* @__PURE__ */ new Map(), T[B("finalized")] = /* @__PURE__ */ new Map(), he == null || he({ ReactiveElement: T }), (C.reactiveElementVersions ?? (C.reactiveElementVersions = [])).push("2.1.0");
+D.elementStyles = [], D.shadowRootOptions = { mode: "open" }, D[B("elementProperties")] = /* @__PURE__ */ new Map(), D[B("finalized")] = /* @__PURE__ */ new Map(), he == null || he({ ReactiveElement: D }), (C.reactiveElementVersions ?? (C.reactiveElementVersions = [])).push("2.1.0");
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -289,7 +289,7 @@ T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[B("elementProper
  */
 const W = globalThis, ae = W.trustedTypes, Me = ae ? ae.createPolicy("lit-html", { createHTML: (o) => o }) : void 0, He = "$lit$", E = `lit$${Math.random().toFixed(9).slice(2)}$`, Fe = "?" + E, Ze = `<${Fe}>`, k = document, q = () => k.createComment(""), V = (o) => o === null || typeof o != "object" && typeof o != "function", ye = Array.isArray, Ye = (o) => ye(o) || typeof (o == null ? void 0 : o[Symbol.iterator]) == "function", de = `[ 	
 \f\r]`, z = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Oe = /-->/g, Pe = />/g, M = RegExp(`>|${de}(?:([^\\s"'>=/]+)(${de}*=${de}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ke = /'/g, De = /"/g, je = /^(?:script|style|textarea|title)$/i, Qe = (o) => (e, ...t) => ({ _$litType$: o, strings: e, values: t }), u = Qe(1), I = Symbol.for("lit-noChange"), m = Symbol.for("lit-nothing"), Te = /* @__PURE__ */ new WeakMap(), O = k.createTreeWalker(k, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ke = /'/g, Te = /"/g, je = /^(?:script|style|textarea|title)$/i, Qe = (o) => (e, ...t) => ({ _$litType$: o, strings: e, values: t }), u = Qe(1), I = Symbol.for("lit-noChange"), m = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), O = k.createTreeWalker(k, 129);
 function Ne(o, e) {
   if (!ye(o) || !o.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return Me !== void 0 ? Me.createHTML(e) : e;
@@ -300,7 +300,7 @@ const Xe = (o, e) => {
   for (let l = 0; l < t; l++) {
     const r = o[l];
     let c, p, h = -1, f = 0;
-    for (; f < r.length && (a.lastIndex = f, p = a.exec(r), p !== null); ) f = a.lastIndex, a === z ? p[1] === "!--" ? a = Oe : p[1] !== void 0 ? a = Pe : p[2] !== void 0 ? (je.test(p[2]) && (i = RegExp("</" + p[2], "g")), a = M) : p[3] !== void 0 && (a = M) : a === M ? p[0] === ">" ? (a = i ?? z, h = -1) : p[1] === void 0 ? h = -2 : (h = a.lastIndex - p[2].length, c = p[1], a = p[3] === void 0 ? M : p[3] === '"' ? De : ke) : a === De || a === ke ? a = M : a === Oe || a === Pe ? a = z : (a = M, i = void 0);
+    for (; f < r.length && (a.lastIndex = f, p = a.exec(r), p !== null); ) f = a.lastIndex, a === z ? p[1] === "!--" ? a = Oe : p[1] !== void 0 ? a = Pe : p[2] !== void 0 ? (je.test(p[2]) && (i = RegExp("</" + p[2], "g")), a = M) : p[3] !== void 0 && (a = M) : a === M ? p[0] === ">" ? (a = i ?? z, h = -1) : p[1] === void 0 ? h = -2 : (h = a.lastIndex - p[2].length, c = p[1], a = p[3] === void 0 ? M : p[3] === '"' ? Te : ke) : a === Te || a === ke ? a = M : a === Oe || a === Pe ? a = z : (a = M, i = void 0);
     const A = a === M && o[l + 1].startsWith("/>") ? " " : "";
     n += a === z ? r + Ze : h >= 0 ? (s.push(c), r.slice(0, h) + He + r.slice(h) + E + A) : r + E + (h === -2 ? l : A);
   }
@@ -419,8 +419,8 @@ class se {
     }
   }
   _$AC(e) {
-    let t = Te.get(e.strings);
-    return t === void 0 && Te.set(e.strings, t = new J(e)), t;
+    let t = De.get(e.strings);
+    return t === void 0 && De.set(e.strings, t = new J(e)), t;
   }
   k(e) {
     ye(this._$AH) || (this._$AH = [], this._$AR());
@@ -524,7 +524,7 @@ const nt = (o, e, t) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const P = globalThis;
-class S extends T {
+class S extends D {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -729,7 +729,7 @@ const pt = [
       console.error("Fallback loading method failed:", c);
     }
   }
-}, ut = "Feed Now", mt = "Schedule", ft = "Portion", gt = "Days", _t = "Enabled", $t = "Edit Meal", yt = "Time", vt = "(1 portion = 6g)", bt = "Suggested:", wt = "Back", At = "Save", Et = "Status", Ct = "Actions", St = "Add Meal", xt = "Schedules", Mt = "Active Schedules", Ot = "Today", Pt = "Edit Feeding Time", kt = "Manage Schedules", Dt = "Unsaved changes", Tt = "You have unsaved changes. Don't forget to save!", Rt = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], Ut = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], Ht = "Avg/week", Ft = {
+}, ut = "Feed Now", mt = "Schedule", ft = "Portion", gt = "Days", _t = "Enabled", $t = "Edit Meal", yt = "Time", vt = "(1 portion = 6g)", bt = "Suggested:", wt = "Back", At = "Save", Et = "Status", Ct = "Actions", St = "Add Meal", xt = "Schedules", Mt = "Active Schedules", Ot = "Today", Pt = "Edit Feeding Time", kt = "Manage Schedules", Tt = "Unsaved changes", Dt = "You have unsaved changes. Don't forget to save!", Rt = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], Ut = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], Ht = "Avg/week", Ft = {
   feed_now: ut,
   schedule: mt,
   portion: ft,
@@ -750,8 +750,8 @@ const pt = [
   today: Ot,
   edit_feeding_time: Pt,
   manage_schedules: kt,
-  unsaved_changes: Dt,
-  unsaved_changes_hint: Tt,
+  unsaved_changes: Tt,
+  unsaved_changes_hint: Dt,
   days_short: Rt,
   days_full: Ut,
   avg_week: Ht
@@ -878,7 +878,7 @@ ce([
 G = ce([
   le("cleverio-day-selector")
 ], G);
-var D = function(o, e, t, s) {
+var T = function(o, e, t, s) {
   var i = arguments.length, n = i < 3 ? e : s === null ? s = Object.getOwnPropertyDescriptor(e, t) : s, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function") n = Reflect.decorate(o, e, t, s);
   else for (var l = o.length - 1; l >= 0; l--) (a = o[l]) && (n = (i < 3 ? a(n) : i > 3 ? a(e, t, n) : a(e, t)) || n);
@@ -909,7 +909,7 @@ let x = (F = class extends S {
   }
   // Watch for changes in meals
   updated(t) {
-    t.has("meals") && (this.viewMeals = this.meals.map((s) => ({ ...s })), this.editDialogOpen = !1);
+    t.has("meals") && (this.viewMeals = this.meals.map((s) => ({ ...s })));
   }
   // Helper to check if there are unsaved changes
   get _hasUnsavedChanges() {
@@ -936,7 +936,7 @@ let x = (F = class extends S {
     this.dispatchEvent(new CustomEvent("close-dialog", { bubbles: !0, composed: !0 }));
   }
   _save() {
-    this.meals = this.viewMeals.map((t) => ({ ...t })), this.dispatchEvent(new CustomEvent("meals-changed", { detail: { meals: this.viewMeals }, bubbles: !0, composed: !0 }));
+    this.meals = this.viewMeals.map((t) => ({ ...t })), this.dispatchEvent(new CustomEvent("save-schedule", { detail: { meals: this.viewMeals }, bubbles: !0, composed: !0 }));
   }
   render() {
     var n, a, l;
@@ -1117,25 +1117,25 @@ let x = (F = class extends S {
       }
     `
 ], F);
-D([
+T([
   $({ type: Array })
 ], x.prototype, "meals", null);
-D([
+T([
   b()
 ], x.prototype, "viewMeals", void 0);
-D([
+T([
   b()
 ], x.prototype, "editForm", void 0);
-D([
+T([
   b()
 ], x.prototype, "editError", void 0);
-D([
+T([
   b()
 ], x.prototype, "editDialogOpen", void 0);
-D([
+T([
   $({ type: Boolean })
 ], x.prototype, "haComponentsReady", null);
-x = D([
+x = T([
   le("cleverio-schedule-view")
 ], x);
 var w = function(o, e, t, s) {
@@ -1267,7 +1267,7 @@ let _ = (N = class extends S {
               <cleverio-schedule-view
                 .meals=${this._meals}
                 .localize=${d}
-                @meals-changed=${this._onScheduleMealsChanged.bind(this)}
+                @save-schedule=${this._onScheduleMealsChanged.bind(this)}
                 @close-dialog=${this._onDialogClose.bind(this)}
                 @footer-buttons-changed=${this._onFooterButtonsChanged.bind(this)}
                 id="scheduleView"
@@ -1290,7 +1290,7 @@ let _ = (N = class extends S {
     });
   }
   _onScheduleMealsChanged(t) {
-    this._dialogOpen = !1, this._meals = t.detail.meals, this._saveMealsToSensor();
+    this._meals = t.detail.meals, this._saveMealsToSensor(), this._dialogOpen = !1;
   }
   _onDialogClose() {
     this._dialogOpen = !1;
