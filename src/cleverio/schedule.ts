@@ -7,7 +7,24 @@ import type { FeedingTime } from './util/mealplan-state';
 
 @customElement('cleverio-schedule-view')
 export class ScheduleView extends LitElement {
-  @property({ type: Array }) accessor meals: FeedingTime[] = [];
+  private _meals: FeedingTime[] = [];
+
+  @property({ type: Array })
+  get meals(): FeedingTime[] {
+    return this._meals;
+  }
+
+  set meals(newMeals: FeedingTime[]) {
+    const oldMeals = this._meals;
+    // Only update if changed (deep compare)
+    const changed = JSON.stringify(oldMeals) !== JSON.stringify(newMeals);
+    this._meals = newMeals;
+    if (changed) {
+      // Deep clone to avoid mutation issues
+      this.viewMeals = newMeals.map(meal => ({ ...meal }));
+      this.requestUpdate('meals', oldMeals);
+    }
+  }
   @state() private viewMeals: FeedingTime[] = [];
   @state() private editForm: FeedingTime | null = null;
   @state() private editError: string | null = null;
@@ -28,13 +45,7 @@ export class ScheduleView extends LitElement {
     this.haComponentsReady = true;
   }
 
-  // Watch for changes in meals
-  updated(changed: PropertyValues) {
-    if (changed.has('meals')) {
-      this.viewMeals = this.meals.map(m => ({ ...m }));
-      this.editDialogOpen = false;
-    }
-  }
+
 
   // Helper to check if there are unsaved changes
   private get _hasUnsavedChanges(): boolean {
@@ -125,8 +136,7 @@ export class ScheduleView extends LitElement {
     this.dispatchEvent(new CustomEvent('close-dialog', { bubbles: true, composed: true }));
   }
   _save() {
-    this.meals = this.viewMeals.map(m => ({ ...m }));
-    this.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: this.viewMeals }, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('save-schedule', { detail: { meals: this.viewMeals }, bubbles: true, composed: true }));
   }
 
   render() {

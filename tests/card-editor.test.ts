@@ -1,7 +1,12 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import '../src/cleverio/card-editor';
 import { CleverioCardEditor } from '../src/cleverio/card-editor';
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
+
+// Mock loadHaComponents to avoid timeouts in tests
+vi.mock('@kipk/load-ha-components', () => ({
+  loadHaComponents: async () => {}
+}));
 
 describe('CleverioCardEditor', () => {
   it('renders and updates config', async () => {
@@ -19,12 +24,21 @@ describe('CleverioCardEditor', () => {
     await el.updateComplete;
     const shadow = el.shadowRoot!;
     expect(shadow).to.exist;
-    const inputs = shadow.querySelectorAll('input');
-    expect(inputs.length).to.equal(2);
-    (inputs[0] as HTMLInputElement).value = 'sensor.test';
-    inputs[0].dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    (inputs[1] as HTMLInputElement).value = 'My Title';
-    inputs[1].dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    const entityPicker = shadow.querySelector('ha-entity-picker');
+    const textField = shadow.querySelector('ha-textfield');
+    expect(entityPicker).to.exist;
+    expect(textField).to.exist;
+
+
+    // Simulate entity picker value change
+    (entityPicker as any).value = 'sensor.test';
+    entityPicker!.dispatchEvent(new CustomEvent('value-changed', { detail: { value: 'sensor.test' }, bubbles: true, composed: true }));
+
+    // Simulate text field input (must set name for handler to work)
+    (textField as any).name = 'title';
+    (textField as any).value = 'My Title';
+    textField!.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+
     await el.updateComplete;
     expect(el.config.sensor).to.equal('sensor.test');
     expect(el.config.title).to.equal('My Title');

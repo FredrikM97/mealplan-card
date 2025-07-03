@@ -11,7 +11,17 @@ import {localize, setLanguage } from './locales/localize';
  */
 @customElement('cleverio-pf100-card')
 export class CleverioPf100Card extends LitElement {
-  @property({ type: Object }) accessor hass;
+  private _hass;
+  @property({ type: Object })
+  get hass() {
+    return this._hass;
+  }
+  set hass(val) {
+    const old = this._hass;
+    this._hass = val;
+    this._updateHass();
+    this.requestUpdate('hass', old);
+  }
   @property({ type: Object }) accessor config;
   @state() accessor _meals: FeedingTime[];
   @state() accessor _persistedMeals: FeedingTime[];
@@ -54,11 +64,7 @@ export class CleverioPf100Card extends LitElement {
     this.config = config;
   }
 
-  updated(changedProps) {
-    if (changedProps.has('hass')) {
-      this._updateHass();
-    }
-  }
+
 
  
   async connectedCallback() {
@@ -144,7 +150,7 @@ export class CleverioPf100Card extends LitElement {
               <cleverio-schedule-view
                 .meals=${this._meals}
                 .localize=${localize}
-                @meals-changed=${this._onScheduleMealsChanged.bind(this)}
+                @save-schedule=${this._onScheduleMealsChanged.bind(this)}
                 @close-dialog=${this._onDialogClose.bind(this)}
                 @footer-buttons-changed=${this._onFooterButtonsChanged.bind(this)}
                 id="scheduleView"
@@ -170,9 +176,9 @@ export class CleverioPf100Card extends LitElement {
   }
 
   _onScheduleMealsChanged(e) {
-    this._dialogOpen = false;
     this._meals = e.detail.meals;
     this._saveMealsToSensor();
+    this._dialogOpen = false;
   }
 
   _onDialogClose() {

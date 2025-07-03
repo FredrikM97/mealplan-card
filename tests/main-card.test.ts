@@ -83,7 +83,7 @@ describe('CleverioPf100Card integration', () => {
     // Simulate schedule save event as UI would
     const scheduleView = el.shadowRoot.querySelector('cleverio-schedule-view');
     expect(scheduleView).to.exist;
-    scheduleView.dispatchEvent(new CustomEvent('meals-changed', { detail: { meals: el._meals }, bubbles: true, composed: true }));
+    scheduleView.dispatchEvent(new CustomEvent('save-schedule', { detail: { meals: el._meals }, bubbles: true, composed: true }));
     await el.updateComplete;
     expect(callService.mock.calls.length).to.be.greaterThan(0);
     const call = callService.mock.calls.find(c => c[0] === 'text' && c[1] === 'set_value');
