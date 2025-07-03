@@ -11,7 +11,17 @@ import {localize, setLanguage } from './locales/localize';
  */
 @customElement('cleverio-pf100-card')
 export class CleverioPf100Card extends LitElement {
-  @property({ type: Object }) accessor hass;
+  private _hass;
+  @property({ type: Object })
+  get hass() {
+    return this._hass;
+  }
+  set hass(val) {
+    const old = this._hass;
+    this._hass = val;
+    this._updateHass();
+    this.requestUpdate('hass', old);
+  }
   @property({ type: Object }) accessor config;
   @state() accessor _meals: FeedingTime[];
   @state() accessor _persistedMeals: FeedingTime[];
@@ -54,11 +64,7 @@ export class CleverioPf100Card extends LitElement {
     this.config = config;
   }
 
-  updated(changedProps) {
-    if (changedProps.has('hass')) {
-      this._updateHass();
-    }
-  }
+
 
  
   async connectedCallback() {
