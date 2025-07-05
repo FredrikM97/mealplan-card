@@ -25,18 +25,14 @@ export class CleverioPf100Card extends LitElement {
   @property({ type: Object }) accessor config;
   @state() accessor _meals: FeedingTime[];
   @state() accessor _persistedMeals: FeedingTime[];
-  @state() accessor _dialogOpen: boolean;
-  @state() accessor _dialogData;
+  @state() accessor _dialogOpen: boolean = false;
   @property({ type: Boolean }) private _haComponentsReady = false;
-  @state() accessor _footerButtons = [];
-  @state() footerButtonsTemplate = null;
 
   constructor() {
     super();
     this._meals = [];
     this._persistedMeals = [];
     this._dialogOpen = false;
-    this._dialogData = undefined;
   }
 
   static styles = [
@@ -176,7 +172,6 @@ export class CleverioPf100Card extends LitElement {
                 .localize=${localize}
                 @save-schedule=${this._onScheduleMealsChanged.bind(this)}
                 @close-dialog=${this._onDialogClose.bind(this)}
-                @footer-buttons-changed=${this._onFooterButtonsChanged.bind(this)}
                 id="scheduleView"
               ></cleverio-schedule-view>
             `
@@ -207,10 +202,6 @@ export class CleverioPf100Card extends LitElement {
 
   _onDialogClose() {
     this._dialogOpen = false;
-  }
-
-  _onFooterButtonsChanged(e) {
-    this.footerButtonsTemplate = e.detail.template;
   }
 }
 
