@@ -10,12 +10,12 @@ declare global {
 
 @customElement('cleverio-card-editor')
 export class CleverioCardEditor extends LitElement {
-  @property({ attribute: false }) config = { sensor: '', title: '' };
+  @property({ attribute: false }) config = { sensor: '', title: '', helper: '' };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
 
-  setConfig(config: { sensor: string; title: string }) {
-    this.config = { ...config };
+  setConfig(config: { sensor: string; title: string; helper: string }) {
+    this.config = {...config};
   }
 
   async connectedCallback() {
@@ -47,7 +47,7 @@ export class CleverioCardEditor extends LitElement {
   }
 
   private _validateConfig() {
-    return !!this.config.sensor;
+    return !!this.config.sensor && !!this.config.helper;
   }
 
   render() {
@@ -66,6 +66,24 @@ export class CleverioCardEditor extends LitElement {
         allow-custom-entity
       ></ha-entity-picker>
       <div style="height: 20px;"></div>
+      <label for="helper-picker" style="display:block;margin-bottom:4px;">Meal plan storage helper (input_text)
+        <ha-tooltip content="This input_text helper is used to store and sync your meal plan schedule. The card will always read and write the schedule to this helper, making it the single source of truth for your meal plan. Tip: Create a dedicated input_text helper in Home Assistant for each feeder you want to manage." placement="right">
+          <ha-icon
+            icon="mdi:information-outline"
+            style="font-size:1.1em;color:var(--secondary-text-color,#666);margin-left:4px;vertical-align:middle;cursor:pointer;"
+            tabindex="0"
+          ></ha-icon>
+        </ha-tooltip>
+      </label>
+      <ha-entity-picker
+        id="helper-picker"
+        .hass=${this.hass}
+        .value=${this.config.helper || ''}
+        .configValue=${'helper'}
+        @value-changed=${this._valueChanged}
+        .includeDomains=${['input_text']}
+      ></ha-entity-picker>
+      <div style="height: 20px;"></div>
       <ha-textfield
         id="title"
         name="title"
@@ -75,8 +93,8 @@ export class CleverioCardEditor extends LitElement {
         placeholder="Title"
       ></ha-textfield>
       ${!this._validateConfig()
-        ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Please select a sensor entity.</div>`
-        : ''}
+        ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Please select a sensor entity and a storage helper (input_text).` : ''}
+      <!-- mwc-tooltip handles its own styling -->
     `;
   }
 }
