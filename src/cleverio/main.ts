@@ -77,38 +77,62 @@ export class CleverioPf100Card extends LitElement {
   get _sensorID() {
     return this.config?.sensor;
   }
+  get _helperID() {
+    return this.config?.helper;
+  }
 
   get _stateObj() {
     return this.hass?.states?.[this._sensorID];
   }
-
+  get _helperObj() {
+    return this.hass?.states?.[this._helperID];
+  }
   get _attributes() {
     return this._stateObj?.attributes || {};
   }
-
   get _name() {
     return this._attributes.friendly_name || this._sensorID;
   }
 
   _updateHass() {
-    const stateObj = this._stateObj;
-    let loadedMeals;
-    if (stateObj) {
-      try {
-        loadedMeals = decodeMealPlanData(stateObj.state);
-        if (Array.isArray(loadedMeals)) {
-          this._persistedMeals = loadedMeals;
-        }
-      } catch (e) {
-        console.error('Failed to decode meal plan:', e);
-      }
-    }
-    if (Array.isArray(this._persistedMeals)) {
-      this._meals = JSON.parse(JSON.stringify(this._persistedMeals));
+    // Sensor is the source of new data, helper is the persistent memory and UI source
+    const sensorRaw = this._stateObj?.state ?? '';
+    const helperRaw = this._helperObj?.state ?? '';
+    let raw = '';
+    if (this._isValidSensorValue(sensorRaw)) {
+      raw = sensorRaw;
+      this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
     } else {
-      this._persistedMeals = [];
-      this._meals = [];
+      raw = helperRaw;
     }
+    this._setMealsFromRaw(raw);
+  }
+
+  _isValidSensorValue(value: any): boolean {
+    return (
+      typeof value === 'string' &&
+      value !== '' &&
+      value !== 'unknown' &&
+      value !== 'unavailable'
+    );
+  }
+
+  _updateHelperIfOutOfSync(sensorRaw: string, helperRaw: string) {
+    if (this._helperID && this.hass && sensorRaw !== helperRaw) {
+      this.hass.callService('input_text', 'set_value', {
+        entity_id: this._helperID,
+        value: sensorRaw,
+      });
+    }
+  }
+
+  _setMealsFromRaw(raw: string) {
+    let meals: FeedingTime[] = [];
+    if (raw && typeof raw === 'string' && raw.trim().length > 0) {
+      meals = decodeMealPlanData(raw);
+    }
+    this._persistedMeals = Array.isArray(meals) ? meals : [];
+    this._meals = JSON.parse(JSON.stringify(this._persistedMeals));
   }
 
   render() {
@@ -148,7 +172,7 @@ export class CleverioPf100Card extends LitElement {
         ${this._dialogOpen
           ? html`
               <cleverio-schedule-view
-                .meals=${this._meals}
+                .meals=${[...this._meals]}
                 .localize=${localize}
                 @save-schedule=${this._onScheduleMealsChanged.bind(this)}
                 @close-dialog=${this._onDialogClose.bind(this)}

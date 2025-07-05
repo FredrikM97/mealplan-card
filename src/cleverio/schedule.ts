@@ -7,20 +7,19 @@ import type { FeedingTime } from './util/mealplan-state';
 
 @customElement('cleverio-schedule-view')
 export class ScheduleView extends LitElement {
-  private _meals: FeedingTime[] = [];
+  private _meals: FeedingTime[] | null = null;
 
   @property({ type: Array })
-  get meals(): FeedingTime[] {
+  get meals(): FeedingTime[] | null {
     return this._meals;
   }
 
-  set meals(newMeals: FeedingTime[]) {
+  set meals(newMeals: FeedingTime[] | null) {
     const oldMeals = this._meals;
-    // Only update if changed (deep compare)
-    const changed = JSON.stringify(oldMeals) !== JSON.stringify(newMeals);
     this._meals = newMeals;
-    if (changed && !this.editDialogOpen && !this._hasUnsavedChanges) {
-      this.viewMeals = newMeals.map(meal => ({ ...meal }));
+    // Allow sync if dialog is not open and (no unsaved changes or _meals is null)
+    if (!this.editDialogOpen && (!this._hasUnsavedChanges || oldMeals == null)) {
+      this.viewMeals = Array.isArray(newMeals) ? newMeals.map(meal => ({ ...meal })) : [];
       this.requestUpdate('meals', oldMeals);
     }
   }
@@ -33,7 +32,6 @@ export class ScheduleView extends LitElement {
 
   constructor() {
     super();
-    this.meals = [];
     this.viewMeals = [];
   }
 
@@ -50,7 +48,7 @@ export class ScheduleView extends LitElement {
   private get _hasUnsavedChanges(): boolean {
     // Compare _localMeals and meals deeply
     const a = JSON.stringify(this.viewMeals);
-    const b = JSON.stringify(this.meals);
+    const b = JSON.stringify(this.meals ?? []);
     return a !== b;
   }
 
