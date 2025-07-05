@@ -172,7 +172,7 @@ export class CleverioPf100Card extends LitElement {
         ${this._dialogOpen
           ? html`
               <cleverio-schedule-view
-                .meals=${this._meals}
+                .meals=${[...this._meals]}
                 .localize=${localize}
                 @save-schedule=${this._onScheduleMealsChanged.bind(this)}
                 @close-dialog=${this._onDialogClose.bind(this)}
