@@ -1,6 +1,8 @@
+
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { LitElement, html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
+import { mealplanLayouts } from './util/mealplan-layouts';
 
 declare global {
   interface Window {
@@ -10,16 +12,25 @@ declare global {
 
 @customElement('cleverio-card-editor')
 export class CleverioCardEditor extends LitElement {
-  @property({ attribute: false }) config = { sensor: '', title: '', helper: '' };
+  @property({ attribute: false }) config = { sensor: '', title: '', helper: '', layout: '' };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
 
-  setConfig(config: { sensor: string; title: string; helper: string }) {
-    this.config = {...config};
+  setConfig(config: { sensor: string; title: string; helper: string; layout?: string }) {
+    this.config = { ...this.config, ...config };
+    if (!this.config.layout) {
+      this.config.layout = '';
+    }
+  }
+  private _onLayoutChange(e: Event) {
+    const value = (e.target as HTMLSelectElement).value;
+    this.config = { ...this.config, layout: value };
+    this.requestUpdate();
+    // Do NOT fire configChanged here! Only on Save.
   }
 
   async connectedCallback() {
-      await loadHaComponents(['ha-entity-picker', 'ha-form', 'ha-textfield']); // Remove ha-card-header
+      await loadHaComponents(['ha-entity-picker', 'ha-form', 'ha-textfield', 'ha-select']); // Remove ha-card-header
       this._haComponentsReady = true;
       super.connectedCallback();
     }
@@ -56,6 +67,17 @@ export class CleverioCardEditor extends LitElement {
       return html`<div>Loading Home Assistant components...</div>`;
     }
     return html`
+      <label for="layout-picker-ha" style="display:block;margin-bottom:4px;">Meal plan layout</label>
+      <ha-select id="layout-picker-ha" @selected=${(e: CustomEvent) => { this._onLayoutChange({ target: { value: e.detail.value } } as any); }} .value=${this.config.layout} fixedMenuPosition>
+        <mwc-list-item value="">None (select layout)</mwc-list-item>
+        ${mealplanLayouts.map(l => html`<mwc-list-item value="${l.name}" ?selected=${this.config.layout === l.name}>${l.name}</mwc-list-item>`)}
+      </ha-select>
+      <div style="height: 20px;"></div>
+      <ha-button @click=${() => this.configChanged(this.config)} .disabled=${!this._validateConfig() || !this.config.layout}>
+        Save
+      </ha-button>
+      <div style="height: 20px;"></div>
+      <div style="height: 20px;"></div>
       <label for="entity-picker" style="display:block;margin-bottom:4px;">Meal plan entity</label>
       <ha-entity-picker
         id="entity-picker"

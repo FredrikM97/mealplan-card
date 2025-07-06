@@ -17,7 +17,7 @@ vi.stubGlobal('fetch', vi.fn(async () => ({
 describe('CleverioPf100Card', () => {
   it('decodes real base64 meal plan data and passes it to children', async () => {
     const base64 = 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==';
-    const config = { sensor: 'sensor.test', title: 'Test Card' };
+    const config = { sensor: 'sensor.test', title: 'Test Card', layout: 'tuya_with_daysMask' };
     const hass = {
       states: {
         'sensor.test': {
@@ -45,7 +45,7 @@ describe('CleverioPf100Card base64 integration', () => {
   it('decodes base64 meal plan and displays correct schedule and grams in UI', async () => {
     // Use the real device base64 string as requested
     const base64 = 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==';
-    const config = { sensor: 'sensor.test', title: 'Test Card' };
+    const config = { sensor: 'sensor.test', title: 'Test Card', layout: 'tuya_with_daysMask' };
     const hass = { states: { 'sensor.test': { state: base64, attributes: {} } } };
     const el = await fixture<any>(html`<cleverio-pf100-card .config=${config} .hass=${hass}></cleverio-pf100-card>`);
     await el.updateComplete;
@@ -67,7 +67,7 @@ describe('CleverioPf100Card base64 integration', () => {
 describe('CleverioPf100Card integration', () => {
   it('calls hass.callService when schedule Save is pressed', async () => {
     const base64 = 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==';
-    const config = { sensor: 'sensor.test', title: 'Test Card' };
+    const config = { sensor: 'sensor.test', title: 'Test Card', layout: 'tuya_with_daysMask' };
     const callService = vi.fn();
     const hass = {
       states: { 'sensor.test': { state: base64, attributes: {} } },

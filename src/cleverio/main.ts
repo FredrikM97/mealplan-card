@@ -5,6 +5,7 @@ import type { FeedingTime } from './util/mealplan-state.js';
 import './schedule';
 import { loadHaComponents } from '@kipk/load-ha-components';
 import {localize, setLanguage } from './locales/localize';
+import { mealplanLayouts, getLayoutByName } from './util/mealplan-layouts';
 
 /**
  * Cleverio PF100 Feeder Card
@@ -27,6 +28,7 @@ export class CleverioPf100Card extends LitElement {
   @state() accessor _persistedMeals: FeedingTime[];
   @state() accessor _dialogOpen: boolean = false;
   @property({ type: Boolean }) private _haComponentsReady = false;
+  @state() private _decodeError: string | null = null;
 
   constructor() {
     super();
@@ -57,12 +59,20 @@ export class CleverioPf100Card extends LitElement {
   ];
 
   setConfig(config) {
+    // Allow empty layout in editor, but require for normal operation
+    if (!config.layout) {
+      // If in editor, just set config and return
+      if (window.location.pathname.includes('lovelace') && window.location.hash.includes('edit')) {
+        this.config = config;
+        return;
+      }
+      // Otherwise, show a user-friendly message in render
+      this.config = config;
+      return;
+    }
     this.config = config;
   }
 
-
-
- 
   async connectedCallback() {
     await setLanguage(this.hass.language); // Only loads once, even if called multiple times
     await loadHaComponents(['ha-button', 'ha-data-table']); // Remove ha-card-header
@@ -124,8 +134,15 @@ export class CleverioPf100Card extends LitElement {
 
   _setMealsFromRaw(raw: string) {
     let meals: FeedingTime[] = [];
+    this._decodeError = null;
     if (raw && typeof raw === 'string' && raw.trim().length > 0) {
-      meals = decodeMealPlanData(raw);
+      try {
+        meals = decodeMealPlanData(raw, this.config.layout);
+      } catch (err) {
+        console.error('Meal plan decode error:', err);
+        this._decodeError = (err as Error).message || 'Failed to decode meal plan data.';
+        meals = [];
+      }
     }
     this._persistedMeals = Array.isArray(meals) ? meals : [];
     this._meals = JSON.parse(JSON.stringify(this._persistedMeals));
@@ -135,8 +152,12 @@ export class CleverioPf100Card extends LitElement {
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
+    if (!this.config?.layout) {
+      return html`<div style="color: var(--error-color, red); margin: 8px;">Please select a meal plan layout in the card editor.</div>`;
+    }
     return html`
       <ha-card header=${this.config?.title || 'Cleverio Pet Feeder'} style="height: 100%;">
+        ${this._decodeError ? html`<div style="color: var(--error-color, red); margin: 8px;">${this._decodeError}</div>` : ''}
         <div class="overview-row">
           <ha-chip class="overview-schedules">
             <ha-icon icon="mdi:calendar-clock"></ha-icon>
@@ -169,6 +190,7 @@ export class CleverioPf100Card extends LitElement {
           ? html`
               <cleverio-schedule-view
                 .meals=${[...this._meals]}
+                .layout=${this.config.layout}
                 .localize=${localize}
                 @save-schedule=${this._onScheduleMealsChanged.bind(this)}
                 @close-dialog=${this._onDialogClose.bind(this)}
@@ -187,7 +209,7 @@ export class CleverioPf100Card extends LitElement {
 
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
-    const value = encodeMealPlanData(this._meals);
+    const value = encodeMealPlanData(this._meals, this.config.layout);
     this.hass.callService('text', 'set_value', {
       entity_id: this._sensorID,
       value,

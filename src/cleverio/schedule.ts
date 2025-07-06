@@ -5,6 +5,9 @@ import {localize} from './locales/localize';
 import './day-selector';
 import type { FeedingTime } from './util/mealplan-state';
 
+import { mealplanLayouts, getLayoutByName } from './util/mealplan-layouts';
+import { formatHourMinute } from './util/mealplan-state';
+
 @customElement('cleverio-schedule-view')
 export class ScheduleView extends LitElement {
   private _meals: FeedingTime[] | null = null;
@@ -29,6 +32,7 @@ export class ScheduleView extends LitElement {
   @state() private editDialogOpen: boolean = false;
   private editIdx: number | null = null;
   @property({ type: Boolean }) accessor haComponentsReady = false;
+  @property({ type: String }) layout = mealplanLayouts[0].name;
 
   constructor() {
     super();
@@ -106,19 +110,20 @@ export class ScheduleView extends LitElement {
 
   _toggleEnabled(idx: number, e: Event) {
     const checked = (e.target as HTMLInputElement).checked;
-    this.viewMeals = this.viewMeals.map((m, i) => i === idx ? { ...m, enabled: checked } : m);
+    this.viewMeals = this.viewMeals.map((m, i) => i === idx ? { ...m, enabled: checked ? 1 : 0 } : m);
   }
 
   _openEditDialog(idx: number) {
     this.editDialogOpen = true;
     this.editIdx = idx;
-    this.editForm = { ...this.viewMeals[idx] };
+    const meal: FeedingTime = { ...this.viewMeals[idx] };
+    this.editForm = meal;
     this.editError = null;
   }
   _openAddDialog() {
     this.editDialogOpen = true;
     this.editIdx = null;
-    this.editForm = { time: '', portion: 1, daysMask: 0, enabled: true };
+    this.editForm = { hour: 0, minute: 0, portion: 1, daysMask: 0, enabled: 1 };
     this.editError = null;
   }
   _closeEditDialog() {
@@ -140,20 +145,32 @@ export class ScheduleView extends LitElement {
     if (!this.haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
+    const layoutDef = getLayoutByName(this.layout) || mealplanLayouts[0];
+    const hasDaysMask = layoutDef.fields.includes('daysMask');
+    // Only show days column if layout supports daysMask and at least one meal has daysMask defined
+    const anyMealHasDaysMask = this.viewMeals.some(m => typeof m.daysMask === 'number');
+    const showDaysColumn = hasDaysMask && anyMealHasDaysMask;
     const columns = {
-      time: { title: localize('time'), sortable: true, minWidth: '80px'},
-      portion: { title: localize('portion'), sortable: true, minWidth: '80px'},
-      days: {
-        title: localize('days'),
-        sortable: false,
-        minWidth: '130px',
-        template: (row: any) => html`
-          <cleverio-day-selector
-            .selectedDaysMask=${row.daysMask}
-            .editable=${false}
-          ></cleverio-day-selector>
-        `
+      time: {
+        title: localize('time'),
+        sortable: true,
+        minWidth: '80px',
+        template: (row: any) => formatHourMinute(row.hour, row.minute)
       },
+      portion: { title: localize('portion'), sortable: true, minWidth: '80px'},
+      ...(showDaysColumn ? {
+        days: {
+          title: localize('days'),
+          sortable: false,
+          minWidth: '130px',
+          template: (row: any) => html`
+            <cleverio-day-selector
+              .selectedDaysMask=${row.daysMask}
+              .editable=${false}
+            ></cleverio-day-selector>
+          `
+        }
+      } : {}),
       enabled: {
         title: localize('enabled'),
         sortable: true,
@@ -186,25 +203,32 @@ export class ScheduleView extends LitElement {
     const predefinedTimes = ['06:00', '08:00', '12:00', '15:00', '18:00', '21:00'];
     return html`
       <ha-dialog open scrimClickAction  heading= ${this.editDialogOpen ? localize('edit_feeding_time') : localize('manage_schedules')}>
-
         ${this.editDialogOpen
           ? html`
               <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
                 ${this.editError ? html`<div class="error">${this.editError}</div>` : ''}
-                <cleverio-day-selector
-                  class="edit-mode"
-                  .selectedDaysMask=${this.editForm?.daysMask ?? 0}
-                  .editable=${true}
-                  @days-changed=${(e: CustomEvent) => { this.editForm!.daysMask = e.detail.daysMask; this.requestUpdate(); }}
-                ></cleverio-day-selector>
+                ${hasDaysMask ? html`
+                  <cleverio-day-selector
+                    class="edit-mode"
+                    .selectedDaysMask=${this.editForm?.daysMask ?? 0}
+                    .editable=${true}
+                    @days-changed=${(e: CustomEvent) => { this.editForm!.daysMask = e.detail.daysMask; this.requestUpdate(); }}
+                  ></cleverio-day-selector>
+                ` : ''}
                 <div class="edit-form-group">
                   <label for="edit-time">${localize('time')}</label>
                   <input
                     id="edit-time"
                     class="edit-time"
                     type="time"
-                    .value=${this.editForm?.time ?? ''}
-                    @input=${(e: Event) => { this.editForm!.time = (e.target as HTMLInputElement).value; this.requestUpdate(); }}
+                    .value=${this.editForm ? formatHourMinute(this.editForm.hour, this.editForm.minute) : ''}
+                    @input=${(e: Event) => {
+                      const val = (e.target as HTMLInputElement).value;
+                      const [h, m] = val.split(':').map(Number);
+                      this.editForm!.hour = h;
+                      this.editForm!.minute = m;
+                      this.requestUpdate();
+                    }}
                   />
                 </div>
                 <div class="edit-form-group">
@@ -220,7 +244,12 @@ export class ScheduleView extends LitElement {
                 </div>
                 <div class="edit-predefined-times">
                   ${predefinedTimes.map(time => html`
-                    <ha-button type="button" @click=${() => { this.editForm!.time = time; this.requestUpdate(); }}>${time}</ha-button>
+                    <ha-button type="button" @click=${() => {
+                      const [h, m] = time.split(':').map(Number);
+                      this.editForm!.hour = h;
+                      this.editForm!.minute = m;
+                      this.requestUpdate();
+                    }}>${time}</ha-button>
                   `)}
                 </div>
               </form>
@@ -254,7 +283,14 @@ export class ScheduleView extends LitElement {
     if (e) e.preventDefault();
     if (!this.editForm) return;
     // Validation
-    if (!this.editForm.time || !/^[0-2]\d:[0-5]\d$/.test(this.editForm.time)) {
+    if (
+      typeof this.editForm.hour !== 'number' ||
+      typeof this.editForm.minute !== 'number' ||
+      isNaN(this.editForm.hour) ||
+      isNaN(this.editForm.minute) ||
+      this.editForm.hour < 0 || this.editForm.hour > 23 ||
+      this.editForm.minute < 0 || this.editForm.minute > 59
+    ) {
       this.editError = 'Please enter a valid time.';
       return;
     }
@@ -262,6 +298,7 @@ export class ScheduleView extends LitElement {
       this.editError = 'Portion must be at least 1.';
       return;
     }
+    // hour/minute already set
     this.editError = null;
     if (this.editIdx !== null) {
       // Update existing
