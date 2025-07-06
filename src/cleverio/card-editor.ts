@@ -1,6 +1,8 @@
+
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { LitElement, html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
+import { mealplanLayouts } from './util/mealplan-layouts';
 
 declare global {
   interface Window {
@@ -10,16 +12,25 @@ declare global {
 
 @customElement('cleverio-card-editor')
 export class CleverioCardEditor extends LitElement {
-  @property({ attribute: false }) config = { sensor: '', title: '', helper: '' };
+  @property({ attribute: false }) config = { sensor: '', title: '', helper: '', layout: '' };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
 
-  setConfig(config: { sensor: string; title: string; helper: string }) {
-    this.config = {...config};
+  setConfig(config: { sensor: string; title: string; helper: string; layout?: string }) {
+    this.config = { ...this.config, ...config };
+    if (!this.config.layout) {
+      this.config.layout = '';
+    }
+  }
+  private _onLayoutChange(e: Event) {
+    const value = (e.target as HTMLSelectElement).value;
+    this.config = { ...this.config, layout: value };
+    this.requestUpdate();
+    this.configChanged(this.config);
   }
 
   async connectedCallback() {
-      await loadHaComponents(['ha-entity-picker', 'ha-form', 'ha-textfield']); // Remove ha-card-header
+      await loadHaComponents(['ha-entity-picker', 'ha-form', 'ha-textfield']);
       this._haComponentsReady = true;
       super.connectedCallback();
     }
@@ -51,11 +62,30 @@ export class CleverioCardEditor extends LitElement {
   }
 
   render() {
-
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
+
+    // Only allow valid layouts
+    const validLayouts = mealplanLayouts.map(l => l.name);
+    const layoutIsValid = this.config.layout === '' || validLayouts.includes(this.config.layout);
+
+    // If the current layout is invalid, reset to blank (None)
+    let layoutValue = this.config.layout;
+    if (!layoutIsValid) {
+      layoutValue = '';
+    }
+
     return html`
+      <label for="layout-picker" style="display:block;margin-bottom:4px;">Meal plan layout</label>
+      <select id="layout-picker" @change=${this._onLayoutChange} .value=${layoutValue}>
+        <option value="">None (select layout)</option>
+        ${mealplanLayouts.map(l => html`<option value="${l.name}" ?selected=${layoutValue === l.name}>${l.name}</option>`)}
+      </select>
+      ${!layoutIsValid ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Invalid layout selected. Please choose a valid layout.</div>` : ''}
+      <div style="height: 20px;"></div>
+      <div style="height: 20px;"></div>
+      <div style="height: 20px;"></div>
       <label for="entity-picker" style="display:block;margin-bottom:4px;">Meal plan entity</label>
       <ha-entity-picker
         id="entity-picker"

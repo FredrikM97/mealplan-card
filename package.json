@@ -21,6 +21,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@kipk/load-ha-components": "^1.0.3"
+    "@kipk/load-ha-components": "^1.0.3",
+    "@open-wc/semantic-dom-diff": "^0.20.1"
   }
 }
