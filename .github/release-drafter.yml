@@ -1,0 +1,20 @@
+name-template: 'v$NEXT_PATCH_VERSION'
+tag-template: 'v$NEXT_PATCH_VERSION'
+categories:
+  - title: 'Features'
+    labels:
+      - 'feature'
+    commit-message:
+      - '/^feat/i'
+  - title: 'Fixes'
+    labels:
+      - 'bug'
+    commit-message:
+      - '/^fix/i'
+  - title: 'Maintenance'
+    labels:
+      - 'chore'
+    commit-message:
+      - '/^chore/i'
+change-template: '- $TITLE (#$NUMBER)'
+no-changes-template: '- No changes'
