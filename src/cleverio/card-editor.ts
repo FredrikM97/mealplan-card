@@ -26,11 +26,11 @@ export class CleverioCardEditor extends LitElement {
     const value = (e.target as HTMLSelectElement).value;
     this.config = { ...this.config, layout: value };
     this.requestUpdate();
-    // Do NOT fire configChanged here! Only on Save.
+    this.configChanged(this.config);
   }
 
   async connectedCallback() {
-      await loadHaComponents(['ha-entity-picker', 'ha-form', 'ha-textfield', 'ha-select']); // Remove ha-card-header
+      await loadHaComponents(['ha-entity-picker', 'ha-form', 'ha-textfield']);
       this._haComponentsReady = true;
       super.connectedCallback();
     }
@@ -62,20 +62,28 @@ export class CleverioCardEditor extends LitElement {
   }
 
   render() {
-
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
+
+    // Only allow valid layouts
+    const validLayouts = mealplanLayouts.map(l => l.name);
+    const layoutIsValid = this.config.layout === '' || validLayouts.includes(this.config.layout);
+
+    // If the current layout is invalid, reset to blank (None)
+    let layoutValue = this.config.layout;
+    if (!layoutIsValid) {
+      layoutValue = '';
+    }
+
     return html`
-      <label for="layout-picker-ha" style="display:block;margin-bottom:4px;">Meal plan layout</label>
-      <ha-select id="layout-picker-ha" @selected=${(e: CustomEvent) => { this._onLayoutChange({ target: { value: e.detail.value } } as any); }} .value=${this.config.layout} fixedMenuPosition>
-        <mwc-list-item value="">None (select layout)</mwc-list-item>
-        ${mealplanLayouts.map(l => html`<mwc-list-item value="${l.name}" ?selected=${this.config.layout === l.name}>${l.name}</mwc-list-item>`)}
-      </ha-select>
+      <label for="layout-picker" style="display:block;margin-bottom:4px;">Meal plan layout</label>
+      <select id="layout-picker" @change=${this._onLayoutChange} .value=${layoutValue}>
+        <option value="">None (select layout)</option>
+        ${mealplanLayouts.map(l => html`<option value="${l.name}" ?selected=${layoutValue === l.name}>${l.name}</option>`)}
+      </select>
+      ${!layoutIsValid ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Invalid layout selected. Please choose a valid layout.</div>` : ''}
       <div style="height: 20px;"></div>
-      <ha-button @click=${() => this.configChanged(this.config)} .disabled=${!this._validateConfig() || !this.config.layout}>
-        Save
-      </ha-button>
       <div style="height: 20px;"></div>
       <div style="height: 20px;"></div>
       <label for="entity-picker" style="display:block;margin-bottom:4px;">Meal plan entity</label>

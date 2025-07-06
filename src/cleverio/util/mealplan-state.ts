@@ -69,6 +69,12 @@ export function decodeMealPlanData(base64String: string, layoutName?: string): F
     for (let j = 0; j < fields.length; j++) {
       entry[fields[j] as string] = bytes[i * entrySize + j];
     }
+    // Ensure all fields are present, otherwise throw
+    for (const field of fields) {
+      if (!(field in entry) || typeof entry[field] === 'undefined') {
+        throw new Error(`Meal plan decode error: missing field '${field}' in entry. Possible layout mismatch or corrupt data.`);
+      }
+    }
     return entry;
   });
 }
@@ -79,9 +85,12 @@ export function encodeMealPlanData(feedingTimes: FeedingTime[], layoutName?: str
   if (!layout) throw new Error(`Unknown meal plan layout: '${layoutName}'`);
   const { fields } = layout;
   const bytes: number[] = [];
-  feedingTimes.forEach(item => {
+  feedingTimes.forEach((item, idx) => {
     for (const field of fields) {
-      bytes.push(Number((item as any)[field as string]) || 0);
+      if (!(field in item) || typeof (item as any)[field] === 'undefined') {
+        throw new Error(`Meal plan encode error: missing field '${field}' in entry #${idx}. Possible layout mismatch or incomplete FeedingTime.`);
+      }
+      bytes.push(Number((item as any)[field]));
     }
   });
   return btoa(String.fromCharCode(...bytes));
