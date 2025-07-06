@@ -10,6 +10,7 @@ import { formatHourMinute } from './util/mealplan-state';
 
 @customElement('cleverio-schedule-view')
 export class ScheduleView extends LitElement {
+  @property({ type: Object }) hass?: any;
   private _meals: FeedingTime[] | null = null;
 
   @property({ type: Array })
@@ -155,6 +156,7 @@ export class ScheduleView extends LitElement {
         title: localize('time'),
         sortable: true,
         minWidth: '80px',
+        valueColumn: 'hourMinute',
         template: (row: any) => formatHourMinute(row.hour, row.minute)
       },
       portion: { title: localize('portion'), sortable: true, minWidth: '80px'},
@@ -183,7 +185,7 @@ export class ScheduleView extends LitElement {
               title="Enable/disable schedule"
             ></ha-switch>
           </div>
-        `
+        `,
       },
       actions: {
         title: localize('actions'),
@@ -199,7 +201,7 @@ export class ScheduleView extends LitElement {
         `
       }
     };
-    const rows = this.viewMeals.map((m, i) => ({ ...m, _idx: i }));
+    const rows = this.viewMeals.map((m, i) => ({ ...m, _idx: i , hourMinute: m.hour * 60 + m.minute }));
     const predefinedTimes = ['06:00', '08:00', '12:00', '15:00', '18:00', '21:00'];
     return html`
       <ha-dialog open scrimClickAction  heading= ${this.editDialogOpen ? localize('edit_feeding_time') : localize('manage_schedules')}>
@@ -259,6 +261,7 @@ export class ScheduleView extends LitElement {
                 <ha-data-table
                   .localizeFunc=${localize}
                   .columns=${columns}
+                  .hass=${this.hass}
                   .data=${rows}
                   class="schedule-table-style"
                   auto-height

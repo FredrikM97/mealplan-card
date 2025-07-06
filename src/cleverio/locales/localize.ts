@@ -6,9 +6,17 @@ const translations: Record<string, any> = { en, sv };
 let currentLang = 'en';
 
 export function setLanguage(lang: string) {
-  currentLang = translations[lang] ? lang : 'en';
+  if (translations?.[lang]) {
+    currentLang = lang;
+  } else {
+    currentLang = 'en';
+  }
 }
 
-export function localize(key: string): any {
-  return translations[currentLang]?.[key] || translations['en'][key] || key;
+export function localize(key: string): string {
+  return (
+    translations?.[currentLang]?.[key] ||
+    translations?.['en']?.[key] ||
+    key
+  );
 }
