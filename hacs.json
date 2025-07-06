@@ -1,6 +1,5 @@
 {
   "name": "Cleverio PF100 Feeder Card",
-  "description": "A Home Assistant card for the Cleverio PF100 Pet Feeder.",
   "filename": "cleverio-pf100-feeder-card.bundle.js",
   "country": "SE",
   "homeassistant": "2025.6.0"
