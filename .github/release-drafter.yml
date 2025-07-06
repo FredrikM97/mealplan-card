@@ -1,3 +1,9 @@
+template: |
+  ## Changes
+  $CHANGES
+
+  ## Contributors
+  $CONTRIBUTORS
 name-template: 'v$NEXT_PATCH_VERSION'
 tag-template: 'v$NEXT_PATCH_VERSION'
 categories:
@@ -18,3 +24,26 @@ categories:
       - '/^chore/i'
 change-template: '- $TITLE (#$NUMBER)'
 no-changes-template: '- No changes'
+
+autolabeler:
+  - label: 'feature'
+    files:
+      - 'src/**'
+  - label: 'chore'
+    files:
+      - '.github/**'
+
+exclude-labels:
+  - 'skip-changelog'
+
+version-resolver:
+  major:
+    labels:
+      - 'breaking'
+  minor:
+    labels:
+      - 'feature'
+  patch:
+    labels:
+      - 'fix'
+  default: patch
