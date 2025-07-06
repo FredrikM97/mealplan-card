@@ -287,9 +287,9 @@ R.elementStyles = [], R.shadowRootOptions = { mode: "open" }, R[B("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const V = globalThis, se = V.trustedTypes, Se = se ? se.createPolicy("lit-html", { createHTML: (o) => o }) : void 0, Ue = "$lit$", b = `lit$${Math.random().toFixed(9).slice(2)}$`, Fe = "?" + b, Ke = `<${Fe}>`, k = document, W = () => k.createComment(""), q = (o) => o === null || typeof o != "object" && typeof o != "function", ge = Array.isArray, Ze = (o) => ge(o) || typeof (o == null ? void 0 : o[Symbol.iterator]) == "function", le = `[ 	
+const V = globalThis, se = V.trustedTypes, Se = se ? se.createPolicy("lit-html", { createHTML: (o) => o }) : void 0, Ue = "$lit$", b = `lit$${Math.random().toFixed(9).slice(2)}$`, Fe = "?" + b, Ke = `<${Fe}>`, O = document, W = () => O.createComment(""), q = (o) => o === null || typeof o != "object" && typeof o != "function", ge = Array.isArray, Ze = (o) => ge(o) || typeof (o == null ? void 0 : o[Symbol.iterator]) == "function", le = `[ 	
 \f\r]`, L = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Ce = /-->/g, Me = />/g, C = RegExp(`>|${le}(?:([^\\s"'>=/]+)(${le}*=${le}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Oe = /'/g, ke = /"/g, He = /^(?:script|style|textarea|title)$/i, Ye = (o) => (e, ...t) => ({ _$litType$: o, strings: e, values: t }), p = Ye(1), I = Symbol.for("lit-noChange"), f = Symbol.for("lit-nothing"), Pe = /* @__PURE__ */ new WeakMap(), M = k.createTreeWalker(k, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ke = /'/g, Oe = /"/g, He = /^(?:script|style|textarea|title)$/i, Ye = (o) => (e, ...t) => ({ _$litType$: o, strings: e, values: t }), m = Ye(1), I = Symbol.for("lit-noChange"), f = Symbol.for("lit-nothing"), Pe = /* @__PURE__ */ new WeakMap(), M = O.createTreeWalker(O, 129);
 function Ne(o, e) {
   if (!ge(o) || !o.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return Se !== void 0 ? Se.createHTML(e) : e;
@@ -300,7 +300,7 @@ const Qe = (o, e) => {
   for (let r = 0; r < t; r++) {
     const l = o[r];
     let c, d, h = -1, u = 0;
-    for (; u < l.length && (a.lastIndex = u, d = a.exec(l), d !== null); ) u = a.lastIndex, a === L ? d[1] === "!--" ? a = Ce : d[1] !== void 0 ? a = Me : d[2] !== void 0 ? (He.test(d[2]) && (i = RegExp("</" + d[2], "g")), a = C) : d[3] !== void 0 && (a = C) : a === C ? d[0] === ">" ? (a = i ?? L, h = -1) : d[1] === void 0 ? h = -2 : (h = a.lastIndex - d[2].length, c = d[1], a = d[3] === void 0 ? C : d[3] === '"' ? ke : Oe) : a === ke || a === Oe ? a = C : a === Ce || a === Me ? a = L : (a = C, i = void 0);
+    for (; u < l.length && (a.lastIndex = u, d = a.exec(l), d !== null); ) u = a.lastIndex, a === L ? d[1] === "!--" ? a = Ce : d[1] !== void 0 ? a = Me : d[2] !== void 0 ? (He.test(d[2]) && (i = RegExp("</" + d[2], "g")), a = C) : d[3] !== void 0 && (a = C) : a === C ? d[0] === ">" ? (a = i ?? L, h = -1) : d[1] === void 0 ? h = -2 : (h = a.lastIndex - d[2].length, c = d[1], a = d[3] === void 0 ? C : d[3] === '"' ? Oe : ke) : a === Oe || a === ke ? a = C : a === Ce || a === Me ? a = L : (a = C, i = void 0);
     const g = a === C && o[r + 1].startsWith("/>") ? " " : "";
     n += a === L ? l + Ke : h >= 0 ? (s.push(c), l.slice(0, h) + Ue + l.slice(h) + b + g) : l + b + (h === -2 ? r : g);
   }
@@ -339,7 +339,7 @@ class J {
     }
   }
   static createElement(e, t) {
-    const s = k.createElement("template");
+    const s = O.createElement("template");
     return s.innerHTML = e, s;
   }
 }
@@ -361,7 +361,7 @@ class Xe {
     return this._$AM._$AU;
   }
   u(e) {
-    const { el: { content: t }, parts: s } = this._$AD, i = ((e == null ? void 0 : e.creationScope) ?? k).importNode(t, !0);
+    const { el: { content: t }, parts: s } = this._$AD, i = ((e == null ? void 0 : e.creationScope) ?? O).importNode(t, !0);
     M.currentNode = i;
     let n = M.nextNode(), a = 0, r = 0, l = s[0];
     for (; l !== void 0; ) {
@@ -371,7 +371,7 @@ class Xe {
       }
       a !== (l == null ? void 0 : l.index) && (n = M.nextNode(), a++);
     }
-    return M.currentNode = k, i;
+    return M.currentNode = O, i;
   }
   p(e) {
     let t = 0;
@@ -407,7 +407,7 @@ class X {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== f && q(this._$AH) ? this._$AA.nextSibling.data = e : this.T(k.createTextNode(e)), this._$AH = e;
+    this._$AH !== f && q(this._$AH) ? this._$AA.nextSibling.data = e : this.T(O.createTextNode(e)), this._$AH = e;
   }
   $(e) {
     var n;
@@ -523,7 +523,7 @@ const ot = (o, e, t) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const O = globalThis;
+const k = globalThis;
 class E extends R {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
@@ -550,10 +550,10 @@ class E extends R {
   }
 }
 var Te;
-E._$litElement$ = !0, E.finalized = !0, (Te = O.litElementHydrateSupport) == null || Te.call(O, { LitElement: E });
-const ce = O.litElementPolyfillSupport;
+E._$litElement$ = !0, E.finalized = !0, (Te = k.litElementHydrateSupport) == null || Te.call(k, { LitElement: E });
+const ce = k.litElementPolyfillSupport;
 ce == null || ce({ LitElement: E });
-(O.litElementVersions ?? (O.litElementVersions = [])).push("4.2.0");
+(k.litElementVersions ?? (k.litElementVersions = [])).push("4.2.0");
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -769,7 +769,7 @@ const dt = [
       console.error("Fallback loading method failed:", c);
     }
   }
-}, ut = "Feed Now", pt = "Schedule", mt = "Portion", ft = "Days", gt = "Enabled", _t = "Edit Meal", yt = "Time", vt = "(1 portion = 6g)", $t = "Suggested:", bt = "Back", wt = "Save", Et = "Status", At = "Actions", xt = "Add Meal", St = "Schedules", Ct = "Active Schedules", Mt = "Today", Ot = "Edit Feeding Time", kt = "Manage Schedules", Pt = "Unsaved changes", Dt = "You have unsaved changes. Don't forget to save!", Tt = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], Rt = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], Ut = "Avg/week", Ft = {
+}, ut = "Feed Now", pt = "Schedule", mt = "Portion", ft = "Days", gt = "Enabled", _t = "Edit Meal", yt = "Time", vt = "(1 portion = 6g)", $t = "Suggested:", bt = "Back", wt = "Save", Et = "Status", At = "Actions", xt = "Add Meal", St = "Schedules", Ct = "Active Schedules", Mt = "Today", kt = "Edit Feeding Time", Ot = "Manage Schedules", Pt = "Unsaved changes", Dt = "You have unsaved changes. Don't forget to save!", Tt = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], Rt = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], Ut = "Avg/week", Ft = "Mealplan (with days)", Ht = "Mealplan (no days)", Nt = "Select layout...", jt = "Meal plan layout", It = {
   feed_now: ut,
   schedule: pt,
   portion: mt,
@@ -788,45 +788,49 @@ const dt = [
   schedules: St,
   active_schedules: Ct,
   today: Mt,
-  edit_feeding_time: Ot,
-  manage_schedules: kt,
+  edit_feeding_time: kt,
+  manage_schedules: Ot,
   unsaved_changes: Pt,
   unsaved_changes_hint: Dt,
   days_short: Tt,
   days_full: Rt,
-  avg_week: Ut
-}, Ht = "Mata nu", Nt = "Schema", jt = "Portion", It = "Dagar", zt = "Aktiverad", Lt = "Redigera måltid", Bt = "Tid", Vt = "(1 portion = 6g)", Wt = "Föreslaget:", qt = "Tillbaka", Jt = "Spara", Gt = "Status", Kt = "Åtgärder", Zt = "Lägg till måltid", Yt = "Scheman", Qt = "Aktiva scheman", Xt = "Idag", es = "Redigera matningstid", ts = "Hantera scheman", ss = "Osparade ändringar", is = "Du har osparade ändringar. Glöm inte att spara!", os = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"], ns = ["Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag", "Söndag"], as = "Snitt/vecka", rs = {
-  feed_now: Ht,
-  schedule: Nt,
-  portion: jt,
-  days: It,
-  enabled: zt,
-  edit_meal: Lt,
-  time: Bt,
-  portion_helper: Vt,
-  suggested: Wt,
-  back: qt,
-  save: Jt,
-  status: Gt,
-  actions: Kt,
+  avg_week: Ut,
+  tuya_with_daysMask: Ft,
+  tuya_no_daysMask: Ht,
+  select_layout: Nt,
+  mealplan_layout: jt
+}, zt = "Mata nu", Lt = "Schema", Bt = "Portion", Vt = "Dagar", Wt = "Aktiverad", qt = "Redigera måltid", Jt = "Tid", Gt = "(1 portion = 6g)", Kt = "Föreslaget:", Zt = "Tillbaka", Yt = "Spara", Qt = "Status", Xt = "Åtgärder", es = "Lägg till måltid", ts = "Scheman", ss = "Aktiva scheman", is = "Idag", os = "Redigera matningstid", ns = "Hantera scheman", as = "Osparade ändringar", rs = "Du har osparade ändringar. Glöm inte att spara!", ls = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"], hs = ["Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag", "Söndag"], cs = "Snitt/vecka", ds = {
+  feed_now: zt,
+  schedule: Lt,
+  portion: Bt,
+  days: Vt,
+  enabled: Wt,
+  edit_meal: qt,
+  time: Jt,
+  portion_helper: Gt,
+  suggested: Kt,
+  back: Zt,
+  save: Yt,
+  status: Qt,
+  actions: Xt,
   delete: "Ta bort",
-  add_meal: Zt,
-  schedules: Yt,
-  active_schedules: Qt,
-  today: Xt,
-  edit_feeding_time: es,
-  manage_schedules: ts,
-  unsaved_changes: ss,
-  unsaved_changes_hint: is,
-  days_short: os,
-  days_full: ns,
-  avg_week: as
-}, de = { en: Ft, sv: rs };
+  add_meal: es,
+  schedules: ts,
+  active_schedules: ss,
+  today: is,
+  edit_feeding_time: os,
+  manage_schedules: ns,
+  unsaved_changes: as,
+  unsaved_changes_hint: rs,
+  days_short: ls,
+  days_full: hs,
+  avg_week: cs
+}, de = { en: It, sv: ds };
 let je = "en";
-function ls(o) {
+function us(o) {
   je = de[o] ? o : "en";
 }
-function m(o) {
+function p(o) {
   var e;
   return ((e = de[je]) == null ? void 0 : e[o]) || de.en[o] || o;
 }
@@ -848,9 +852,9 @@ let G = (U = class extends E {
   }
   render() {
     const e = this.dayLabels && this.dayLabels.length === 7 ? this.dayLabels : ["M", "T", "W", "T", "F", "S", "S"];
-    return p`
+    return m`
       <div class="days-row">
-        ${e.map((t, s) => p`
+        ${e.map((t, s) => m`
           <span
             class="day-cell${this.selectedDaysMask & 1 << s ? " selected" : ""}${this.editable ? "" : " readonly"}"
             @click=${() => this._toggleDay(s)}
@@ -979,21 +983,21 @@ let y = (H = class extends E {
   render() {
     var c, d;
     if (!this.haComponentsReady)
-      return p`<div>Loading Home Assistant components...</div>`;
+      return m`<div>Loading Home Assistant components...</div>`;
     const s = (_e(this.layout) || ie[0]).fields.includes("daysMask"), i = this.viewMeals.some((h) => typeof h.daysMask == "number"), n = s && i, a = {
       time: {
-        title: m("time"),
+        title: p("time"),
         sortable: !0,
         minWidth: "80px",
         template: (h) => De(h.hour, h.minute)
       },
-      portion: { title: m("portion"), sortable: !0, minWidth: "80px" },
+      portion: { title: p("portion"), sortable: !0, minWidth: "80px" },
       ...n ? {
         days: {
-          title: m("days"),
+          title: p("days"),
           sortable: !1,
           minWidth: "130px",
-          template: (h) => p`
+          template: (h) => m`
             <cleverio-day-selector
               .selectedDaysMask=${h.daysMask}
               .editable=${!1}
@@ -1002,10 +1006,10 @@ let y = (H = class extends E {
         }
       } : {},
       enabled: {
-        title: m("enabled"),
+        title: p("enabled"),
         sortable: !0,
         minWidth: "60px",
-        template: (h) => p`
+        template: (h) => m`
           <div style="display: flex; align-items: center; justify-content: center; height: 48px;">
             <ha-switch
               .checked=${h.enabled}
@@ -1016,10 +1020,10 @@ let y = (H = class extends E {
         `
       },
       actions: {
-        title: m("actions"),
+        title: p("actions"),
         sortable: !1,
         minWidth: "140px",
-        template: (h) => p`
+        template: (h) => m`
           <ha-icon-button @click=${() => this._openEditDialog(h._idx)} title="Edit">
             <ha-icon icon="mdi:pencil"></ha-icon>
           </ha-icon-button>
@@ -1029,12 +1033,12 @@ let y = (H = class extends E {
         `
       }
     }, r = this.viewMeals.map((h, u) => ({ ...h, _idx: u })), l = ["06:00", "08:00", "12:00", "15:00", "18:00", "21:00"];
-    return p`
-      <ha-dialog open scrimClickAction  heading= ${this.editDialogOpen ? m("edit_feeding_time") : m("manage_schedules")}>
-        ${this.editDialogOpen ? p`
+    return m`
+      <ha-dialog open scrimClickAction  heading= ${this.editDialogOpen ? p("edit_feeding_time") : p("manage_schedules")}>
+        ${this.editDialogOpen ? m`
               <form class="edit-form" @submit=${(h) => h.preventDefault()}>
-                ${this.editError ? p`<div class="error">${this.editError}</div>` : ""}
-                ${s ? p`
+                ${this.editError ? m`<div class="error">${this.editError}</div>` : ""}
+                ${s ? m`
                   <cleverio-day-selector
                     class="edit-mode"
                     .selectedDaysMask=${((c = this.editForm) == null ? void 0 : c.daysMask) ?? 0}
@@ -1045,7 +1049,7 @@ let y = (H = class extends E {
                   ></cleverio-day-selector>
                 ` : ""}
                 <div class="edit-form-group">
-                  <label for="edit-time">${m("time")}</label>
+                  <label for="edit-time">${p("time")}</label>
                   <input
                     id="edit-time"
                     class="edit-time"
@@ -1071,7 +1075,7 @@ let y = (H = class extends E {
                   <div class="helper">1 portion = 6 grams</div>
                 </div>
                 <div class="edit-predefined-times">
-                  ${l.map((h) => p`
+                  ${l.map((h) => m`
                     <ha-button type="button" @click=${() => {
       const [u, g] = h.split(":").map(Number);
       this.editForm.hour = u, this.editForm.minute = g, this.requestUpdate();
@@ -1079,10 +1083,10 @@ let y = (H = class extends E {
                   `)}
                 </div>
               </form>
-            ` : p`
+            ` : m`
               <div class="schedule-table-wrapper">
                 <ha-data-table
-                  .localizeFunc=${m}
+                  .localizeFunc=${p}
                   .columns=${a}
                   .data=${r}
                   class="schedule-table-style"
@@ -1090,13 +1094,13 @@ let y = (H = class extends E {
                 ></ha-data-table>
               </div>
             `}
-        ${this.editDialogOpen ? p`
-              <ha-button slot="secondaryAction" @click=${this._closeEditDialog.bind(this)}>${m("back")}</ha-button>
-              <ha-button slot="primaryAction" class="ha-primary" @click=${this._onEditSave.bind(this)}>${m("save")}</ha-button>
-            ` : p`
-              <ha-button slot="secondaryAction" @click=${this._openAddDialog.bind(this)}>${m("add_meal")}</ha-button>
-              <ha-button slot="secondaryAction" @click=${this._cancel.bind(this)}>${m("cancel")}</ha-button>
-              <ha-button slot="primaryAction" class="ha-primary" @click=${this._save.bind(this)} ?disabled=${!this._hasUnsavedChanges}>${m("save")}</ha-button>
+        ${this.editDialogOpen ? m`
+              <ha-button slot="secondaryAction" @click=${this._closeEditDialog.bind(this)}>${p("back")}</ha-button>
+              <ha-button slot="primaryAction" class="ha-primary" @click=${this._onEditSave.bind(this)}>${p("save")}</ha-button>
+            ` : m`
+              <ha-button slot="secondaryAction" @click=${this._openAddDialog.bind(this)}>${p("add_meal")}</ha-button>
+              <ha-button slot="secondaryAction" @click=${this._cancel.bind(this)}>${p("cancel")}</ha-button>
+              <ha-button slot="primaryAction" class="ha-primary" @click=${this._save.bind(this)} ?disabled=${!this._hasUnsavedChanges}>${p("save")}</ha-button>
             `}
       </ha-dialog>
     `;
@@ -1247,7 +1251,7 @@ let v = (j = class extends E {
     this.config = t;
   }
   async connectedCallback() {
-    await ls(this.hass.language), await ye(["ha-button", "ha-data-table"]), this._haComponentsReady = !0, super.connectedCallback();
+    await us(this.hass.language), await ye(["ha-button", "ha-data-table"]), this._haComponentsReady = !0, super.connectedCallback();
   }
   get _sensorID() {
     var t;
@@ -1304,25 +1308,25 @@ let v = (j = class extends E {
   }
   render() {
     var t, s;
-    return this._haComponentsReady ? (t = this.config) != null && t.layout ? p`
+    return this._haComponentsReady ? (t = this.config) != null && t.layout ? m`
       <ha-card header=${((s = this.config) == null ? void 0 : s.title) || "Cleverio Pet Feeder"} style="height: 100%;">
-        ${this._decodeError ? p`<div style="color: var(--error-color, red); margin: 8px;">${this._decodeError}</div>` : ""}
+        ${this._decodeError ? m`<div style="color: var(--error-color, red); margin: 8px;">${this._decodeError}</div>` : ""}
         <div class="overview-row">
           <ha-chip class="overview-schedules">
             <ha-icon icon="mdi:calendar-clock"></ha-icon>
-            ${m("schedules")}: <span style="white-space:nowrap;">${this._meals.length}</span>
+            ${p("schedules")}: <span style="white-space:nowrap;">${this._meals.length}</span>
           </ha-chip>
           <ha-chip class="overview-active">
             <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-            ${m("active_schedules")}: <span style="white-space:nowrap;">${this._meals.filter((i) => i.enabled).length}</span>
+            ${p("active_schedules")}: <span style="white-space:nowrap;">${this._meals.filter((i) => i.enabled).length}</span>
           </ha-chip>
           <ha-chip class="overview-grams">
             <ha-icon icon="mdi:food-drumstick"></ha-icon>
-            ${m("today")}: <span style="white-space:nowrap;">${lt(this._meals.filter((i) => i.enabled), (/* @__PURE__ */ new Date()).getDay()) * 6}g</span>
+            ${p("today")}: <span style="white-space:nowrap;">${lt(this._meals.filter((i) => i.enabled), (/* @__PURE__ */ new Date()).getDay()) * 6}g</span>
           </ha-chip>
           <ha-chip class="overview-average">
             <ha-icon icon="mdi:scale-balance"></ha-icon>
-            ${m("avg_week")}: <span style="white-space:nowrap;">
+            ${p("avg_week")}: <span style="white-space:nowrap;">
               ${(rt(this._meals.filter((a) => a.enabled)).reduce((a, r) => a + r, 0) / 7 * 6).toFixed(1)}g
             </span>
           </ha-chip>
@@ -1330,14 +1334,14 @@ let v = (j = class extends E {
       this._dialogOpen = !0;
     }}>
             <ha-icon icon="mdi:table-edit"></ha-icon>
-            ${m("manage_schedules")}
+            ${p("manage_schedules")}
           </ha-button>
         </div>
-        ${this._dialogOpen ? p`
+        ${this._dialogOpen ? m`
               <cleverio-schedule-view
                 .meals=${[...this._meals]}
                 .layout=${this.config.layout}
-                .localize=${m}
+                .localize=${p}
                 @save-schedule=${this._onScheduleMealsChanged.bind(this)}
                 @close-dialog=${this._onDialogClose.bind(this)}
                 id="scheduleView"
@@ -1345,10 +1349,10 @@ let v = (j = class extends E {
             ` : ""}
         <slot></slot>
       </ha-card>
-    ` : p`<div style="color: var(--error-color, red); margin: 8px;">Please select a meal plan layout in the card editor.</div>` : p`<div>Loading Home Assistant components...</div>`;
+    ` : m`<div style="color: var(--error-color, red); margin: 8px;">Please select a meal plan layout in the card editor.</div>` : m`<div>Loading Home Assistant components...</div>`;
   }
   static async getConfigElement() {
-    return await Promise.resolve().then(() => hs), document.createElement("cleverio-card-editor");
+    return await Promise.resolve().then(() => ps), document.createElement("cleverio-card-editor");
   }
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID)
@@ -1445,11 +1449,14 @@ let K = class extends E {
   }
   render() {
     var e, t;
-    return this._haComponentsReady ? p`
-      <label for="layout-combo" style="display:block;margin-bottom:4px;">Meal plan layout</label>
+    return this._haComponentsReady ? m`
+      <label for="layout-combo" style="display:block;margin-bottom:4px;">${p("mealplan_layout")}</label>
       <ha-combo-box
         id="layout-combo"
-        .items=${ie.map((s) => ({ value: s.name, label: s.name }))}
+        .items=${[
+      { value: "", label: p("select_layout") },
+      ...ie.map((s) => ({ value: s.name, label: p(s.name) }))
+    ]}
         .value=${this.config.layout || ""}
         @value-changed=${(s) => {
       this.config = { ...this.config, layout: s.detail.value }, this.configChanged(this.config);
@@ -1493,9 +1500,9 @@ let K = class extends E {
         placeholder="Title"
       ></ha-textfield>
       <div style="height: 20px;"></div>
-      ${this._validateConfig() ? "" : p`<div style="color: var(--error-color, red); margin-top: 8px;">Please select a sensor entity and a storage helper (input_text).`}
+      ${this._validateConfig() ? "" : m`<div style="color: var(--error-color, red); margin-top: 8px;">Please select a sensor entity and a storage helper (input_text).`}
       <!-- mwc-tooltip handles its own styling -->
-    ` : p`<div>Loading Home Assistant components...</div>`;
+    ` : m`<div>Loading Home Assistant components...</div>`;
   }
 };
 ve([
@@ -1514,7 +1521,7 @@ window.customCards.push({
   preview: !1,
   description: "Cleverio PF100 feeder card to decode/encode base64 meal_plan"
 });
-const hs = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const ps = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   get CleverioCardEditor() {
     return K;

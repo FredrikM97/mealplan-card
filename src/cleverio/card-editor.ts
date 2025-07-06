@@ -3,6 +3,7 @@ import { loadHaComponents } from '@kipk/load-ha-components';
 import { LitElement, html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { mealplanLayouts } from './util/mealplan-layouts';
+import { localize } from './locales/localize';
 
 declare global {
   interface Window {
@@ -64,11 +65,14 @@ export class CleverioCardEditor extends LitElement {
       return html`<div>Loading Home Assistant components...</div>`;
     }
     return html`
-      <label for="layout-combo" style="display:block;margin-bottom:4px;">Meal plan layout</label>
+      <label for="layout-combo" style="display:block;margin-bottom:4px;">${localize('mealplan_layout')}</label>
       <ha-combo-box
         id="layout-combo"
-        .items=${mealplanLayouts.map((l) => ({ value: l.name, label: l.name }))}
-        .value=${this.config.layout || ""}
+        .items=${[
+          { value: '', label: localize('select_layout') },
+          ...mealplanLayouts.map((l) => ({ value: l.name, label: localize(l.name) }))
+        ]}
+        .value=${this.config.layout || ''}
         @value-changed=${(e) => {
           this.config = { ...this.config, layout: e.detail.value };
           this.configChanged(this.config);
