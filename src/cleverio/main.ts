@@ -135,6 +135,12 @@ export class CleverioPf100Card extends LitElement {
   _setMealsFromRaw(raw: string) {
     let meals: FeedingTime[] = [];
     this._decodeError = null;
+    if (!this.config?.layout) {
+      this._decodeError = 'Please select a meal plan layout in the card editor.';
+      this._persistedMeals = [];
+      this._meals = [];
+      return;
+    }
     if (raw && typeof raw === 'string' && raw.trim().length > 0) {
       try {
         meals = decodeMealPlanData(raw, this.config.layout);

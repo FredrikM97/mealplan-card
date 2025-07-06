@@ -12,21 +12,19 @@ declare global {
 
 @customElement('cleverio-card-editor')
 export class CleverioCardEditor extends LitElement {
-  @property({ attribute: false }) config = { sensor: '', title: '', helper: '', layout: '' };
+  @property({ attribute: false }) config: {
+    sensor: string;
+    title: string;
+    helper: string;
+    layout?: string;
+    overviewFields?: string[];
+  } = { sensor: '', title: '', helper: '', layout: '', overviewFields: ['schedules', 'active_schedules', 'today', 'avg_week'] };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
 
-  setConfig(config: { sensor: string; title: string; helper: string; layout?: string }) {
-    this.config = { ...this.config, ...config };
-    if (!this.config.layout) {
-      this.config.layout = '';
-    }
-  }
-  private _onLayoutChange(e: Event) {
-    const value = (e.target as HTMLSelectElement).value;
-    this.config = { ...this.config, layout: value };
-    this.requestUpdate();
-    this.configChanged(this.config);
+  setConfig(config: { sensor: string; title: string; helper: string; layout?: string; overviewFields?: string[] }) {
+    this.config = { ...config };
+ 
   }
 
   async connectedCallback() {
@@ -65,26 +63,17 @@ export class CleverioCardEditor extends LitElement {
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
-
-    // Only allow valid layouts
-    const validLayouts = mealplanLayouts.map(l => l.name);
-    const layoutIsValid = this.config.layout === '' || validLayouts.includes(this.config.layout);
-
-    // If the current layout is invalid, reset to blank (None)
-    let layoutValue = this.config.layout;
-    if (!layoutIsValid) {
-      layoutValue = '';
-    }
-
     return html`
-      <label for="layout-picker" style="display:block;margin-bottom:4px;">Meal plan layout</label>
-      <select id="layout-picker" @change=${this._onLayoutChange} .value=${layoutValue}>
-        <option value="">None (select layout)</option>
-        ${mealplanLayouts.map(l => html`<option value="${l.name}" ?selected=${layoutValue === l.name}>${l.name}</option>`)}
-      </select>
-      ${!layoutIsValid ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Invalid layout selected. Please choose a valid layout.</div>` : ''}
-      <div style="height: 20px;"></div>
-      <div style="height: 20px;"></div>
+      <label for="layout-combo" style="display:block;margin-bottom:4px;">Meal plan layout</label>
+      <ha-combo-box
+        id="layout-combo"
+        .items=${mealplanLayouts.map((l) => ({ value: l.name, label: l.name }))}
+        .value=${this.config.layout || ""}
+        @value-changed=${(e) => {
+          this.config = { ...this.config, layout: e.detail.value };
+          this.configChanged(this.config);
+        }}
+      ></ha-combo-box>
       <div style="height: 20px;"></div>
       <label for="entity-picker" style="display:block;margin-bottom:4px;">Meal plan entity</label>
       <ha-entity-picker
@@ -122,6 +111,7 @@ export class CleverioCardEditor extends LitElement {
         .label=${this.hass?.localize?.('ui.card.config.title_label') || 'Title'}
         placeholder="Title"
       ></ha-textfield>
+      <div style="height: 20px;"></div>
       ${!this._validateConfig()
         ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Please select a sensor entity and a storage helper (input_text).` : ''}
       <!-- mwc-tooltip handles its own styling -->
