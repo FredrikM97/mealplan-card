@@ -2,17 +2,9 @@
 
 A HACS card for Home Assistant to monitor and control your pet feeder using a meal_plan base64 format. This card is designed for the Cleverio PF100 Pet Feeder, but can work for other feeders if they use a compatible meal_plan or similar base64-encoded format.
 
----
 
-<p align="center">
-  <img width="400" alt="Screenshot 2025-06-24 at 15 09 09" src="https://github.com/user-attachments/assets/e5b04377-59ed-4064-82cc-864caf07d10d" />
-  <img width="400" alt="Screenshot 2025-06-24 at 15 05 07" src="https://github.com/user-attachments/assets/3cd0ef3a-62f4-4d86-a5ae-6854de67eba9" />
-  <img width="400" alt="Screenshot 2025-06-24 at 15 04 20" src="https://github.com/user-attachments/assets/4a61a152-2245-41b7-bcf9-5bb0467edc87" />
-  <br>
-  <i>Card preview</i>
-</p>
+<img width="430" src="https://github.com/user-attachments/assets/13882cf0-ca0e-4768-89e9-fcbc15d50aef" ce/>
 
----
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=cleverio-pf100-feeder-card&category=plugin)
 ## Features
