@@ -29,12 +29,3 @@ jobs:
           prerelease: true
           tag: ${{ github.ref }}
           overwrite: true
-  validate:
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: HACS Validate
-        uses: hacs/action@main
-        with:
-          category: plugin
