@@ -7,10 +7,12 @@ export default defineConfig({
   ],
   build: {
     outDir: 'dist',
+    emptyOutDir: true,
+    minify: 'terser',
     lib: {
-      entry: 'target/cleverio/main.js',
+      entry: 'src/main.ts',
       name: 'CleverioPf100FeederCard',
-      fileName: 'cleverio-pf100-feeder-card.bundle',
+      fileName: 'cleverio-pf100-feeder-card',
       formats: ['es']
     },
     rollupOptions: {

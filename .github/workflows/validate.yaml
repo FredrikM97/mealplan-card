@@ -11,7 +11,7 @@ permissions: {}
 
 jobs:
   validate-hacs:
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,6 +20,6 @@ jobs:
       - name: Build frontend
         run: npm run build
       - name: HACS validation
-        uses: hacs/action@main
+        uses: "hacs/action@main"
         with:
-          category: plugin
+          category: "plugin"
