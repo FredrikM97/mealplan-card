@@ -9,15 +9,11 @@ A HACS card for Home Assistant to monitor and control your pet feeder using a me
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=cleverio-pf100-feeder-card&category=plugin)
 ## Features
 
-- Display and manage feeding schedules with a modern UI
 - See next scheduled feeding and total food for today
 - Add, edit, and delete feeding times with or without day selection
-- Supports both schedule schemas: with days (using daysMask) and without days
+- Supports meal_plan data with days and without days
 - Card configuration and meal plan persist over Home Assistant restarts and reloads
-- Works with the Cleverio PF100 sensor (including MakeAll/Tuya Local integrations)
-- Easy integration with Home Assistant dashboards
-- Card configuration and meal plan persist over Home Assistant restarts and reloads
-
+- Light and dark mode
 
 ## How it works
 
