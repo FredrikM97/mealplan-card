@@ -2,7 +2,7 @@
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { LitElement, html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
-import { mealplanLayouts } from './util/mealplan-layouts';
+import { profiles } from './profiles';
 import { localize } from './locales/localize';
 
 declare global {
@@ -17,15 +17,17 @@ export class CleverioCardEditor extends LitElement {
     sensor: string;
     title: string;
     helper: string;
-    layout?: string;
+    profile?: string;
     overviewFields?: string[];
-  } = { sensor: '', title: '', helper: '', layout: '', overviewFields: ['schedules', 'active_schedules', 'today', 'avg_week'] };
+    device_model?: string;
+    device_manufacturer?: string;
+    device_identifier?: string;
+  } = { sensor: '', title: '', helper: '', profile: '', overviewFields: ['schedules', 'active_schedules', 'today', 'avg_week'] };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
 
-  setConfig(config: { sensor: string; title: string; helper: string; layout?: string; overviewFields?: string[] }) {
+  setConfig(config: { sensor: string; title: string; helper: string; profile?: string; layout?: string; overviewFields?: string[] }) {
     this.config = { ...config };
- 
   }
 
   async connectedCallback() {
@@ -51,7 +53,9 @@ export class CleverioCardEditor extends LitElement {
   private _valueChanged(e: CustomEvent) {
     const target = e.target as any;
     if (target.configValue) {
-      this.config = { ...this.config, [target.configValue]: e.detail.value };
+      const newConfig = { ...this.config, [target.configValue]: e.detail.value };
+      // No more device model/profile auto-matching. Just update config with the selected value.
+      this.config = newConfig;
       this.configChanged(this.config);
     }
   }
@@ -65,29 +69,29 @@ export class CleverioCardEditor extends LitElement {
       return html`<div>Loading Home Assistant components...</div>`;
     }
     return html`
-      <label for="layout-combo" style="display:block;margin-bottom:4px;">${localize('mealplan_layout')}</label>
-      <ha-combo-box
-        id="layout-combo"
-        .items=${[
-          { value: '', label: localize('select_layout') },
-          ...mealplanLayouts.map((l) => ({ value: l.name, label: localize(l.name) }))
-        ]}
-        .value=${this.config.layout || ''}
-        @value-changed=${(e) => {
-          this.config = { ...this.config, layout: e.detail.value };
-          this.configChanged(this.config);
-        }}
-      ></ha-combo-box>
-      <div style="height: 20px;"></div>
-      <label for="entity-picker" style="display:block;margin-bottom:4px;">Meal plan entity</label>
+      <label for="sensor-picker" style="display:block;margin-bottom:4px;">Feeder entity (sensor or text)</label>
       <ha-entity-picker
-        id="entity-picker"
+        id="sensor-picker"
         .hass=${this.hass}
         .value=${this.config.sensor || ''}
         .configValue=${'sensor'}
         @value-changed=${this._valueChanged}
-        allow-custom-entity
+        .includeDomains=${['sensor', 'text']}
       ></ha-entity-picker>
+      <div style="height: 20px;"></div>
+      <label for="profile-combo" style="display:block;margin-bottom:4px;">Feeder profile</label>
+      <ha-combo-box
+        id="profile-combo"
+        .items=${[
+          { value: '', label: localize('select_layout') },
+          ...profiles.map((p) => ({ value: p.id, label: localize(p.name) }))
+        ]}
+        .value=${this.config.profile || ''}
+        @value-changed=${(e: CustomEvent) => {
+          this.config = { ...this.config, profile: e.detail.value };
+          this.configChanged(this.config);
+        }}
+      ></ha-combo-box>
       <div style="height: 20px;"></div>
       <label for="helper-picker" style="display:block;margin-bottom:4px;">Meal plan storage helper (input_text)
         <ha-tooltip content="This input_text helper is used to store and sync your meal plan schedule. The card will always read and write the schedule to this helper, making it the single source of truth for your meal plan. Tip: Create a dedicated input_text helper in Home Assistant for each feeder you want to manage." placement="right">
@@ -117,7 +121,7 @@ export class CleverioCardEditor extends LitElement {
       ></ha-textfield>
       <div style="height: 20px;"></div>
       ${!this._validateConfig()
-        ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Please select a sensor entity and a storage helper (input_text).` : ''}
+        ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Please select a feeder entity and a storage helper (input_text).` : ''}
       <!-- mwc-tooltip handles its own styling -->
     `;
   }

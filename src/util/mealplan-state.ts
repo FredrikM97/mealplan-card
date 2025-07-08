@@ -1,5 +1,24 @@
+import { ScheduleEncodingFieldKey } from '../schedule-schema/fields';
 
-import { getLayoutByName } from './mealplan-layouts';
+// Returns null if valid, or an error string if invalid
+export function validateFeedingTime(entry: Partial<FeedingTime>): string | null {
+  if (
+    typeof entry.hour !== 'number' ||
+    typeof entry.minute !== 'number' ||
+    isNaN(entry.hour) ||
+    isNaN(entry.minute) ||
+    entry.hour < 0 || entry.hour > 23 ||
+    entry.minute < 0 || entry.minute > 59
+  ) {
+    return 'Please enter a valid time.';
+  }
+  if (!entry.portion || entry.portion < 1) {
+    return 'Portion must be at least 1.';
+  }
+  return null;
+}
+
+
 
 export interface FeedingTime {
   hour: number;
@@ -50,47 +69,49 @@ export function getTodaysFoodGrams(feedingTimes: FeedingTime[], dayIdx: number):
 
 
 
-export function decodeMealPlanData(base64String: string, layoutName?: string): FeedingTime[] {
+
+
+export function decodeMealPlanData(base64String: string, profile: { encodingFields: any[] }): FeedingTime[] {
   if (!base64String || base64String === 'unknown') return [];
-  if (!layoutName) throw new Error(`Unknown meal plan layout: '${layoutName}'`);
-  const layout = getLayoutByName(layoutName);
-  if (!layout) throw new Error(`Unknown meal plan layout: '${layoutName}'`);
+  if (!profile || !Array.isArray(profile.encodingFields)) throw new Error('Invalid device profile for decoding');
+  const fields = profile.encodingFields;
+  const entrySize = fields.length;
   let binary: string;
   try {
     binary = atob(base64String);
   } catch {
     throw new Error('Invalid base64');
   }
-  const { entrySize, fields } = layout;
   const bytes = new Uint8Array([...binary].map(char => char.charCodeAt(0)));
   if (bytes.length % entrySize !== 0) throw new Error('Invalid meal plan length');
   return Array.from({ length: bytes.length / entrySize }, (_, i) => {
     const entry: any = {};
     for (let j = 0; j < fields.length; j++) {
-      entry[fields[j] as string] = bytes[i * entrySize + j];
+      const prop = fields[j];
+      entry[prop] = bytes[i * entrySize + j];
     }
-    // Ensure all fields are present, otherwise throw
-    for (const field of fields) {
-      if (!(field in entry) || typeof entry[field] === 'undefined') {
-        throw new Error(`Meal plan decode error: missing field '${field}' in entry. Possible layout mismatch or corrupt data.`);
-      }
-    }
-    return entry;
+    // Map and sanitize fields for UI robustness
+    return {
+      hour: typeof entry.hour === 'number' ? entry.hour : 0,
+      minute: typeof entry.minute === 'number' ? entry.minute : 0,
+      portion: typeof entry.portion === 'number' ? entry.portion : 1,
+      daysMask: typeof entry.daysMask === 'number' ? entry.daysMask : 0,
+      enabled: entry.enabled === 1 ? 1 : 0
+    };
   });
 }
 
-export function encodeMealPlanData(feedingTimes: FeedingTime[], layoutName?: string): string {
-  if (!layoutName) throw new Error(`Unknown meal plan layout: '${layoutName}'`);
-  const layout = getLayoutByName(layoutName);
-  if (!layout) throw new Error(`Unknown meal plan layout: '${layoutName}'`);
-  const { fields } = layout;
+export function encodeMealPlanData(feedingTimes: FeedingTime[], profile: { encodingFields: any[] }): string {
+  if (!profile || !Array.isArray(profile.encodingFields)) throw new Error('Invalid device profile for encoding');
+  const fields = profile.encodingFields;
   const bytes: number[] = [];
   feedingTimes.forEach((item, idx) => {
     for (const field of fields) {
-      if (!(field in item) || typeof (item as any)[field] === 'undefined') {
-        throw new Error(`Meal plan encode error: missing field '${field}' in entry #${idx}. Possible layout mismatch or incomplete FeedingTime.`);
+      const prop = field;
+      if (!(prop in item) || typeof (item as any)[prop] === 'undefined') {
+        throw new Error(`Meal plan encode error: missing field '${prop}' in entry #${idx}. Possible layout mismatch or incomplete FeedingTime.`);
       }
-      bytes.push(Number((item as any)[field]));
+      bytes.push(Number((item as any)[prop]));
     }
   });
   return btoa(String.fromCharCode(...bytes));

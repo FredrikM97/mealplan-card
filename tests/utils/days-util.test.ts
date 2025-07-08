@@ -1,6 +1,6 @@
 // Remove legacy API tests, keep only tests for bitmaskToDays and daysToBitmask
 import { describe, expect, it } from 'vitest';
-import { bitmaskToDays, daysToBitmask, Day } from '../../src/cleverio/util/days-util';
+import { bitmaskToDays, daysToBitmask, Day } from '../../src/util/days-util';
 
 describe('days-util bitmask/enum', () => {
   it('daysToBitmask and bitmaskToDays roundtrip', () => {

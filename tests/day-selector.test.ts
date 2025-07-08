@@ -1,5 +1,5 @@
 import { fixture, html, expect, oneEvent } from '@open-wc/testing';
-import '../src/cleverio/day-selector';
+import '../src/day-selector';
 import { describe, it } from 'vitest';
 
 describe('CleverioDaySelector', () => {

@@ -6,7 +6,6 @@ beforeAll(() => {
   const haElements = [
     'ha-card',
     'ha-card-header', // Add ha-card-header for tests
-    'ha-dialog',
     'ha-button',
     'ha-textfield',
     'ha-switch',
