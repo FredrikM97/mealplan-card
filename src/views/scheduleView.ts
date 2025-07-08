@@ -12,7 +12,6 @@ export function renderScheduleView({
   editForm,
   editError,
   editDialogOpen,
-  predefinedTimes,
   onUpdateEditForm,
   onOpenEditDialog,
   onOpenAddDialog,
@@ -30,7 +29,6 @@ export function renderScheduleView({
   editForm: any,
   editError: string | null,
   editDialogOpen: boolean,
-  predefinedTimes: string[],
   onUpdateEditForm: (update: Partial<any>) => void,
   onOpenEditDialog: (idx: number) => void,
   onOpenAddDialog: () => void,
@@ -163,7 +161,6 @@ export function renderScheduleView({
             profile,
             editForm,
             editError,
-            predefinedTimes,
             onUpdate: onUpdateEditForm,
           })
         : html`

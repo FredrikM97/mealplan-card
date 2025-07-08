@@ -2,21 +2,24 @@
 import { html } from 'lit';
 import { localize } from '../locales/localize';
 import { formatHourMinute } from '../util/mealplan-state';
+
+// Static list of predefined feeding times
+export const PREDEFINED_TIMES = [
+  "06:00", "08:00", "12:00", "18:00", "21:00"
+];
 /**
  * Renders the edit form for a feeding time.
  * @param {object} params - The parameters for rendering.
  * @param {any} params.profile - The profile object (must have a `fields` array).
  * @param {FeedingTime|null} params.editForm - The current edit form state.
  * @param {string|null} params.editError - The current error message, if any.
- * @param {string[]} params.predefinedTimes - Array of predefined time strings (e.g., ["06:00", ...]).
  * @param {(update: Partial<FeedingTime>) => void} params.onUpdate - Callback for updating the edit form state.
  * @returns {TemplateResult} The rendered edit form.
  */
-export function renderEditView({ profile, editForm, editError, predefinedTimes, onUpdate }: {
+export function renderEditView({ profile, editForm, editError, onUpdate }: {
   profile: any,
   editForm: any,
   editError: string | null,
-  predefinedTimes: string[],
   onUpdate: (update: Partial<any>) => void
 }) {
   return html`
@@ -58,9 +61,9 @@ export function renderEditView({ profile, editForm, editError, predefinedTimes, 
         </div>
       ` : ''}
       <div class="edit-predefined-times">
-        ${predefinedTimes.map(time => html`
+        ${PREDEFINED_TIMES.map(time => html`
           <ha-button type="button" @click=${() => {
-            const [h, m] = time.split(':').map(Number);
+            const [h, m] = time.split(":").map(Number);
             onUpdate({ hour: h, minute: m });
           }}>${time}</ha-button>
         `)}

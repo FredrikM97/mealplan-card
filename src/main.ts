@@ -199,7 +199,6 @@ export class CleverioPf100Card extends LitElement {
           editForm: this._editForm,
           editError: this._editError,
           editDialogOpen: this._editDialogOpen,
-          predefinedTimes: [],
           onUpdateEditForm: (update) => {
             this._editForm = { ...this._editForm, ...update };
             this.requestUpdate();
