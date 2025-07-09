@@ -1,6 +1,20 @@
 import type { DeviceProfileGroup } from "./types";
 import { profiles } from "./profiles";
 
+
+function findManufacturerProfile(group, device_manufacturer, device_model) {
+  for (const manu of group.profiles) {
+    if (manu.manufacturer === device_manufacturer) {
+      const models = Array.isArray(manu.models) ? manu.models : [];
+      const model = device_model ?? models[0] ?? "";
+      if (!device_model || models.includes(model) || models.length === 0) {
+        return { ...group, manufacturer: manu.manufacturer, model };
+      }
+    }
+  }
+  return undefined;
+}
+
 export function resolveProfile(config: {
   device_manufacturer?: string;
   device_model?: string;
@@ -11,15 +25,8 @@ export function resolveProfile(config: {
     return undefined;
   }
   for (const group of profiles) {
-    for (const manu of group.profiles) {
-      if (manu.manufacturer === device_manufacturer) {
-        const models = Array.isArray(manu.models) ? manu.models : [];
-        const model = device_model ?? models[0] ?? "";
-        if (!device_model || models.includes(model) || models.length === 0) {
-          return { ...group, manufacturer: manu.manufacturer, model };
-        }
-      }
-    }
+    const result = findManufacturerProfile(group, device_manufacturer, device_model);
+    if (result) return result;
   }
   console.warn(
     "No matching profile found for",

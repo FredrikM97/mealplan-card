@@ -114,7 +114,6 @@ export class MealPlanCard extends LitElement {
     const sensorRaw = stateObj?.state ?? "";
     const helperRaw = helperObj?.state ?? "";
     if (this.config?.helper) {
-      // If helper is set, prefer helper for storage, but sync from sensor if valid
       if (this._isValidSensorValue(sensorRaw)) {
         this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
         this._setMealsFromRaw(sensorRaw);
@@ -123,7 +122,6 @@ export class MealPlanCard extends LitElement {
       this._setMealsFromRaw(helperRaw);
       return;
     }
-    // If no helper, only use sensor if valid, otherwise log error and show error message
     if (this._isValidSensorValue(sensorRaw)) {
       this._setMealsFromRaw(sensorRaw);
       return;
@@ -335,7 +333,6 @@ export class MealPlanCard extends LitElement {
     const value = encodeMealPlanData(this._meals, {
       encodingFields: profile.encodingFields ?? [],
     });
-    // Always write to sensor, never to helper
     this.hass.callService("text", "set_value", {
       entity_id: this._sensorID,
       value,
