@@ -24,7 +24,7 @@ export interface DeviceProfile {
 
 export interface DeviceProfileGroup {
   profiles: DeviceProfile[];
-  fields: ProfileField[]; 
-  encodingFields: EncodingField[]; 
+  fields: ProfileField[];
+  encodingFields: EncodingField[];
   featureFields?: ProfileField[];
 }

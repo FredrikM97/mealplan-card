@@ -1,7 +1,6 @@
 import type { DeviceProfileGroup } from "./types";
 import { profiles } from "./profiles";
 
-
 function findManufacturerProfile(group, device_manufacturer, device_model) {
   for (const manu of group.profiles) {
     if (manu.manufacturer === device_manufacturer) {
@@ -25,7 +24,11 @@ export function resolveProfile(config: {
     return undefined;
   }
   for (const group of profiles) {
-    const result = findManufacturerProfile(group, device_manufacturer, device_model);
+    const result = findManufacturerProfile(
+      group,
+      device_manufacturer,
+      device_model,
+    );
     if (result) return result;
   }
   console.warn(
