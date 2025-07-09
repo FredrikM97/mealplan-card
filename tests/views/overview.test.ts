@@ -2,12 +2,12 @@ import { fixture, html, expect } from '@open-wc/testing';
 import '../../src/main';
 import { describe, it } from 'vitest';
 
-describe('CleverioPf100Card Overview UI', () => {
+describe('MealPlanCard Overview UI', () => {
   it('decodes base64 meal plan and displays correct schedule and grams in UI', async () => {
     const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
     const config = { sensor: 'sensor.test', title: 'Test Card', profile: 'cleverio' };
     const hass = { states: { 'sensor.test': { state: base64, attributes: {} } } };
-    const el = await fixture<any>(html`<cleverio-pf100-card .config=${config} .hass=${hass}></cleverio-pf100-card>`);
+    const el = await fixture<any>(html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`);
     await el.updateComplete;
     const schedules = el.shadowRoot.querySelector('.overview-schedules');
     expect(schedules).to.exist;

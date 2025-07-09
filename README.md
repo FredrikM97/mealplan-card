@@ -1,12 +1,12 @@
-# Cleverio PF100 Feeder Card
+# MealPlanCard
 
-A HACS card for Home Assistant to monitor and control your pet feeder using a meal_plan base64 format. This card is designed for the Cleverio PF100 Pet Feeder, but can work for other feeders if they use a compatible meal_plan or similar base64-encoded format.
+A HACS card for Home Assistant to monitor and control your pet feeder using a meal_plan base64 format. This card is designed for Tuya Mealplan data, but can work for other feeders if they use a compatible meal_plan or similar base64-encoded format.
 
 
 <img width="430" src="https://github.com/user-attachments/assets/13882cf0-ca0e-4768-89e9-fcbc15d50aef" ce/>
 
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=cleverio-pf100-feeder-card&category=plugin)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=mealplan-card&category=plugin)
 ## Features
 
 - See next scheduled feeding and total food for today
@@ -34,8 +34,8 @@ When the user makes changes and presses save on the schedule view, the config is
 ## Installation
 
 1. Click the **Add to HACS** button above, or manually add this repository as a custom repository in HACS (category: Lovelace).
-2. Find "Cleverio PF100 Feeder Card" in HACS under Frontend and install it.
-3. Search for Cleverio Pet Feeder in the card selector view.
+2. Find "Mealplan Card" in HACS under Frontend and install it.
+3. Search for Mealplan Pet Feeder in the card selector view.
 
 ## Configuration
 
@@ -55,4 +55,4 @@ The following devices are known to work with this card:
 
 ## Support
 
-For issues, feature requests, or contributions, please open an issue or pull request on [GitHub](https://github.com/FredrikM97/cleverio-pf100-feeder-card).
+For issues, feature requests, or contributions, please open an issue or pull request on [GitHub](https://github.com/FredrikM97/mealplan-card).

@@ -11,8 +11,8 @@ export default defineConfig({
     minify: 'terser',
     lib: {
       entry: 'src/main.ts',
-      name: 'CleverioPf100FeederCard',
-      fileName: 'cleverio-pf100-feeder-card',
+      name: 'MealPlanCard',
+      fileName: 'mealplan-card',
       formats: ['es']
     },
     rollupOptions: {

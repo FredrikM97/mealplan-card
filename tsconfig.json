@@ -24,5 +24,5 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*.ts", "src/**/*.js"],
-  "exclude": ["node_modules", "target", "tests", "www/cleverio-pf100-feeder-card"]
+  "exclude": ["node_modules", "target", "tests", "www/mealplan-card"]
 }

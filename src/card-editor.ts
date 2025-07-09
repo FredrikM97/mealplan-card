@@ -11,8 +11,8 @@ declare global {
   }
 }
 
-@customElement('cleverio-card-editor')
-export class CleverioCardEditor extends LitElement {
+@customElement('mealplan-card-editor')
+export class MealPlanCardEditor extends LitElement {
   @property({ attribute: false }) config: {
     sensor: string;
     title: string;
@@ -129,8 +129,8 @@ export class CleverioCardEditor extends LitElement {
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "cleverio-pf100-card",
-  name: "Cleverio Feeder Card",
+  type: "mealplan-card",
+  name: "Mealplan Card",
   preview: false,
-  description: "Cleverio PF100 feeder card to decode/encode base64 meal_plan"
+  description: "Mealplan card to decode/encode base64 meal_plan"
 });

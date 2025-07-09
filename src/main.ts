@@ -1,22 +1,20 @@
 ﻿import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData, getTodaysFoodGrams } from './util/mealplan-state.js';
+import { decodeMealPlanData, encodeMealPlanData } from './util/mealplan-state.js';
 import type { FeedingTime } from './util/mealplan-state.js';
-// import './schedule';
 import { loadHaComponents } from '@kipk/load-ha-components';
 import {localize, setLanguage } from './locales/localize';
 
 
 import { renderScheduleView } from './views/scheduleView';
 import { renderOverview } from './views/overview';
-import { mealplanLayouts, getLayoutByName } from './util/mealplan-layouts';
 import { profiles } from './profiles';
 
 /**
- * Cleverio PF100 Feeder Card
+ * MealPlan Card
  */
-@customElement('cleverio-pf100-card')
-export class CleverioPf100Card extends LitElement {
+@customElement('mealplan-card')
+export class MealPlanCard extends LitElement {
   private _hass;
   @property({ type: Object })
   get hass() {
@@ -74,14 +72,11 @@ export class CleverioPf100Card extends LitElement {
   ];
 
   setConfig(config) {
-    // Allow empty layout in editor, but require for normal operation
     if (!config.layout) {
-      // If in editor, just set config and return
       if (window.location.pathname.includes('lovelace') && window.location.hash.includes('edit')) {
         this.config = config;
         return;
       }
-      // Otherwise, show a user-friendly message in render
       this.config = config;
       return;
     }
@@ -102,14 +97,12 @@ export class CleverioPf100Card extends LitElement {
     return this.config?.helper;
   }
 
-  // Removed _stateObj, _helperObj, _attributes getters (inlined below)
   get _name() {
     const stateObj = this.hass?.states?.[this._sensorID];
     return stateObj?.attributes?.friendly_name || this._sensorID;
   }
 
   _updateHass() {
-    // Sensor is the source of new data, helper is the persistent memory and UI source
     const stateObj = this.hass?.states?.[this._sensorID];
     const helperObj = this.hass?.states?.[this._helperID];
     const sensorRaw = stateObj?.state ?? '';
@@ -144,7 +137,6 @@ export class CleverioPf100Card extends LitElement {
 
   _resolveProfile() {
     if (!this.config?.profile) return undefined;
-    // Debug log removed
     return profiles.find((p) => p.id === this.config.profile);
   }
 
@@ -176,10 +168,8 @@ export class CleverioPf100Card extends LitElement {
       return html`<div>Loading Home Assistant components...</div>`;
     }
     const profile = this._resolveProfile();
-    // Always render the card, even if no profile is selected, to avoid disappearing UI
-    // Show error message in the card if profile is missing or invalid
     return html`
-      <ha-card header=${this.config?.title || 'Cleverio Pet Feeder'} style="height: 100%;">
+      <ha-card header=${this.config?.title || 'MealPlan Card'} style="height: 100%;">
         ${this._decodeError ? html`<div style="color: var(--error-color, red); margin: 8px;">${this._decodeError}</div>` : ''}
         ${renderOverview({
           meals: this._meals,
@@ -240,10 +230,8 @@ export class CleverioPf100Card extends LitElement {
             if (!this._editForm) return;
             const idx = this._editForm._idx;
             if (idx !== undefined && idx !== null && idx >= 0) {
-              // Edit existing
               this._meals = this._meals.map((m, i) => i === idx ? { ...this._editForm } : m);
             } else {
-              // Add new
               this._meals = [...this._meals, { ...this._editForm }];
             }
             this._editDialogOpen = false;
@@ -264,14 +252,13 @@ export class CleverioPf100Card extends LitElement {
   }
   static async getConfigElement() {
     await import('./card-editor');
-    return document.createElement('cleverio-card-editor');
+    return document.createElement('mealplan-card-editor');
   }
 
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
     const profile = this._resolveProfile();
     if (!profile || !Array.isArray(profile.encodingFields) || profile.encodingFields.length === 0) {
-      // Don't try to encode if profile is missing or invalid
       return;
     }
     const value = encodeMealPlanData(this._meals, { encodingFields: profile.encodingFields ?? [] });
@@ -280,19 +267,10 @@ export class CleverioPf100Card extends LitElement {
       value,
     });
   }
-
-  // Dialog open/close now handled by state and function-based rendering
-  // _openDialog removed
-
-  firstUpdated() {
-    // No longer needed: open-schedule-dialog event
-  }
-
   _onScheduleMealsChanged(e) {
-    console.log('[CleverioPf100Card] _onScheduleMealsChanged called', e);
+    console.log('[MealPlanCard] _onScheduleMealsChanged called', e);
     this._meals = e.detail.meals;
     this._saveMealsToSensor();
-    // No need to close dialog here; child manages its own dialog state
   }
 }
 

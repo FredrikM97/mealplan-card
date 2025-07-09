@@ -2,10 +2,8 @@
 import { fixture, html, expect } from '@open-wc/testing';
 import '../src/main';
 import { describe, it } from 'vitest';
-import { CleverioPf100Card } from '../src/main';
-import { decodeMealPlanData } from '../src/util/mealplan-state';
+import { MealPlanCard } from '../src/main';
 import { vi } from 'vitest';
-import { cleverioProfile } from '../src/profiles/cleverio';
 
 vi.mock('@kipk/load-ha-components', () => ({
   loadHaComponents: async () => {}
@@ -16,7 +14,7 @@ vi.stubGlobal('fetch', vi.fn(async () => ({
   json: async () => ({})
 })));
 
-describe('CleverioPf100Card', () => {
+describe('MealPlanCard', () => {
   it('decodes real base64 meal plan data and passes it to children', async () => {
     // Encodes: daysMask=127, portion=2, hour=8, minute=0, enabled=1
     const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
@@ -29,7 +27,7 @@ describe('CleverioPf100Card', () => {
         }
       }
     };
-    const el = await fixture<any>(html`<cleverio-pf100-card .config=${config} .hass=${hass}></cleverio-pf100-card>`);
+    const el = await fixture<any>(html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`);
     await el.updateComplete;
     expect(el).to.exist;
   }, 20000);
@@ -37,16 +35,16 @@ describe('CleverioPf100Card', () => {
 
 describe('getConfigElement', () => {
   it('returns a card-editor element with setConfig method', async () => {
-    const el = await CleverioPf100Card.getConfigElement();
+    const el = await MealPlanCard.getConfigElement();
     expect(el).to.exist;
-    expect(el.tagName.toLowerCase()).to.equal('cleverio-card-editor');
+    expect(el.tagName.toLowerCase()).to.equal('mealplan-card-editor');
     expect(typeof el.setConfig).to.equal('function');
   });
 });
 
 // (Overview UI test moved to views/overview.test.ts)
 
-describe('CleverioPf100Card integration', () => {
+describe('MealPlanCard integration', () => {
   it('calls hass.callService when schedule Save is pressed', async () => {
     const base64 = 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==';
     const config = { sensor: 'sensor.test', title: 'Test Card', profile: 'cleverio' };
@@ -55,7 +53,7 @@ describe('CleverioPf100Card integration', () => {
       states: { 'sensor.test': { state: base64, attributes: {} } },
       callService,
     };
-    const el = await fixture<any>(html`<cleverio-pf100-card .config=${config} .hass=${hass}></cleverio-pf100-card>`);
+    const el = await fixture<any>(html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`);
     await el.updateComplete;
     // Open dialog
     const btn = el.shadowRoot.querySelector('.manage-btn');

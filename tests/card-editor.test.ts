@@ -1,6 +1,6 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import '../src/card-editor';
-import { CleverioCardEditor } from '../src/card-editor';
+import { MealPlanCardEditor } from '../src/card-editor';
 import { describe, it, vi } from 'vitest';
 
 // Mock loadHaComponents to avoid timeouts in tests
@@ -8,9 +8,9 @@ vi.mock('@kipk/load-ha-components', () => ({
   loadHaComponents: async () => {}
 }));
 
-describe('CleverioCardEditor', () => {
+describe('MealPlanCardEditor', () => {
   it('renders and updates config', async () => {
-    const el = await fixture<CleverioCardEditor>(html`<cleverio-card-editor></cleverio-card-editor>`);
+    const el = await fixture<MealPlanCardEditor>(html`<mealplan-card-editor></mealplan-card-editor>`);
     await el.updateComplete;
     el.setConfig({
       sensor: 'sensor.test', title: 'Test', profile: 'cleverio', helper: ''
@@ -21,8 +21,8 @@ describe('CleverioCardEditor', () => {
   });
 
   it('renders inputs and updates config via UI', async () => {
-    const el = await fixture<CleverioCardEditor>(html`<cleverio-card-editor></cleverio-card-editor>`);
-    await customElements.whenDefined('cleverio-card-editor');
+    const el = await fixture<MealPlanCardEditor>(html`<mealplan-card-editor></mealplan-card-editor>`);
+    await customElements.whenDefined('mealplan-card-editor');
     await el.updateComplete;
     const shadow = el.shadowRoot!;
     expect(shadow).to.exist;
