@@ -39,12 +39,20 @@ export function getNextSchedule(feedingTimes: FeedingTime[]): string {
   return formatHourMinute(enabled[0].hour, enabled[0].minute);
 }
 
-// Returns an array of total food per day, index 0=Monday, 6=Sunday
+
 export function getTotalFoodPerDay(feedingTimes: FeedingTime[]): number[] {
+
   const totals = Array(7).fill(0);
-  feedingTimes.forEach(t => {
+  feedingTimes.forEach((t, idx) => {
     if (t.enabled !== 1) return;
-    if (typeof t.daysMask !== 'number') return;
+    if (typeof t.daysMask !== 'number') {
+      console.error(`FeedingTime entry #${idx} is missing required 'daysMask' field.`);
+      return;
+    }
+    if (typeof t.portion !== 'number') {
+      console.error(`FeedingTime entry #${idx} is missing required 'portion' field.`);
+      return;
+    }
     for (let i = 0; i < 7; i++) {
       if (t.daysMask & (1 << i)) {
         totals[i] += t.portion;
@@ -54,12 +62,18 @@ export function getTotalFoodPerDay(feedingTimes: FeedingTime[]): number[] {
   return totals;
 }
 
-// Returns total food for a given day index (0=Monday, 6=Sunday)
 export function getTodaysFoodGrams(feedingTimes: FeedingTime[], dayIdx: number): number {
   let total = 0;
-  feedingTimes.forEach(t => {
+  feedingTimes.forEach((t, idx) => {
     if (t.enabled !== 1) return;
-    if (typeof t.daysMask !== 'number') return;
+    if (typeof t.daysMask !== 'number') {
+      console.error(`FeedingTime entry #${idx} is missing required 'daysMask' field.`);
+      return;
+    }
+    if (typeof t.portion !== 'number') {
+      console.error(`FeedingTime entry #${idx} is missing required 'portion' field.`);
+      return;
+    }
     if (t.daysMask & (1 << dayIdx)) {
       total += t.portion;
     }
@@ -119,6 +133,11 @@ export function encodeMealPlanData(feedingTimes: FeedingTime[], profile: { encod
 
 // Utility for UI formatting only
 export function formatHourMinute(hour?: number, minute?: number): string {
-  if (typeof hour !== 'number' || isNaN(hour) || typeof minute !== 'number' || isNaN(minute)) return '--:--';
+  if (
+    typeof hour !== 'number' || isNaN(hour) ||
+    typeof minute !== 'number' || isNaN(minute) ||
+    hour < 0 || hour > 23 ||
+    minute < 0 || minute > 59
+  ) return '--:--';
   return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 }

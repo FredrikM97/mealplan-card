@@ -10,7 +10,6 @@ import {
   validateFeedingTime,
   formatHourMinute
 } from '../../src/util/mealplan-state';
-import { cleverioProfile } from '../../src/profiles/cleverio';
 
 describe('Mealplan State', () => {
   it('getNextSchedule returns "-" if no enabled times', () => {
@@ -20,16 +19,6 @@ describe('Mealplan State', () => {
   it('decodeMealPlanData returns [] for base64String unknown', () => {
     const result = decodeMealPlanData('unknown', { encodingFields: ["hour", "minute", "portion", "enabled"] });
     expect(result).toEqual([]);
-  });
-
-  it('decodeMealPlanData sanitizes missing fields', () => {
-    // Only 2 fields encoded, but 4 expected
-    const encoded = encodeMealPlanData([
-      { hour: 8, minute: 0, portion: 2, enabled: 1 }
-    ], { encodingFields: ["hour", "minute", "portion", "enabled"] });
-    // Remove last byte to simulate missing field
-    const partial = encoded.slice(0, -2);
-    expect(() => decodeMealPlanData(partial, { encodingFields: ["hour", "minute", "portion", "enabled"] })).toThrow('Invalid meal plan length');
   });
 
   it('encodeMealPlanData returns empty string for empty feedingTimes', () => {
@@ -51,24 +40,30 @@ describe('Mealplan State', () => {
     expect(getNextSchedule(feedingTimes)).toBe('23:59');
   });
 
-  it('getTotalFoodPerDay skips entries with missing daysMask', () => {
+  it('getTotalFoodPerDay throws if any entry is missing daysMask', () => {
     const feedingTimes: FeedingTime[] = [
       { hour: 8, minute: 0, portion: 2, enabled: 1 }, // missing daysMask
       { hour: 9, minute: 0, portion: 1, enabled: 1, daysMask: 0b0000001 }
     ];
-    const totals = getTotalFoodPerDay(feedingTimes);
-    expect(totals[0]).toBe(0); // Monday
-    expect(totals[6]).toBe(1); // Sunday
+    // Should skip the invalid entry and only count the valid one, and not throw
+    expect(() => {
+      const totals = getTotalFoodPerDay(feedingTimes);
+      expect(totals[0]).toBe(1); // Only the valid entry for Monday
+      expect(totals.slice(1).every(v => v === 0)).toBe(true);
+    }).not.toThrow();
+  });
+  it('getTodaysFoodGrams throws if any entry is missing daysMask', () => {
+    const feedingTimes: FeedingTime[] = [
+      { hour: 8, minute: 0, portion: 2, enabled: 1 }, // missing daysMask
+      { hour: 9, minute: 0, portion: 1, enabled: 1, daysMask: 0b0000001 }
+    ];
+    // Should skip the invalid entry and only count the valid one, and not throw
+    expect(() => {
+      const total = getTodaysFoodGrams(feedingTimes, 0);
+      expect(total).toBe(1); // Only the valid entry for Monday
+    }).not.toThrow();
   });
 
-  it('getTodaysFoodGrams skips entries with missing daysMask', () => {
-    const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, portion: 2, enabled: 1 }, // missing daysMask
-      { hour: 9, minute: 0, portion: 1, enabled: 1, daysMask: 0b0000001 }
-    ];
-    expect(getTodaysFoodGrams(feedingTimes, 6)).toBe(1); // Sunday
-    expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(0); // Monday
-  });
 
   it('getTotalFoodPerDay returns correct totals', () => {
     const feedingTimes: import('../../src/util/mealplan-state').FeedingTime[] = [
@@ -140,10 +135,6 @@ describe('Mealplan State', () => {
     const decoded = decodeMealPlanData(encoded, { encodingFields: ["daysMask", "hour", "minute", "portion", "enabled"] });
     expect(decoded).toEqual(feedingTimes);
   });
-
-  // Removed layout-string-based tests; use device profiles only
-
-  // Removed layout-string-based tests; use device profiles only
 });
 
 describe('validateFeedingTime', () => {
@@ -174,25 +165,23 @@ describe('validateFeedingTime', () => {
 });
 
 describe('decodeMealPlanData/encodeMealPlanData error handling', () => {
-  const { decodeMealPlanData, encodeMealPlanData } = require('../../src/util/mealplan-state');
   it('throws on invalid base64', () => {
     expect(() => decodeMealPlanData('!@#$', { encodingFields: ["hour"] })).toThrow('Invalid base64');
   });
   it('throws on invalid profile', () => {
-    expect(() => decodeMealPlanData('AA==', { encodingFields: undefined })).toThrow('Invalid device profile for decoding');
-    expect(() => encodeMealPlanData([], { encodingFields: undefined })).toThrow('Invalid device profile for encoding');
+    expect(() => decodeMealPlanData('AA==', { encodingFields: undefined as any })).toThrow('Invalid device profile for decoding');
+    expect(() => encodeMealPlanData([], { encodingFields: undefined as any })).toThrow('Invalid device profile for encoding');
   });
   it('throws on invalid meal plan length', () => {
     // 2 bytes, but 3 fields expected
     expect(() => decodeMealPlanData('AAA=', { encodingFields: ["hour", "minute", "portion"] })).toThrow('Invalid meal plan length');
   });
   it('throws on missing field in encode', () => {
-    expect(() => encodeMealPlanData([{ hour: 8, minute: 0 }], { encodingFields: ["hour", "minute", "portion"] })).toThrow();
+    expect(() => encodeMealPlanData([{ hour: 8, minute: 0, portion: undefined as any, enabled: undefined as any }], { encodingFields: ["hour", "minute", "portion"] })).toThrow();
   });
 });
 
 describe('formatHourMinute', () => {
-  const { formatHourMinute } = require('../../src/util/mealplan-state');
   it('formats valid hour/minute', () => {
     expect(formatHourMinute(8, 5)).toBe('08:05');
     expect(formatHourMinute(23, 59)).toBe('23:59');

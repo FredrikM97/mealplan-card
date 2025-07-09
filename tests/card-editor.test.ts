@@ -32,16 +32,13 @@ describe('CleverioCardEditor', () => {
     expect(textField).to.exist;
 
 
-    // Simulate device picker value change
     (entityPicker as any).value = 'sensor.test';
     entityPicker!.dispatchEvent(new CustomEvent('value-changed', { detail: { value: 'sensor.test' }, bubbles: true, composed: true }));
 
-    // Simulate text field input (must set name for handler to work)
     (textField as any).name = 'title';
     (textField as any).value = 'My Title';
     textField!.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
 
-    // Simulate profile selection
     const profileCombo = shadow.querySelector('#profile-combo');
     if (profileCombo) {
       (profileCombo as any).value = 'cleverio';

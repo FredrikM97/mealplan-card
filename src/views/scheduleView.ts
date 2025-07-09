@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import { renderDaySelector } from '../day-selector';
 import { localize } from '../locales/localize';
 import '../day-selector';
 import { renderEditView } from './editView';
@@ -57,12 +58,10 @@ export function renderScheduleView({
         title: localize('days'),
         sortable: false,
         minWidth: '130px',
-        template: (row: any) => html`
-          <cleverio-day-selector
-            .selectedDaysMask=${row.daysMask}
-            .editable=${false}
-          ></cleverio-day-selector>
-        `
+        template: (row: any) => renderDaySelector({
+          selectedDaysMask: row.daysMask,
+          editable: false
+        })
       };
     }
     if (profile.fields.includes('enabled')) {

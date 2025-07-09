@@ -41,7 +41,6 @@ describe('renderScheduleView (function)', () => {
         editForm: null,
         editError: null,
         editDialogOpen: false,
-        predefinedTimes: [],
         onUpdateEditForm: vi.fn(),
         onOpenEditDialog: vi.fn(),
         onOpenAddDialog: vi.fn(),

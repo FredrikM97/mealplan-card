@@ -14,7 +14,7 @@ if (!customElements.get('ha-chip')) {
 }
 
 const editForm = { hour: 8, minute: 0, portion: 2, daysMask: 127, enabled: 1 };
-const predefinedTimes = ['08:00', '12:00', '18:00'];
+const predefinedTimes = ['06:00', '08:00', '12:00', '18:00', '21:00'];
 
 describe('renderEditView (function)', () => {
   it('renders the edit form with required fields', async () => {
@@ -25,22 +25,17 @@ describe('renderEditView (function)', () => {
         profile: cleverioProfile,
         editForm,
         editError: null,
-        predefinedTimes,
         onUpdate: vi.fn()
       }),
       container
     );
     await new Promise(r => setTimeout(r, 10));
-    // Check for portion input
     const portionInput = container.querySelector('#edit-portion');
     expect(portionInput).to.exist;
-    // Check for time input
     const timeInput = container.querySelector('#edit-time');
     expect(timeInput).to.exist;
-    // Check for day selector
-    const daySelector = container.querySelector('cleverio-day-selector');
+    const daySelector = container.querySelector('.days-row');
     expect(daySelector).to.exist;
-    // Check for form class
     const form = container.querySelector('.edit-form');
     expect(form).to.exist;
     document.body.removeChild(container);
@@ -54,7 +49,6 @@ describe('renderEditView (function)', () => {
         profile: cleverioProfile,
         editForm,
         editError: 'Test error',
-        predefinedTimes,
         onUpdate: vi.fn()
       }),
       container
@@ -62,7 +56,7 @@ describe('renderEditView (function)', () => {
     await new Promise(r => setTimeout(r, 10));
     const errorDiv = container.querySelector('.error');
     expect(errorDiv).to.exist;
-    expect(errorDiv.textContent).toContain('Test error');
+    expect(errorDiv?.textContent).toContain('Test error');
     document.body.removeChild(container);
   });
 
@@ -74,14 +68,13 @@ describe('renderEditView (function)', () => {
         profile: cleverioProfile,
         editForm,
         editError: null,
-        predefinedTimes,
         onUpdate: vi.fn()
       }),
       container
     );
     await new Promise(r => setTimeout(r, 10));
     const buttons = container.querySelectorAll('ha-button');
-    expect(buttons.length).toBe(predefinedTimes.length);
+    expect(buttons.length).toBe(5); 
     document.body.removeChild(container);
   });
 });

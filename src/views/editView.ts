@@ -1,5 +1,6 @@
 
 import { html } from 'lit';
+import { renderDaySelector } from '../day-selector';
 import { localize } from '../locales/localize';
 import { formatHourMinute } from '../util/mealplan-state';
 
@@ -25,14 +26,11 @@ export function renderEditView({ profile, editForm, editError, onUpdate }: {
   return html`
     <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
       ${editError ? html`<div class="error">${editError}</div>` : ''}
-      ${profile.fields.includes('daysMask') ? html`
-        <cleverio-day-selector
-          class="edit-mode"
-          .selectedDaysMask=${editForm?.daysMask ?? 0}
-          .editable=${true}
-          @days-changed=${(e: CustomEvent) => { onUpdate({ daysMask: e.detail.daysMask }); }}
-        ></cleverio-day-selector>
-      ` : ''}
+      ${profile.fields.includes('daysMask') ? renderDaySelector({
+        selectedDaysMask: editForm?.daysMask ?? 0,
+        editable: true,
+        onDaysChanged: (newMask: number) => onUpdate({ daysMask: newMask })
+      }) : ''}
       <div class="edit-form-group">
         <label for="edit-time">${localize('time')}</label>
         <input
