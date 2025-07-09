@@ -43,7 +43,6 @@ export function getProfileDropdownItems(profiles: DeviceProfileGroup[]) {
         let label = '';
         if (!manu.manufacturer) {
           label = '[Missing manufacturer]';
-          // Optionally, log a warning for missing manufacturer
           console.warn('Device profile missing manufacturer:', manu);
         } else if (isSingle || !model) {
           label = manu.manufacturer;

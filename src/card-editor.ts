@@ -77,22 +77,6 @@ export class MealPlanCardEditor extends LitElement {
         .includeDomains=${['sensor', 'text']}
       ></ha-entity-picker>
       <div style="height: 20px;"></div>
-      <label for="profile-combo" style="display:block;margin-bottom:4px;">Feeder profile</label>
-      <ha-combo-box
-        id="profile-combo"
-        .items=${[
-          { value: '', label: localize('select_layout') },
-          ...getProfileDropdownItems(profiles)
-        ]}
-        .value=${this.config.device_manufacturer ? `${this.config.device_manufacturer}:${this.config.device_model || ''}` : ''}
-        @value-changed=${(e: CustomEvent) => {
-          // Store both device_manufacturer and device_model in config
-          const [device_manufacturer, device_model] = (e.detail.value || '').split(':');
-          this.config = { ...this.config, device_manufacturer, device_model };
-          this.configChanged(this.config);
-        }}
-      ></ha-combo-box>
-      <div style="height: 20px;"></div>
       <label for="helper-picker" style="display:block;margin-bottom:4px;">Meal plan storage helper (input_text)
         <ha-tooltip content="This input_text helper is used to store and sync your meal plan schedule. The card will always read and write the schedule to this helper, making it the single source of truth for your meal plan. Tip: Create a dedicated input_text helper in Home Assistant for each feeder you want to manage." placement="right">
           <ha-icon
@@ -110,6 +94,22 @@ export class MealPlanCardEditor extends LitElement {
         @value-changed=${this._valueChanged}
         .includeDomains=${['input_text']}
       ></ha-entity-picker>
+      <div style="height: 20px;"></div>
+      <label for="profile-combo" style="display:block;margin-bottom:4px;">Feeder profile</label>
+      <ha-combo-box
+        id="profile-combo"
+        .items=${[
+          { value: '', label: localize('select_layout') },
+          ...getProfileDropdownItems(profiles)
+        ]}
+        .value=${this.config.device_manufacturer ? `${this.config.device_manufacturer}:${this.config.device_model || ''}` : ''}
+        @value-changed=${(e: CustomEvent) => {
+          // Store both device_manufacturer and device_model in config
+          const [device_manufacturer, device_model] = (e.detail.value || '').split(':');
+          this.config = { ...this.config, device_manufacturer, device_model };
+          this.configChanged(this.config);
+        }}
+      ></ha-combo-box>
       <div style="height: 20px;"></div>
       <ha-textfield
         id="title"

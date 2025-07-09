@@ -34,8 +34,6 @@ export const profiles: DeviceProfileGroup[] = [
       pf.PORTION,
       pf.ENABLED,
       pf.EDIT,
-      pf.DELETE,
-      pf.ADD
     ],
     encodingFields: [
       ef.HOUR,
