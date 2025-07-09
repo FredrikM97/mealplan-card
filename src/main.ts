@@ -1,17 +1,23 @@
-﻿import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { getTotalFoodPerDay, decodeMealPlanData, encodeMealPlanData, getTodaysFoodGrams } from './util/mealplan-state.js';
-import type { FeedingTime } from './util/mealplan-state.js';
-import './schedule';
-import { loadHaComponents } from '@kipk/load-ha-components';
-import {localize, setLanguage } from './locales/localize';
-import { mealplanLayouts, getLayoutByName } from './util/mealplan-layouts';
+﻿import { LitElement, html, css } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import {
+  decodeMealPlanData,
+  encodeMealPlanData,
+} from "./util/mealplan-state.js";
+import type { FeedingTime } from "./util/mealplan-state.js";
+import { loadHaComponents } from "@kipk/load-ha-components";
+import { localize, setLanguage } from "./locales/localize";
+
+import { renderScheduleView } from "./views/scheduleView";
+import { renderOverview } from "./views/overview";
+import { resolveProfile } from "./profiles/resolveProfile";
+import type { DeviceProfileGroup } from "./profiles/types";
 
 /**
- * Cleverio PF100 Feeder Card
+ * MealPlan Card
  */
-@customElement('cleverio-pf100-card')
-export class CleverioPf100Card extends LitElement {
+@customElement("mealplan-card")
+export class MealPlanCard extends LitElement {
   private _hass;
   @property({ type: Object })
   get hass() {
@@ -21,14 +27,24 @@ export class CleverioPf100Card extends LitElement {
     const old = this._hass;
     this._hass = val;
     this._updateHass();
-    this.requestUpdate('hass', old);
+    this.requestUpdate("hass", old);
   }
   @property({ type: Object }) accessor config;
   @state() accessor _meals: FeedingTime[];
   @state() accessor _persistedMeals: FeedingTime[];
   @state() accessor _dialogOpen: boolean = false;
+  @state() accessor _editDialogOpen: boolean = false;
+  @state() accessor _editForm: any = null;
+  @state() accessor _editError: string | null = null;
+
   @property({ type: Boolean }) private _haComponentsReady = false;
   @state() private _decodeError: string | null = null;
+
+  private resetEditState() {
+    this._editDialogOpen = false;
+    this._editForm = null;
+    this._editError = null;
+  }
 
   constructor() {
     super();
@@ -55,18 +71,18 @@ export class CleverioPf100Card extends LitElement {
           margin: 0 4px 8px 4px;
         }
       }
-    `
+    `,
   ];
 
   setConfig(config) {
-    // Allow empty layout in editor, but require for normal operation
     if (!config.layout) {
-      // If in editor, just set config and return
-      if (window.location.pathname.includes('lovelace') && window.location.hash.includes('edit')) {
+      if (
+        window.location.pathname.includes("lovelace") &&
+        window.location.hash.includes("edit")
+      ) {
         this.config = config;
         return;
       }
-      // Otherwise, show a user-friendly message in render
       this.config = config;
       return;
     }
@@ -75,7 +91,7 @@ export class CleverioPf100Card extends LitElement {
 
   async connectedCallback() {
     await setLanguage(this.hass.language); // Only loads once, even if called multiple times
-    await loadHaComponents(['ha-button', 'ha-data-table']); // Remove ha-card-header
+    await loadHaComponents(["ha-button", "ha-data-table", "ha-dialog"]);
     this._haComponentsReady = true;
     super.connectedCallback();
   }
@@ -87,66 +103,92 @@ export class CleverioPf100Card extends LitElement {
     return this.config?.helper;
   }
 
-  get _stateObj() {
-    return this.hass?.states?.[this._sensorID];
-  }
-  get _helperObj() {
-    return this.hass?.states?.[this._helperID];
-  }
-  get _attributes() {
-    return this._stateObj?.attributes || {};
-  }
   get _name() {
-    return this._attributes.friendly_name || this._sensorID;
+    const stateObj = this.hass?.states?.[this._sensorID];
+    return stateObj?.attributes?.friendly_name || this._sensorID;
   }
 
   _updateHass() {
-    // Sensor is the source of new data, helper is the persistent memory and UI source
-    const sensorRaw = this._stateObj?.state ?? '';
-    const helperRaw = this._helperObj?.state ?? '';
-    let raw = '';
-    if (this._isValidSensorValue(sensorRaw)) {
-      raw = sensorRaw;
-      this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
-    } else {
-      raw = helperRaw;
+    const stateObj = this.hass?.states?.[this._sensorID];
+    const helperObj = this.hass?.states?.[this._helperID];
+    const sensorRaw = stateObj?.state ?? "";
+    const helperRaw = helperObj?.state ?? "";
+    if (this.config?.helper) {
+      if (this._isValidSensorValue(sensorRaw)) {
+        this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
+        this._setMealsFromRaw(sensorRaw);
+        return;
+      }
+      this._setMealsFromRaw(helperRaw);
+      return;
     }
-    this._setMealsFromRaw(raw);
+    if (this._isValidSensorValue(sensorRaw)) {
+      this._setMealsFromRaw(sensorRaw);
+      return;
+    }
+    // Neither helper nor valid sensor value present: log and show error
+    const errorMsg =
+      "No valid meal plan data found: neither helper nor a valid sensor value is present.";
+    console.error(errorMsg);
+    this._decodeError = errorMsg;
+    this._persistedMeals = [];
+    this._meals = [];
   }
 
   _isValidSensorValue(value: any): boolean {
     return (
-      typeof value === 'string' &&
-      value !== '' &&
-      value !== 'unknown' &&
-      value !== 'unavailable'
+      typeof value === "string" &&
+      value !== "" &&
+      value !== "unknown" &&
+      value !== "unavailable"
     );
   }
 
   _updateHelperIfOutOfSync(sensorRaw: string, helperRaw: string) {
-    if (this._helperID && this.hass && sensorRaw !== helperRaw) {
-      this.hass.callService('input_text', 'set_value', {
+    // Only sync to helper if helper is set and different from sensor
+    if (
+      this.config?.helper &&
+      this._helperID &&
+      this.hass &&
+      sensorRaw !== helperRaw
+    ) {
+      this.hass.callService("input_text", "set_value", {
         entity_id: this._helperID,
         value: sensorRaw,
       });
     }
   }
 
+  _resolveProfile():
+    | (DeviceProfileGroup & { manufacturer: string; model: string })
+    | undefined {
+    return resolveProfile(this.config || {});
+  }
+
   _setMealsFromRaw(raw: string) {
     let meals: FeedingTime[] = [];
     this._decodeError = null;
-    if (!this.config?.layout) {
-      this._decodeError = 'Please select a meal plan layout in the card editor.';
+    const profile = this._resolveProfile();
+    if (
+      !profile ||
+      !Array.isArray(profile.encodingFields) ||
+      profile.encodingFields.length === 0
+    ) {
+      this._decodeError =
+        "Selected feeder profile is invalid or not supported.";
       this._persistedMeals = [];
       this._meals = [];
       return;
     }
-    if (raw && typeof raw === 'string' && raw.trim().length > 0) {
+    if (raw && typeof raw === "string" && raw.trim().length > 0) {
       try {
-        meals = decodeMealPlanData(raw, this.config.layout);
+        meals = decodeMealPlanData(raw, {
+          encodingFields: profile.encodingFields ?? [],
+        });
       } catch (err) {
-        console.error('Meal plan decode error:', err);
-        this._decodeError = (err as Error).message || 'Failed to decode meal plan data.';
+        console.error("Meal plan decode error:", err);
+        this._decodeError =
+          (err as Error).message || "Failed to decode meal plan data.";
         meals = [];
       }
     }
@@ -158,82 +200,152 @@ export class CleverioPf100Card extends LitElement {
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
-    if (!this.config?.layout) {
-      return html`<div style="color: var(--error-color, red); margin: 8px;">Please select a meal plan layout in the card editor.</div>`;
-    }
+    const profile = this._resolveProfile();
     return html`
-      <ha-card header=${this.config?.title || 'Cleverio Pet Feeder'} style="height: 100%;">
-        ${this._decodeError ? html`<div style="color: var(--error-color, red); margin: 8px;">${this._decodeError}</div>` : ''}
-        <div class="overview-row">
-          <ha-chip class="overview-schedules">
-            <ha-icon icon="mdi:calendar-clock"></ha-icon>
-            ${localize('schedules')}: <span style="white-space:nowrap;">${this._meals.length}</span>
-          </ha-chip>
-          <ha-chip class="overview-active">
-            <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-            ${localize('active_schedules')}: <span style="white-space:nowrap;">${this._meals.filter(m => m.enabled).length}</span>
-          </ha-chip>
-          <ha-chip class="overview-grams">
-            <ha-icon icon="mdi:food-drumstick"></ha-icon>
-            ${localize('today')}: <span style="white-space:nowrap;">${getTodaysFoodGrams(this._meals.filter(m => m.enabled), new Date().getDay()) * 6}g</span>
-          </ha-chip>
-          <ha-chip class="overview-average">
-            <ha-icon icon="mdi:scale-balance"></ha-icon>
-            ${localize('avg_week')}: <span style="white-space:nowrap;">
-              ${(() => {
-                const totals = getTotalFoodPerDay(this._meals.filter(m => m.enabled));
-                const avg = totals.reduce((a, b) => a + b, 0) / 7;
-                return (avg * 6).toFixed(1);
-              })()}g
-            </span>
-          </ha-chip>
-          <ha-button class="manage-btn" @click=${() => { this._dialogOpen = true; }}>
+      <ha-card
+        header=${this.config?.title || "MealPlan Card"}
+        style="height: 100%;"
+      >
+        ${this._decodeError
+          ? html`<div style="color: var(--error-color, red); margin: 8px;">
+              ${this._decodeError}
+            </div>`
+          : ""}
+        ${renderOverview({
+          meals: this._meals,
+          localize,
+        })}
+        <div
+          class="card-actions"
+          style="display: flex; justify-content: flex-end; padding: 8px 16px 8px 16px; gap: 8px;"
+        >
+          <ha-button
+            class="manage-btn"
+            @click=${() => {
+              this._dialogOpen = true;
+            }}
+          >
             <ha-icon icon="mdi:table-edit"></ha-icon>
-            ${localize('manage_schedules')}
+            ${localize("manage_schedules")}
           </ha-button>
         </div>
-        ${this._dialogOpen
-          ? html`
-              <cleverio-schedule-view
-                .meals=${[...this._meals]}
-                .layout=${this.config.layout}
-                .localize=${localize}
-                .hass=${this.hass}
-                @save-schedule=${this._onScheduleMealsChanged.bind(this)}
-                @close-dialog=${this._onDialogClose.bind(this)}
-                id="scheduleView"
-              ></cleverio-schedule-view>
-            `
-          : ''}
         <slot></slot>
+        ${this._dialogOpen
+          ? renderScheduleView({
+              profile,
+              hass: this.hass,
+              viewMeals: [...this._meals],
+              editForm: this._editForm,
+              editError: this._editError,
+              editDialogOpen: this._editDialogOpen,
+              onUpdateEditForm: (update) => {
+                this._editForm = { ...this._editForm, ...update };
+                this.requestUpdate();
+              },
+              onOpenEditDialog: (idx) => {
+                this._editForm = { ...this._meals[idx], _idx: idx };
+                this._editDialogOpen = true;
+                this._editError = null;
+                this.requestUpdate();
+              },
+              onOpenAddDialog: () => {
+                this._editForm = {
+                  hour: 12,
+                  minute: 0,
+                  portion: 1,
+                  days: 127,
+                  enabled: true,
+                };
+                this._editDialogOpen = true;
+                this._editError = null;
+                this.requestUpdate();
+              },
+              onCloseEditDialog: () => {
+                this.resetEditState();
+                this.requestUpdate();
+              },
+              onDelete: (idx) => {
+                this._meals = this._meals.filter((_, i) => i !== idx);
+                this.resetEditState();
+                this.requestUpdate();
+              },
+              onCancel: () => {
+                this._dialogOpen = false;
+                this.resetEditState();
+                this.requestUpdate();
+              },
+              onSave: () => {
+                this._persistedMeals = JSON.parse(JSON.stringify(this._meals));
+                this._dialogOpen = false;
+                this.resetEditState();
+                this._saveMealsToSensor();
+                this.requestUpdate();
+              },
+              onEditSave: () => {
+                if (!this._editForm) return;
+                const idx = this._editForm._idx;
+                if (idx !== undefined && idx !== null && idx >= 0) {
+                  this._meals = this._meals.map((m, i) =>
+                    i === idx ? { ...this._editForm } : m,
+                  );
+                } else {
+                  this._meals = [...this._meals, { ...this._editForm }];
+                }
+                this._editDialogOpen = false;
+                this._editForm = null;
+                this._editError = null;
+                this.requestUpdate();
+              },
+              onToggleEnabled: (idx, e) => {
+                const target = e.target as HTMLInputElement | null;
+                const checked =
+                  target && typeof target.checked === "boolean"
+                    ? target.checked
+                    : false;
+                this._meals = this._meals.map((m, i) =>
+                  i === idx ? { ...m, enabled: checked ? 1 : 0 } : m,
+                );
+                this.requestUpdate();
+              },
+              hasUnsavedChanges:
+                JSON.stringify(this._meals) !==
+                JSON.stringify(this._persistedMeals),
+            })
+          : ""}
       </ha-card>
     `;
   }
   static async getConfigElement() {
-    await import('./card-editor');
-    return document.createElement('cleverio-card-editor');
+    await import("./card-editor");
+    return document.createElement("mealplan-card-editor");
   }
 
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
-    const value = encodeMealPlanData(this._meals, this.config.layout);
-    this.hass.callService('text', 'set_value', {
+    const profile = this._resolveProfile();
+    if (
+      !profile ||
+      !Array.isArray(profile.encodingFields) ||
+      profile.encodingFields.length === 0
+    ) {
+      return;
+    }
+    const value = encodeMealPlanData(this._meals, {
+      encodingFields: profile.encodingFields ?? [],
+    });
+    this.hass.callService("text", "set_value", {
       entity_id: this._sensorID,
       value,
     });
   }
-
   _onScheduleMealsChanged(e) {
+    console.log("[MealPlanCard] _onScheduleMealsChanged called", e);
     this._meals = e.detail.meals;
     this._saveMealsToSensor();
-    this._dialogOpen = false;
-  }
-
-  _onDialogClose() {
-    this._dialogOpen = false;
   }
 }
 
-function loadTranslations() {
-  throw new Error('Function not implemented.');
+// Exported stub for test coverage
+export function loadTranslations() {
+  throw new Error("Function not implemented.");
 }
