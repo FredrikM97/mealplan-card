@@ -3,7 +3,7 @@ import { html } from 'lit';
 /**
  * Renders a day selector row as a Lit template (function version).
  * @param {object} params
- * @param {number} params.selectedDaysMask - Bitmask for selected days (0 = none, 127 = all).
+ * @param {number} params.days - Bitmask for selected days (0 = none, 127 = all).
  * @param {boolean} params.editable - If true, days are clickable and emit events.
  * @param {string[]} [params.dayLabels] - Optional array of 7 day labels.
  * @param {(newMask: number) => void} [params.onDaysChanged] - Optional callback for when days change.
@@ -15,29 +15,29 @@ import { html } from 'lit';
  *
  * html`
  *   ${renderDaySelector({
- *     selectedDaysMask: daysMask,
+ *     days: days,
  *     editable: true,
  *     dayLabels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
- *     onDaysChanged: (newMask) => { ... }
+ *     onDaysChanged: (newDays) => { ... }
  *   })}
  * `;
  */
 export function renderDaySelector({
-  selectedDaysMask = 0,
+  days = 0,
   editable = false,
   dayLabels,
   onDaysChanged
 }: {
-  selectedDaysMask: number,
+  days: number,
   editable: boolean,
   dayLabels?: string[],
-  onDaysChanged?: (newMask: number) => void
+  onDaysChanged?: (newDays: number) => void
 }): import('lit').TemplateResult {
   const labels = dayLabels && dayLabels.length === 7 ? dayLabels : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const handleClick = (i: number) => {
     if (!editable) return;
-    const newMask = selectedDaysMask ^ (1 << i);
-    if (onDaysChanged) onDaysChanged(newMask);
+    const newDays = days ^ (1 << i);
+    if (onDaysChanged) onDaysChanged(newDays);
   };
   return html`
     <style>
@@ -90,7 +90,7 @@ export function renderDaySelector({
     <div class="days-row${editable ? ' edit-mode' : ''}">
       ${labels.map((d, i) => html`
         <span
-          class="day-cell${selectedDaysMask & (1 << i) ? ' selected' : ''}${editable ? '' : ' readonly'}"
+          class="day-cell${days & (1 << i) ? ' selected' : ''}${editable ? '' : ' readonly'}"
           @click=${() => handleClick(i)}
         >${d}</span>
       `)}

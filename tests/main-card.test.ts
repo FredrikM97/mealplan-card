@@ -1,4 +1,5 @@
-import { fixture, html, expect } from '@open-wc/testing';
+import { fixture, html } from '@open-wc/testing';
+import { expect } from 'vitest';
 import '../src/main';
 import { describe, it } from 'vitest';
 import { MealPlanCard } from '../src/main';
@@ -15,7 +16,7 @@ vi.stubGlobal('fetch', vi.fn(async () => ({
 
 describe('MealPlanCard', () => {
   it('decodes real base64 meal plan data and passes it to children', async () => {
-    // Encodes: daysMask=127, portion=2, hour=8, minute=0, enabled=1
+    // Encodes: days=127, portion=2, hour=8, minute=0, enabled=1
     const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
     const config = { sensor: 'sensor.test', title: 'Test Card', device_manufacturer: 'Cleverio', device_model: '' };
     const hass = {
@@ -101,7 +102,7 @@ describe('MealPlanCard uncovered lines', () => {
     expect(card._editDialogOpen).to.be.false;
     expect(card._editForm).to.be.null;
     expect(card._editError).to.be.null;
-    expect(card.requestUpdate).to.have.been.called;
+    expect((card.requestUpdate as any).mock.calls.length).toBeGreaterThan(0);
   });
 
   it('onEditSave logic edits an existing meal if _idx is present', () => {
@@ -127,7 +128,7 @@ describe('MealPlanCard uncovered lines', () => {
     expect(card._editDialogOpen).to.be.false;
     expect(card._editForm).to.be.null;
     expect(card._editError).to.be.null;
-    expect(card.requestUpdate).to.have.been.called;
+    expect((card.requestUpdate as any).mock.calls.length).toBeGreaterThan(0);
   });
 
   it('_saveMealsToSensor returns early if no hass or _sensorID', () => {
@@ -156,7 +157,7 @@ describe('MealPlanCard uncovered lines', () => {
     const e = { detail: { meals: [{ hour: 8, minute: 0, portion: 1, enabled: 1 }] } };
     card._onScheduleMealsChanged(e);
     expect(card._meals.length).to.equal(1);
-    expect(card._saveMealsToSensor).to.have.been.called;
+    expect((card._saveMealsToSensor as any).mock.calls.length).toBeGreaterThan(0);
   });
 
   it('getConfigElement resolves and returns a card editor', async () => {

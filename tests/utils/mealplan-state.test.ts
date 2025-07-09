@@ -42,8 +42,8 @@ describe('Mealplan State', () => {
 
   it('getTotalFoodPerDay throws if any entry is missing daysMask', () => {
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, portion: 2, enabled: 1 }, // missing daysMask
-      { hour: 9, minute: 0, portion: 1, enabled: 1, daysMask: 0b0000001 }
+      { hour: 8, minute: 0, portion: 2, enabled: 1 }, // missing days
+      { hour: 9, minute: 0, portion: 1, enabled: 1, days: 0b0000001 }
     ];
     // Should skip the invalid entry and only count the valid one, and not throw
     expect(() => {
@@ -54,8 +54,8 @@ describe('Mealplan State', () => {
   });
   it('getTodaysFoodGrams throws if any entry is missing daysMask', () => {
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, portion: 2, enabled: 1 }, // missing daysMask
-      { hour: 9, minute: 0, portion: 1, enabled: 1, daysMask: 0b0000001 }
+      { hour: 8, minute: 0, portion: 2, enabled: 1 }, // missing days
+      { hour: 9, minute: 0, portion: 1, enabled: 1, days: 0b0000001 }
     ];
     // Should skip the invalid entry and only count the valid one, and not throw
     expect(() => {
@@ -67,8 +67,8 @@ describe('Mealplan State', () => {
 
   it('getTotalFoodPerDay returns correct totals', () => {
     const feedingTimes: import('../../src/util/mealplan-state').FeedingTime[] = [
-      { hour: 8, minute: 0, daysMask: 0b0111110, portion: 2, enabled: 1 },
-      { hour: 10, minute: 0, daysMask: 0b1000001, portion: 1, enabled: 1 },
+      { hour: 8, minute: 0, days: 0b0111110, portion: 2, enabled: 1 },
+      { hour: 10, minute: 0, days: 0b1000001, portion: 1, enabled: 1 },
     ];
     const totals = getTotalFoodPerDay(feedingTimes);
     // 0=Monday, 1=Tuesday, ..., 6=Sunday
@@ -85,7 +85,7 @@ describe('Mealplan State', () => {
 
   it('getTotalFoodPerDay ignores disabled times', () => {
     const feedingTimes: import('../../src/util/mealplan-state').FeedingTime[] = [
-      { hour: 8, minute: 0, daysMask: 0b1111111, portion: 2, enabled: 0 },
+      { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 0 },
     ];
     const totals = getTotalFoodPerDay(feedingTimes);
     expect(Object.values(totals).every(v => v === 0)).toBe(true);
@@ -93,8 +93,8 @@ describe('Mealplan State', () => {
 
   it('getTodaysFoodGrams returns correct grams for today', () => {
     const feedingTimes: import('../../src/util/mealplan-state').FeedingTime[] = [
-      { hour: 8, minute: 0, daysMask: 0b0111110, portion: 2, enabled: 1 },
-      { hour: 10, minute: 0, daysMask: 0b1000001, portion: 1, enabled: 1 },
+      { hour: 8, minute: 0, days: 0b0111110, portion: 2, enabled: 1 },
+      { hour: 10, minute: 0, days: 0b1000001, portion: 1, enabled: 1 },
     ];
     expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(1); // Monday
     expect(getTodaysFoodGrams(feedingTimes, 1)).toBe(2); // Tuesday
@@ -103,23 +103,23 @@ describe('Mealplan State', () => {
 
   it('getNextSchedule returns first enabled time', () => {
     const feedingTimes: FeedingTime[] = [
-      { hour: 7, minute: 0, daysMask: 0b1111111, portion: 1, enabled: 0 },
-      { hour: 9, minute: 0, daysMask: 0b1111111, portion: 1, enabled: 1 },
-      { hour: 12, minute: 0, daysMask: 0b1111111, portion: 1, enabled: 1 },
+      { hour: 7, minute: 0, days: 0b1111111, portion: 1, enabled: 0 },
+      { hour: 9, minute: 0, days: 0b1111111, portion: 1, enabled: 1 },
+      { hour: 12, minute: 0, days: 0b1111111, portion: 1, enabled: 1 },
     ];
     expect(getNextSchedule(feedingTimes)).toBe('09:00');
   });
 
   it('getTodaysFoodGrams returns 0 if no enabled times for today', () => {
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, daysMask: 0b0000000, portion: 2, enabled: 1 },
+      { hour: 8, minute: 0, days: 0b0000000, portion: 2, enabled: 1 },
     ];
     expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(0); // Monday
   });
 
   it('getTodaysFoodGrams ignores disabled times', () => {
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, daysMask: 0b1111111, portion: 2, enabled: 0 },
+      { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 0 },
     ];
     expect(getTodaysFoodGrams(feedingTimes, 0)).toBe(0); // Monday
   });
@@ -128,11 +128,11 @@ describe('Mealplan State', () => {
   // Only keep a generic round-trip test for encode/decode
   it('encodeMealPlanData and decodeMealPlanData are inverses for generic data', () => {
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, daysMask: 0b0111110, portion: 2, enabled: 1 },
-      { hour: 10, minute: 0, daysMask: 0b1000001, portion: 1, enabled: 0 },
+      { hour: 8, minute: 0, days: 0b0111110, portion: 2, enabled: 1 },
+      { hour: 10, minute: 0, days: 0b1000001, portion: 1, enabled: 0 },
     ];
-    const encoded = encodeMealPlanData(feedingTimes, { encodingFields: ["daysMask", "hour", "minute", "portion", "enabled"] });
-    const decoded = decodeMealPlanData(encoded, { encodingFields: ["daysMask", "hour", "minute", "portion", "enabled"] });
+    const encoded = encodeMealPlanData(feedingTimes, { encodingFields: ["days", "hour", "minute", "portion", "enabled"] });
+    const decoded = decodeMealPlanData(encoded, { encodingFields: ["days", "hour", "minute", "portion", "enabled"] });
     expect(decoded).toEqual(feedingTimes);
   });
 });

@@ -24,8 +24,6 @@
   "days_short": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   "days_full": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
   "avg_week": "Avg/week",
-  "tuya_with_daysMask": "Mealplan (with days)",
-  "tuya_no_daysMask": "Mealplan (no days)",
   "select_layout": "Select layout...",
   "mealplan_layout": "Meal plan layout"
 }

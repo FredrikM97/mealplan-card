@@ -24,7 +24,7 @@ export interface FeedingTime {
   hour: number;
   minute: number;
   portion: number;
-  daysMask?: number;
+  days?: number;
   enabled: 0 | 1;
 }
 
@@ -41,12 +41,11 @@ export function getNextSchedule(feedingTimes: FeedingTime[]): string {
 
 
 export function getTotalFoodPerDay(feedingTimes: FeedingTime[]): number[] {
-
   const totals = Array(7).fill(0);
   feedingTimes.forEach((t, idx) => {
     if (t.enabled !== 1) return;
-    if (typeof t.daysMask !== 'number') {
-      console.error(`FeedingTime entry #${idx} is missing required 'daysMask' field.`);
+    if (typeof t.days !== 'number') {
+      console.error(`FeedingTime entry #${idx} is missing required 'days' field.`);
       return;
     }
     if (typeof t.portion !== 'number') {
@@ -54,7 +53,7 @@ export function getTotalFoodPerDay(feedingTimes: FeedingTime[]): number[] {
       return;
     }
     for (let i = 0; i < 7; i++) {
-      if (t.daysMask & (1 << i)) {
+      if (t.days & (1 << i)) {
         totals[i] += t.portion;
       }
     }
@@ -66,15 +65,15 @@ export function getTodaysFoodGrams(feedingTimes: FeedingTime[], dayIdx: number):
   let total = 0;
   feedingTimes.forEach((t, idx) => {
     if (t.enabled !== 1) return;
-    if (typeof t.daysMask !== 'number') {
-      console.error(`FeedingTime entry #${idx} is missing required 'daysMask' field.`);
+    if (typeof t.days !== 'number') {
+      console.error(`FeedingTime entry #${idx} is missing required 'days' field.`);
       return;
     }
     if (typeof t.portion !== 'number') {
       console.error(`FeedingTime entry #${idx} is missing required 'portion' field.`);
       return;
     }
-    if (t.daysMask & (1 << dayIdx)) {
+    if (t.days & (1 << dayIdx)) {
       total += t.portion;
     }
   });
@@ -109,7 +108,7 @@ export function decodeMealPlanData(base64String: string, profile: { encodingFiel
       hour: typeof entry.hour === 'number' ? entry.hour : 0,
       minute: typeof entry.minute === 'number' ? entry.minute : 0,
       portion: typeof entry.portion === 'number' ? entry.portion : 1,
-      daysMask: typeof entry.daysMask === 'number' ? entry.daysMask : 0,
+      days: typeof entry.days === 'number' ? entry.days : 0,
       enabled: entry.enabled === 1 ? 1 : 0
     };
   });

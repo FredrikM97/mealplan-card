@@ -19,8 +19,8 @@ describe('honeyguardianProfile encoding/decoding', () => {
     const encoded = encodeMealPlanData(feedingTimes, { encodingFields: honeyguardianProfile.encodingFields! });
     const decoded = decodeMealPlanData(encoded, { encodingFields: honeyguardianProfile.encodingFields! });
     expect(decoded).toEqual([
-      { hour: 6, minute: 0, portion: 1, enabled: 1, daysMask: 0 },
-      { hour: 18, minute: 0, portion: 2, enabled: 0, daysMask: 0 },
+      { hour: 6, minute: 0, portion: 1, enabled: 1, days: 0 },
+      { hour: 18, minute: 0, portion: 2, enabled: 0, days: 0 },
     ]);
   });
 

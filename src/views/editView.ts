@@ -27,10 +27,10 @@ export function renderEditView({ profile, editForm, editError, onUpdate }: {
   return html`
     <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
       ${editError ? html`<div class="error">${editError}</div>` : ''}
-      ${fields.includes('daysMask') ? renderDaySelector({
-        selectedDaysMask: editForm?.daysMask ?? 0,
+      ${fields.includes('days') ? renderDaySelector({
+        days: editForm?.days ?? 0,
         editable: true,
-        onDaysChanged: (newMask: number) => onUpdate({ daysMask: newMask })
+        onDaysChanged: (newDays: number) => onUpdate({ days: newDays })
       }) : ''}
       <div class="edit-form-group">
         <label for="edit-time">${localize('time')}</label>

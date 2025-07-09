@@ -3,16 +3,16 @@ describe('resolveProfile edge cases', () => {
   it('returns undefined and warns if device_manufacturer is missing', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const result = resolveProfile({});
-    expect(result).to.be.undefined;
-    expect(warn).to.have.been.calledWith('No device_manufacturer specified in config');
+    expect(result).toBeUndefined();
+    expect(warn).toHaveBeenCalledWith('No device_manufacturer specified in config');
     warn.mockRestore();
   });
 
   it('returns undefined and warns if no matching profile is found', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const result = resolveProfile({ device_manufacturer: 'NotARealBrand', device_model: 'X' });
-    expect(result).to.be.undefined;
-    expect(warn).to.have.been.calledWith('No matching profile found for', 'NotARealBrand', 'X');
+    expect(result).toBeUndefined();
+    expect(warn).toHaveBeenCalledWith('No matching profile found for', 'NotARealBrand', 'X');
     warn.mockRestore();
   });
 
@@ -21,7 +21,7 @@ describe('resolveProfile edge cases', () => {
       { profiles: [{ manufacturer: 'NoModels' }], fields: [], encodingFields: [] }
     ];
     const result = resolveProfile.call({ profiles }, { device_manufacturer: 'NoModels' });
-    expect(result).to.be.undefined;
+    expect(result).toBeUndefined();
   });
 
   it('getProfileDropdownItems warns if a profile is missing manufacturer', () => {
@@ -30,10 +30,11 @@ describe('resolveProfile edge cases', () => {
       { profiles: [{ manufacturer: '', models: [] }], fields: [], encodingFields: [] }
     ];
     getProfileDropdownItems(testProfiles as any);
-    expect(warn).to.have.been.calledWith('Device profile missing manufacturer:', { manufacturer: '', models: [] });
+    expect(warn).toHaveBeenCalledWith('Device profile missing manufacturer:', { manufacturer: '', models: [] });
     warn.mockRestore();
   });
 });
+
 import { describe, it, expect, vi } from 'vitest';
 import { resolveProfile, getProfileDropdownItems } from '../../src/profiles/resolveProfile';
 import { profiles } from '../../src/profiles/profiles';
@@ -42,8 +43,8 @@ const cleverioProfile = {
   profiles: [
     { manufacturer: 'Cleverio', default: true, models: [] }
   ],
-  fields: ['time', 'portion', 'daysMask', 'enabled', 'edit', 'delete', 'add'],
-  encodingFields: ['daysMask', 'hour', 'minute', 'portion', 'enabled']
+  fields: ['time', 'portion', 'days', 'enabled', 'edit', 'delete', 'add'],
+  encodingFields: ['days', 'hour', 'minute', 'portion', 'enabled']
 };
 
 const honeyguardianProfile = {

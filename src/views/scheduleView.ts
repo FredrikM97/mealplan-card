@@ -54,13 +54,13 @@ export function renderScheduleView({
     if (fields.includes('portion')) {
       columns.portion = { title: localize('portion'), sortable: true, minWidth: '80px' };
     }
-    if (fields.includes('daysMask')) {
+    if (fields.includes('days')) {
       columns.days = {
         title: localize('days'),
         sortable: false,
         minWidth: '130px',
         template: (row: any) => renderDaySelector({
-          selectedDaysMask: row.daysMask,
+          days: row.days,
           editable: false
         })
       };

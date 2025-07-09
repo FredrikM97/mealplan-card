@@ -1,3 +1,19 @@
+describe('profiles structure validation', () => {
+  it('each profile has a models array and only one default per manufacturer per group', () => {
+    for (const group of profiles) {
+      const defaultCounts: Record<string, number> = {};
+      for (const p of group.profiles) {
+        expect(Array.isArray(p.models)).toBe(true);
+        if (p.default) {
+          defaultCounts[p.manufacturer] = (defaultCounts[p.manufacturer] || 0) + 1;
+        }
+      }
+      for (const [manufacturer, count] of Object.entries(defaultCounts)) {
+        expect(count).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+});
 import { describe, it, expect, vi } from 'vitest';
 import { profiles } from '../../src/profiles/profiles';
 

@@ -200,7 +200,7 @@ export class MealPlanCard extends LitElement {
             this.requestUpdate();
           },
           onOpenAddDialog: () => {
-            this._editForm = { hour: 12, minute: 0, portion: 1, daysMask: 127, enabled: true };
+            this._editForm = { hour: 12, minute: 0, portion: 1, days: 127, enabled: true };
             this._editDialogOpen = true;
             this._editError = null;
             this.requestUpdate();

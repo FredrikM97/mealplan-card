@@ -5,7 +5,7 @@
 export enum ProfileField {
   TIME = 'time',
   PORTION = 'portion',
-  MASK = 'mask',
+  DAYS = 'days',
   ENABLED = 'enabled',
   EDIT = 'edit',
   DELETE = 'delete',
