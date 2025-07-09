@@ -5,10 +5,7 @@
   "customizations": {
     "vscode": {
       "settings": {},
-      "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
-      ]
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
     }
   },
   "postCreateCommand": "npm install && npm test"

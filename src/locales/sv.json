@@ -22,6 +22,14 @@
   "unsaved_changes": "Osparade ändringar",
   "unsaved_changes_hint": "Du har osparade ändringar. Glöm inte att spara!",
   "days_short": ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"],
-  "days_full": ["Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag", "Söndag"],
+  "days_full": [
+    "Måndag",
+    "Tisdag",
+    "Onsdag",
+    "Torsdag",
+    "Fredag",
+    "Lördag",
+    "Söndag"
+  ],
   "avg_week": "Snitt/vecka"
 }

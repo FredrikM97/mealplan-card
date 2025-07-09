@@ -1,4 +1,3 @@
-
 // Deprecated: schedule-schema/profiles.ts is no longer used. See src/profiles/.
 
 const defaultFields = [
@@ -22,7 +21,7 @@ const defaultEncodingFields = [
 export const profiles: DeviceProfileGroup[] = [
   {
     profiles: [
-      { manufacturer: 'Cleverio', models: [] }, // Only one model, no need for 'default'
+      { manufacturer: "Cleverio", models: [] }, // Only one model, no need for 'default'
     ],
     maxSchedules: 10,
     minSchedules: 0,
@@ -30,22 +29,10 @@ export const profiles: DeviceProfileGroup[] = [
     encodingFields: defaultEncodingFields,
   },
   {
-    profiles: [
-      { manufacturer: 'HoneyGuardian', models: [] }, 
-    ],
+    profiles: [{ manufacturer: "HoneyGuardian", models: [] }],
     maxSchedules: 6,
     minSchedules: 6,
-    fields: [
-        ff.TIME,
-        ff.PORTIONS,
-        ff.ENABLE,
-        ff.EDIT,
-    ],
-    encodingFields: [
-      ef.HOUR,
-      ef.MINUTE,
-      ef.PORTIONS,
-      ef.ENABLE
-    ],
+    fields: [ff.TIME, ff.PORTIONS, ff.ENABLE, ff.EDIT],
+    encodingFields: [ef.HOUR, ef.MINUTE, ef.PORTIONS, ef.ENABLE],
   },
 ];

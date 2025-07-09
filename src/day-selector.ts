@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html } from "lit";
 
 /**
  * Renders a day selector row as a Lit template (function version).
@@ -26,14 +26,17 @@ export function renderDaySelector({
   days = 0,
   editable = false,
   dayLabels,
-  onDaysChanged
+  onDaysChanged,
 }: {
-  days: number,
-  editable: boolean,
-  dayLabels?: string[],
-  onDaysChanged?: (newDays: number) => void
-}): import('lit').TemplateResult {
-  const labels = dayLabels && dayLabels.length === 7 ? dayLabels : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  days: number;
+  editable: boolean;
+  dayLabels?: string[];
+  onDaysChanged?: (newDays: number) => void;
+}): import("lit").TemplateResult {
+  const labels =
+    dayLabels && dayLabels.length === 7
+      ? dayLabels
+      : ["M", "T", "W", "T", "F", "S", "S"];
   const handleClick = (i: number) => {
     if (!editable) return;
     const newDays = days ^ (1 << i);
@@ -58,7 +61,9 @@ export function renderDaySelector({
         font-weight: 600;
         font-size: 0.95em;
         margin: 0 1px;
-        transition: background 0.2s, color 0.2s;
+        transition:
+          background 0.2s,
+          color 0.2s;
         cursor: pointer;
         user-select: none;
         position: relative;
@@ -87,13 +92,18 @@ export function renderDaySelector({
         cursor: default;
       }
     </style>
-    <div class="days-row${editable ? ' edit-mode' : ''}">
-      ${labels.map((d, i) => html`
-        <span
-          class="day-cell${days & (1 << i) ? ' selected' : ''}${editable ? '' : ' readonly'}"
-          @click=${() => handleClick(i)}
-        >${d}</span>
-      `)}
+    <div class="days-row${editable ? " edit-mode" : ""}">
+      ${labels.map(
+        (d, i) => html`
+          <span
+            class="day-cell${days & (1 << i) ? " selected" : ""}${editable
+              ? ""
+              : " readonly"}"
+            @click=${() => handleClick(i)}
+            >${d}</span
+          >
+        `,
+      )}
     </div>
   `;
 }

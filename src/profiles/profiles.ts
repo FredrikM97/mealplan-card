@@ -1,13 +1,11 @@
 // Unified grouped config for all supported device profiles
-import type { DeviceProfileGroup } from './types';
+import type { DeviceProfileGroup } from "./types";
 
-import { ProfileField as pf, EncodingField as ef } from './types';
+import { ProfileField as pf, EncodingField as ef } from "./types";
 
 export const profiles: DeviceProfileGroup[] = [
   {
-    profiles: [
-      { manufacturer: 'Cleverio', default: true, models: [] }
-    ],
+    profiles: [{ manufacturer: "Cleverio", default: true, models: [] }],
     fields: [
       pf.TIME,
       pf.PORTION,
@@ -15,32 +13,13 @@ export const profiles: DeviceProfileGroup[] = [
       pf.ENABLED,
       pf.EDIT,
       pf.DELETE,
-      pf.ADD
+      pf.ADD,
     ],
-    encodingFields: [
-      ef.DAYS,
-      ef.HOUR,
-      ef.MINUTE,
-      ef.PORTION,
-      ef.ENABLED
-    ]
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
   {
-    profiles: [
-      { manufacturer: 'HoneyGuardian', default: true, models: [] }
-    ],
-    fields: [
-      pf.TIME,
-      pf.PORTION,
-      pf.ENABLED,
-      pf.EDIT,
-    ],
-    encodingFields: [
-      ef.HOUR,
-      ef.MINUTE,
-      ef.PORTION,
-      ef.ENABLED
-    ]
-  }
+    profiles: [{ manufacturer: "HoneyGuardian", default: true, models: [] }],
+    fields: [pf.TIME, pf.PORTION, pf.ENABLED, pf.EDIT],
+    encodingFields: [ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+  },
 ];
-

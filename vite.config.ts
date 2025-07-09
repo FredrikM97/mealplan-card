@@ -1,47 +1,45 @@
-import { defineConfig } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [
-    tsconfigPaths()
-  ],
+  plugins: [tsconfigPaths()],
   build: {
-    outDir: 'dist',
+    outDir: "dist",
     emptyOutDir: true,
-    minify: 'terser',
+    minify: "terser",
     lib: {
-      entry: 'src/main.ts',
-      name: 'MealPlanCard',
-      fileName: 'mealplan-card',
-      formats: ['es']
+      entry: "src/main.ts",
+      name: "MealPlanCard",
+      fileName: "mealplan-card",
+      formats: ["es"],
     },
     rollupOptions: {
       output: {
         inlineDynamicImports: true,
-        manualChunks: undefined
-      }
-    }
+        manualChunks: undefined,
+      },
+    },
   },
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     env: {
-      TZ: 'Etc/UTC',
-      IS_TEST: 'true',
+      TZ: "Etc/UTC",
+      IS_TEST: "true",
     },
-    setupFiles: ['./tests/setup.ts'],
-    include: ['tests/**/*.test.ts'],
+    setupFiles: ["./tests/setup.ts"],
+    include: ["tests/**/*.test.ts"],
     coverage: {
       include: [
-        'src/**/*.js',
-        'src/**/*.ts',
-        'src/**/*.mjs',
-        'src/**/*.vue',
-        'src/**/*.jsx',
-        'src/**/*.tsx'
+        "src/**/*.js",
+        "src/**/*.ts",
+        "src/**/*.mjs",
+        "src/**/*.vue",
+        "src/**/*.jsx",
+        "src/**/*.tsx",
       ],
-      reporter: ['text', 'html'],
-      provider: 'v8',
-      reportsDirectory: 'coverage'
-    }
-  }
+      reporter: ["text", "html"],
+      provider: "v8",
+      reportsDirectory: "coverage",
+    },
+  },
 });

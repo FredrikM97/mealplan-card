@@ -1,24 +1,23 @@
 // Types and schema for device profiles
 
-
 // Enum for all UI/feature fields (can be shown in the editor or as toggles)
 export enum ProfileField {
-  TIME = 'time',
-  PORTION = 'portion',
-  DAYS = 'days',
-  ENABLED = 'enabled',
-  EDIT = 'edit',
-  DELETE = 'delete',
-  ADD = 'add',
+  TIME = "time",
+  PORTION = "portion",
+  DAYS = "days",
+  ENABLED = "enabled",
+  EDIT = "edit",
+  DELETE = "delete",
+  ADD = "add",
 }
 
 // Enum for fields that can be encoded/decoded in meal plan data
 export enum EncodingField {
-  DAYS = 'days',
-  HOUR = 'hour',
-  MINUTE = 'minute',
-  PORTION = 'portion',
-  ENABLED = 'enabled',
+  DAYS = "days",
+  HOUR = "hour",
+  MINUTE = "minute",
+  PORTION = "portion",
+  ENABLED = "enabled",
 }
 
 export interface DeviceProfile {
