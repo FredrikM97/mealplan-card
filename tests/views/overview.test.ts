@@ -28,7 +28,10 @@ describe("MealPlanCard Overview UI", () => {
     expect(Number(active.textContent.replace(/\D/g, ""))).to.be.greaterThan(0);
     const grams = el.shadowRoot.querySelector(".overview-grams");
     expect(grams).to.exist;
-    const gramsText = grams.textContent.toLowerCase().replace(/\s+/g, ' ').trim();
+    const gramsText = grams.textContent
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
     expect(gramsText).to.match(/today: \d+g/);
   }, 20000);
 });
