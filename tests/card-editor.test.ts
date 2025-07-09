@@ -12,7 +12,9 @@ describe('CleverioCardEditor', () => {
   it('renders and updates config', async () => {
     const el = await fixture<CleverioCardEditor>(html`<cleverio-card-editor></cleverio-card-editor>`);
     await el.updateComplete;
-    el.setConfig({ sensor: 'sensor.test', title: 'Test', profile: 'cleverio' });
+    el.setConfig({
+      sensor: 'sensor.test', title: 'Test', profile: 'cleverio', helper: ''
+    });
     await el.updateComplete;
     expect(el.config.sensor).to.equal('sensor.test');
     expect(el.config.title).to.equal('Test');
