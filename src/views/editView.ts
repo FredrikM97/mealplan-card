@@ -23,10 +23,11 @@ export function renderEditView({ profile, editForm, editError, onUpdate }: {
   editError: string | null,
   onUpdate: (update: Partial<any>) => void
 }) {
+  const fields = profile.fields || [];
   return html`
     <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
       ${editError ? html`<div class="error">${editError}</div>` : ''}
-      ${profile.fields.includes('daysMask') ? renderDaySelector({
+      ${fields.includes('daysMask') ? renderDaySelector({
         selectedDaysMask: editForm?.daysMask ?? 0,
         editable: true,
         onDaysChanged: (newMask: number) => onUpdate({ daysMask: newMask })
@@ -45,7 +46,7 @@ export function renderEditView({ profile, editForm, editError, onUpdate }: {
           }}
         />
       </div>
-      ${profile.fields.includes('portion') ? html`
+      ${fields.includes('portion') ? html`
         <div class="edit-form-group">
           <label for="edit-portion">${localize('portion')}</label>
           <input

@@ -1,4 +1,4 @@
-import { ScheduleEncodingFieldKey } from '../schedule-schema/fields';
+// import { ScheduleEncodingFieldKey } from '../profiles/types';
 
 // Returns null if valid, or an error string if invalid
 export function validateFeedingTime(entry: Partial<FeedingTime>): string | null {

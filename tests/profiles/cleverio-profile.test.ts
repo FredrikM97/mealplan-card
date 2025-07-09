@@ -1,8 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { cleverioProfile } from '../../src/profiles/cleverio';
+import { profiles } from '../../src/profiles/profiles';
 import { encodeMealPlanData, decodeMealPlanData, FeedingTime } from '../../src/util/mealplan-state';
 
+// Find the Cleverio profile from the grouped structure
+const cleverioProfile = profiles.find(group =>
+  group.profiles.some(p => p.manufacturer === 'Cleverio')
+);
+
 describe('cleverioProfile encoding/decoding', () => {
+  if (!cleverioProfile) throw new Error('Cleverio profile not found in profiles array');
+
   const feedingTimes: FeedingTime[] = [
     { hour: 8, minute: 0, portion: 2, daysMask: 127, enabled: 1 },
     { hour: 18, minute: 0, portion: 1, daysMask: 62, enabled: 0 },

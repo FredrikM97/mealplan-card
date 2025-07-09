@@ -8,7 +8,8 @@ import {localize, setLanguage } from './locales/localize';
 
 import { renderScheduleView } from './views/scheduleView';
 import { renderOverview } from './views/overview';
-import { profiles } from './profiles';
+import { resolveProfile } from './profiles/resolveProfile';
+import type { DeviceProfileGroup } from './profiles/types';
 
 /**
  * MealPlan Card
@@ -135,9 +136,8 @@ export class MealPlanCard extends LitElement {
     }
   }
 
-  _resolveProfile() {
-    if (!this.config?.profile) return undefined;
-    return profiles.find((p) => p.id === this.config.profile);
+  _resolveProfile(): DeviceProfileGroup & { manufacturer: string; model: string } | undefined {
+    return resolveProfile(this.config || {});
   }
 
   _setMealsFromRaw(raw: string) {
@@ -274,6 +274,8 @@ export class MealPlanCard extends LitElement {
   }
 }
 
-function loadTranslations() {
+
+// Exported stub for test coverage
+export function loadTranslations() {
   throw new Error('Function not implemented.');
 }

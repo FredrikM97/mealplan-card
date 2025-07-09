@@ -13,7 +13,7 @@ describe('MealPlanCardEditor', () => {
     const el = await fixture<MealPlanCardEditor>(html`<mealplan-card-editor></mealplan-card-editor>`);
     await el.updateComplete;
     el.setConfig({
-      sensor: 'sensor.test', title: 'Test', profile: 'cleverio', helper: ''
+      sensor: 'sensor.test', title: 'Test', device_manufacturer: 'Cleverio', device_model: '', helper: ''
     });
     await el.updateComplete;
     expect(el.config.sensor).to.equal('sensor.test');
@@ -41,13 +41,14 @@ describe('MealPlanCardEditor', () => {
 
     const profileCombo = shadow.querySelector('#profile-combo');
     if (profileCombo) {
-      (profileCombo as any).value = 'cleverio';
-      profileCombo.dispatchEvent(new CustomEvent('value-changed', { detail: { value: 'cleverio' }, bubbles: true, composed: true }));
+      (profileCombo as any).value = 'Cleverio:';
+      profileCombo.dispatchEvent(new CustomEvent('value-changed', { detail: { value: 'Cleverio:' }, bubbles: true, composed: true }));
     }
 
     await el.updateComplete;
     expect(el.config.sensor).to.equal('sensor.test');
     expect(el.config.title).to.equal('My Title');
-    expect(el.config.profile).to.equal('cleverio');
+    expect(el.config.device_manufacturer).to.equal('Cleverio');
+    expect(el.config.device_model).to.equal('');
   });
 });

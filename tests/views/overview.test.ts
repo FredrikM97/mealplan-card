@@ -5,7 +5,7 @@ import { describe, it } from 'vitest';
 describe('MealPlanCard Overview UI', () => {
   it('decodes base64 meal plan and displays correct schedule and grams in UI', async () => {
     const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
-    const config = { sensor: 'sensor.test', title: 'Test Card', profile: 'cleverio' };
+    const config = { sensor: 'sensor.test', title: 'Test Card', device_manufacturer: 'Cleverio', device_model: '' };
     const hass = { states: { 'sensor.test': { state: base64, attributes: {} } } };
     const el = await fixture<any>(html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`);
     await el.updateComplete;

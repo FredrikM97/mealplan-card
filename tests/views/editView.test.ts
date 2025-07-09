@@ -1,7 +1,8 @@
 import { html, render } from 'lit';
 import { expect, describe, it, vi } from 'vitest';
 import { renderEditView } from '../../src/views/editView';
-import { cleverioProfile } from '../../src/profiles/cleverio';
+import { profiles } from '../../src/profiles/profiles';
+const cleverioProfile = profiles.find(group => group.profiles.some(p => p.manufacturer === 'Cleverio'))!;
 
 // Register minimal mocks for missing Home Assistant custom elements
 class HaButtonMock extends HTMLElement {}

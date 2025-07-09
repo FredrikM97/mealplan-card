@@ -1,9 +1,11 @@
-import { html, render } from 'lit';
+
+import { render } from 'lit';
 import { expect, describe, it, vi } from 'vitest';
 import { renderScheduleView } from '../../src/views/scheduleView';
-import { cleverioProfile } from '../../src/profiles/cleverio';
+import { profiles } from '../../src/profiles/profiles';
+const cleverioProfile = profiles.find(group => group.profiles.some(p => p.manufacturer === 'Cleverio'))!;
 
-// Register minimal mocks for missing Home Assistant custom elements
+
 class HaDataTableMock extends HTMLElement {
   _data: any;
   _columns: any;
@@ -12,17 +14,10 @@ class HaDataTableMock extends HTMLElement {
   set columns(val: any) { this._columns = val; }
   get columns() { return this._columns; }
 }
-if (!customElements.get('ha-data-table')) {
-  customElements.define('ha-data-table', HaDataTableMock);
-}
-class HaButtonMock extends HTMLElement {}
-if (!customElements.get('ha-button')) {
-  customElements.define('ha-button', HaButtonMock);
-}
-class HaChipMock extends HTMLElement {}
-if (!customElements.get('ha-chip')) {
-  customElements.define('ha-chip', HaChipMock);
-}
+if (!customElements.get('ha-data-table')) customElements.define('ha-data-table', HaDataTableMock);
+if (!customElements.get('ha-button')) customElements.define('ha-button', class extends HTMLElement {});
+if (!customElements.get('ha-chip')) customElements.define('ha-chip', class extends HTMLElement {});
+
 
 const sampleMeals = [
   { hour: 8, minute: 0, portion: 2, daysMask: 127, enabled: 1 },

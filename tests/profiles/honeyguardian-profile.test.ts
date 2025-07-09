@@ -1,8 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { honeyguardianProfile } from '../../src/profiles/honeyguardian';
+import { profiles } from '../../src/profiles/profiles';
 import { encodeMealPlanData, decodeMealPlanData, FeedingTime } from '../../src/util/mealplan-state';
 
+// Find the HoneyGuardian profile from the grouped structure
+const honeyguardianProfile = profiles.find(group =>
+  group.profiles.some(p => p.manufacturer === 'HoneyGuardian')
+);
+
 describe('honeyguardianProfile encoding/decoding', () => {
+  if (!honeyguardianProfile) throw new Error('HoneyGuardian profile not found in profiles array');
+
   const feedingTimes: FeedingTime[] = [
     { hour: 6, minute: 0, portion: 1, enabled: 1 },
     { hour: 18, minute: 0, portion: 2, enabled: 0 },

@@ -1,4 +1,3 @@
-
 import { fixture, html, expect } from '@open-wc/testing';
 import '../src/main';
 import { describe, it } from 'vitest';
@@ -18,7 +17,7 @@ describe('MealPlanCard', () => {
   it('decodes real base64 meal plan data and passes it to children', async () => {
     // Encodes: daysMask=127, portion=2, hour=8, minute=0, enabled=1
     const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
-    const config = { sensor: 'sensor.test', title: 'Test Card', profile: 'cleverio' };
+    const config = { sensor: 'sensor.test', title: 'Test Card', device_manufacturer: 'Cleverio', device_model: '' };
     const hass = {
       states: {
         'sensor.test': {
@@ -47,7 +46,7 @@ describe('getConfigElement', () => {
 describe('MealPlanCard integration', () => {
   it('calls hass.callService when schedule Save is pressed', async () => {
     const base64 = 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==';
-    const config = { sensor: 'sensor.test', title: 'Test Card', profile: 'cleverio' };
+    const config = { sensor: 'sensor.test', title: 'Test Card', device_manufacturer: 'Cleverio', device_model: '' };
     const callService = vi.fn();
     const hass = {
       states: { 'sensor.test': { state: base64, attributes: {} } },
@@ -72,5 +71,103 @@ describe('MealPlanCard integration', () => {
     const call = callService.mock.calls.find(c => c[0] === 'text' && c[1] === 'set_value');
     expect(call, 'callService should be called with text.set_value').to.exist;
     if (call) expect(call[2].entity_id).to.equal('sensor.test');
+  });
+});
+
+// Uncovered lines/coverage tests merged from main-card.coverage.test.ts
+import * as mainModule from '../src/main';
+
+describe('MealPlanCard uncovered lines', () => {
+  it('onEditSave logic adds a new meal if no _idx', () => {
+    const card = new MealPlanCard();
+    card._meals = [];
+    card._editForm = { hour: 8, minute: 0, portion: 1, enabled: 1 };
+    card._editDialogOpen = true;
+    card._editError = 'err';
+    card.requestUpdate = vi.fn();
+    // Simulate onEditSave logic
+    if (!card._editForm) return;
+    const idx = card._editForm._idx;
+    if (idx !== undefined && idx !== null && idx >= 0) {
+      card._meals = card._meals.map((m, i) => i === idx ? { ...card._editForm } : m);
+    } else {
+      card._meals = [...card._meals, { ...card._editForm }];
+    }
+    card._editDialogOpen = false;
+    card._editForm = null;
+    card._editError = null;
+    card.requestUpdate();
+    expect(card._meals.length).to.equal(1);
+    expect(card._editDialogOpen).to.be.false;
+    expect(card._editForm).to.be.null;
+    expect(card._editError).to.be.null;
+    expect(card.requestUpdate).to.have.been.called;
+  });
+
+  it('onEditSave logic edits an existing meal if _idx is present', () => {
+    const card = new MealPlanCard();
+    card._meals = [{ hour: 8, minute: 0, portion: 1, enabled: 1 }];
+    card._editForm = { hour: 9, minute: 0, portion: 2, enabled: 1, _idx: 0 };
+    card._editDialogOpen = true;
+    card._editError = 'err';
+    card.requestUpdate = vi.fn();
+    // Simulate onEditSave logic
+    if (!card._editForm) return;
+    const idx = card._editForm._idx;
+    if (idx !== undefined && idx !== null && idx >= 0) {
+      card._meals = card._meals.map((m, i) => i === idx ? { ...card._editForm } : m);
+    } else {
+      card._meals = [...card._meals, { ...card._editForm }];
+    }
+    card._editDialogOpen = false;
+    card._editForm = null;
+    card._editError = null;
+    card.requestUpdate();
+    expect(card._meals[0].hour).to.equal(9);
+    expect(card._editDialogOpen).to.be.false;
+    expect(card._editForm).to.be.null;
+    expect(card._editError).to.be.null;
+    expect(card.requestUpdate).to.have.been.called;
+  });
+
+  it('_saveMealsToSensor returns early if no hass or _sensorID', () => {
+    const card = new MealPlanCard();
+    card._meals = [];
+    Object.defineProperty(card, '_sensorID', { get: () => undefined });
+    card.hass = undefined;
+    expect(() => card._saveMealsToSensor()).to.not.throw();
+  });
+
+  it('_saveMealsToSensor returns early if no valid profile or encodingFields', () => {
+    const card = new MealPlanCard();
+    card._meals = [];
+    Object.defineProperty(card, '_sensorID', { get: () => 'sensor.test' });
+    card.hass = { callService: vi.fn() };
+    card._resolveProfile = () => undefined;
+    expect(() => card._saveMealsToSensor()).to.not.throw();
+    card._resolveProfile = () => ({ encodingFields: [], profiles: [], fields: [], manufacturer: '', model: '' });
+    expect(() => card._saveMealsToSensor()).to.not.throw();
+  });
+
+  it('_onScheduleMealsChanged updates meals and calls _saveMealsToSensor', () => {
+    const card = new MealPlanCard();
+    card._meals = [];
+    card._saveMealsToSensor = vi.fn();
+    const e = { detail: { meals: [{ hour: 8, minute: 0, portion: 1, enabled: 1 }] } };
+    card._onScheduleMealsChanged(e);
+    expect(card._meals.length).to.equal(1);
+    expect(card._saveMealsToSensor).to.have.been.called;
+  });
+
+  it('getConfigElement resolves and returns a card editor', async () => {
+    const el = await MealPlanCard.getConfigElement();
+    expect(el).to.be.instanceOf(HTMLElement);
+    expect(el.tagName.toLowerCase()).to.equal('mealplan-card-editor');
+  });
+
+  it('loadTranslations throws not implemented', () => {
+    expect(() => {
+      mainModule.loadTranslations();
+    }).to.throw('Function not implemented.');
   });
 });

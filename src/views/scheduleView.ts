@@ -41,6 +41,7 @@ export function renderScheduleView({
   onToggleEnabled: (idx: number, e: Event) => void,
   hasUnsavedChanges: boolean
 }) {
+  const fields = profile.fields || [];
   const buildColumns = (profile: any) => {
     const columns: any = {};
     columns.time = {
@@ -50,10 +51,10 @@ export function renderScheduleView({
       valueColumn: 'hourMinute',
       template: (row: any) => formatHourMinute(row.hour, row.minute)
     };
-    if (profile.fields.includes('portion')) {
+    if (fields.includes('portion')) {
       columns.portion = { title: localize('portion'), sortable: true, minWidth: '80px' };
     }
-    if (profile.fields.includes('daysMask')) {
+    if (fields.includes('daysMask')) {
       columns.days = {
         title: localize('days'),
         sortable: false,
@@ -64,7 +65,7 @@ export function renderScheduleView({
         })
       };
     }
-    if (profile.fields.includes('enabled')) {
+    if (fields.includes('enabled')) {
       columns.enabled = {
         title: localize('enabled'),
         sortable: true,
@@ -88,7 +89,7 @@ export function renderScheduleView({
         <ha-icon-button @click=${() => onOpenEditDialog(row._idx)} title="Edit">
           <ha-icon icon="mdi:pencil"></ha-icon>
         </ha-icon-button>
-        ${profile.fields.includes('delete') ? html`
+        ${fields.includes('delete') ? html`
           <ha-icon-button @click=${() => onDelete(row._idx)} title="Delete">
             <ha-icon icon="mdi:delete"></ha-icon>
           </ha-icon-button>
@@ -180,7 +181,7 @@ export function renderScheduleView({
             <ha-button slot="primaryAction" class="ha-primary" @click=${onEditSave}>${localize('save')}</ha-button>
           `
         : html`
-            ${profile.fields.includes('add') ? html`<ha-button slot="secondaryAction" @click=${onOpenAddDialog}>${localize('add_meal')}</ha-button>` : ''}
+      ${fields.includes('add') ? html`<ha-button slot="secondaryAction" @click=${onOpenAddDialog}>${localize('add_meal')}</ha-button>` : ''}
             <ha-button slot="secondaryAction" @click=${onCancel}>${localize('cancel')}</ha-button>
             <ha-button slot="primaryAction" class="ha-primary" @click=${onSave} ?disabled=${!hasUnsavedChanges}>${localize('save')}</ha-button>
           `}

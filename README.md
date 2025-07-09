@@ -22,11 +22,11 @@ The card expects a base64 string (example: 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==
 **With days:**
 ```json
 [
-  { "time": "04:00", "daysMask": 127, "portion": 1, "enabled": false },
-  { "time": "09:00", "daysMask": 127, "portion": 2, "enabled": true },
-  { "time": "15:00", "daysMask": 127, "portion": 1, "enabled": true },
-  { "time": "21:00", "daysMask": 127, "portion": 2, "enabled": true },
-  { "time": "18:00", "daysMask": 8,   "portion": 1, "enabled": false }
+  { "time": "04:00", "mask": 127, "portion": 1, "enabled": false },
+  { "time": "09:00", "mask": 127, "portion": 2, "enabled": true },
+  { "time": "15:00", "mask": 127, "portion": 1, "enabled": true },
+  { "time": "21:00", "mask": 127, "portion": 2, "enabled": true },
+  { "time": "18:00", "mask": 8,   "portion": 1, "enabled": false }
 ]
 ```
 When the user makes changes and presses save on the schedule view, the config is updated and sent to the Tuya cloud. The implementation reduces the delay for actions compared to Smart Life and allows seamless integration with Home Assistant for Tuya feeders with a meal_plan configuration.

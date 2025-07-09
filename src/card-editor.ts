@@ -2,7 +2,8 @@
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { LitElement, html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
-import { profiles } from './profiles';
+import { profiles } from './profiles/profiles';
+import { getProfileDropdownItems } from './profiles/resolveProfile';
 import { localize } from './locales/localize';
 
 declare global {
@@ -17,16 +18,13 @@ export class MealPlanCardEditor extends LitElement {
     sensor: string;
     title: string;
     helper: string;
-    profile?: string;
-    overviewFields?: string[];
     device_model?: string;
     device_manufacturer?: string;
-    device_identifier?: string;
-  } = { sensor: '', title: '', helper: '', profile: '', overviewFields: ['schedules', 'active_schedules', 'today', 'avg_week'] };
+  } = { sensor: '', title: '', helper: '' };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
 
-  setConfig(config: { sensor: string; title: string; helper: string; profile?: string; layout?: string; overviewFields?: string[] }) {
+  setConfig(config: { sensor: string; title: string; helper: string; device_model?: string; device_manufacturer?: string }) {
     this.config = { ...config };
   }
 
@@ -84,11 +82,13 @@ export class MealPlanCardEditor extends LitElement {
         id="profile-combo"
         .items=${[
           { value: '', label: localize('select_layout') },
-          ...profiles.map((p) => ({ value: p.id, label: localize(p.name) }))
+          ...getProfileDropdownItems(profiles)
         ]}
-        .value=${this.config.profile || ''}
+        .value=${this.config.device_manufacturer ? `${this.config.device_manufacturer}:${this.config.device_model || ''}` : ''}
         @value-changed=${(e: CustomEvent) => {
-          this.config = { ...this.config, profile: e.detail.value };
+          // Store both device_manufacturer and device_model in config
+          const [device_manufacturer, device_model] = (e.detail.value || '').split(':');
+          this.config = { ...this.config, device_manufacturer, device_model };
           this.configChanged(this.config);
         }}
       ></ha-combo-box>
