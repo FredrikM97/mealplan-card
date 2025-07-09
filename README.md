@@ -37,15 +37,6 @@ When the user makes changes and presses save on the schedule view, the config is
 2. Find "Mealplan Card" in HACS under Frontend and install it.
 3. Search for Mealplan Pet Feeder in the card selector view.
 
-## Configuration
-
-| Name    | Type   | Required | Description                                 |
-|---------|--------|----------|---------------------------------------------|
-| sensor  | string | Yes      | The sensor entity holding the meal plan     |
-| title   | string | No       | Card title (optional, defaults to Pet Feeder)|
-| layout  | string | No       | Layout for the meal plan overview (choose from available layouts) |
-| helper  | string | Yes      | input_text helper entity for storing the meal plan (required for editing) |
-
 ## Supported Devices
 
 The following devices are known to work with this card:
