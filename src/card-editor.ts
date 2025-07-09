@@ -59,7 +59,7 @@ export class MealPlanCardEditor extends LitElement {
   }
 
   private _validateConfig() {
-    return !!this.config.sensor && !!this.config.helper;
+    return !!this.config.sensor;
   }
 
   render() {
@@ -121,7 +121,7 @@ export class MealPlanCardEditor extends LitElement {
       ></ha-textfield>
       <div style="height: 20px;"></div>
       ${!this._validateConfig()
-        ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Please select a feeder entity and a storage helper (input_text).` : ''}
+        ? html`<div style="color: var(--error-color, red); margin-top: 8px;">Please select a feeder entity (sensor or text).` : ''}
       <!-- mwc-tooltip handles its own styling -->
     `;
   }

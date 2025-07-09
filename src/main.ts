@@ -108,14 +108,27 @@ export class MealPlanCard extends LitElement {
     const helperObj = this.hass?.states?.[this._helperID];
     const sensorRaw = stateObj?.state ?? '';
     const helperRaw = helperObj?.state ?? '';
-    let raw = '';
-    if (this._isValidSensorValue(sensorRaw)) {
-      raw = sensorRaw;
-      this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
-    } else {
-      raw = helperRaw;
+    if (this.config?.helper) {
+      // If helper is set, prefer helper for storage, but sync from sensor if valid
+      if (this._isValidSensorValue(sensorRaw)) {
+        this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
+        this._setMealsFromRaw(sensorRaw);
+        return;
+      }
+      this._setMealsFromRaw(helperRaw);
+      return;
     }
-    this._setMealsFromRaw(raw);
+    // If no helper, only use sensor if valid, otherwise log error and show error message
+    if (this._isValidSensorValue(sensorRaw)) {
+      this._setMealsFromRaw(sensorRaw);
+      return;
+    }
+    // Neither helper nor valid sensor value present: log and show error
+    const errorMsg = 'No valid meal plan data found: neither helper nor a valid sensor value is present.';
+    console.error(errorMsg);
+    this._decodeError = errorMsg;
+    this._persistedMeals = [];
+    this._meals = [];
   }
 
   _isValidSensorValue(value: any): boolean {
@@ -128,7 +141,8 @@ export class MealPlanCard extends LitElement {
   }
 
   _updateHelperIfOutOfSync(sensorRaw: string, helperRaw: string) {
-    if (this._helperID && this.hass && sensorRaw !== helperRaw) {
+    // Only sync to helper if helper is set and different from sensor
+    if (this.config?.helper && this._helperID && this.hass && sensorRaw !== helperRaw) {
       this.hass.callService('input_text', 'set_value', {
         entity_id: this._helperID,
         value: sensorRaw,
@@ -262,6 +276,7 @@ export class MealPlanCard extends LitElement {
       return;
     }
     const value = encodeMealPlanData(this._meals, { encodingFields: profile.encodingFields ?? [] });
+    // Always write to sensor, never to helper
     this.hass.callService('text', 'set_value', {
       entity_id: this._sensorID,
       value,
