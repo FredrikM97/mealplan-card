@@ -11,24 +11,12 @@ import { localize, setLanguage } from "./locales/localize";
 import { renderScheduleView } from "./views/scheduleView";
 import { renderOverview } from "./views/overview";
 import { resolveProfile } from "./profiles/resolveProfile";
-import type { DeviceProfileGroup } from "./profiles/types";
 
 /**
  * MealPlan Card
  */
 @customElement("mealplan-card")
 export class MealPlanCard extends LitElement {
-
-  private _hasUnsavedChanges(): boolean {
-    if (!this._meals?.length) return false;
-    return JSON.stringify(this._meals) !== JSON.stringify(this._persistedMeals);
-  }
-
-  private _setMealsFromDecoded(meals: FeedingTime[] | undefined | null) {
-    const arr = Array.isArray(meals) ? meals : [];
-    this._persistedMeals = arr;
-    this._meals = arr;
-  }
   private _hass;
   @property({ type: Object })
   get hass() {
@@ -112,12 +100,11 @@ export class MealPlanCard extends LitElement {
    * Main update logic: determines source, decodes, and syncs helper if needed.
    */
   _updateHass() {
-    if (this._hasUnsavedChanges()) return;
-
     const profile = resolveProfile(this.config || {});
     if (!profile || !Array.isArray(profile.encodingFields) || profile.encodingFields.length === 0) {
       this._decodeError = "Selected feeder profile is invalid or not supported.";
-      this._setMealsFromDecoded([]);
+      this._setPersistedMeals([]);
+      this._setMealsIfNotEditing([]);
       return;
     }
 
@@ -130,46 +117,39 @@ export class MealPlanCard extends LitElement {
     // Prefer sensor if valid
     const isValid = (v: any) => typeof v === "string" && v.trim() !== "" && v !== "unknown" && v !== "unavailable";
 
+    let decodedMeals: FeedingTime[] | undefined | null = [];
+    let decodeError: string | null = null;
 
-    // Helper for decode+set
-    const tryDecodeAndSet = (raw: string) => {
-      this._decodeError = null;
-      try {
-        const meals = decodeMealPlanData(raw, { encodingFields: profile.encodingFields });
-        this._setMealsFromDecoded(meals);
-        return true;
-      } catch (err) {
-        console.error("Meal plan decode error:", err);
-        this._decodeError = (err as Error).message || "Failed to decode meal plan data.";
-        this._setMealsFromDecoded([]);
-        return false;
-      }
-    };
-    
-    if (
-      isValid(sensorRaw) &&
-      tryDecodeAndSet(sensorRaw) &&
-      helperObj && isValid(helperRaw) && sensorRaw !== helperRaw
-    ) {
-      this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
-      return;
-    }
     if (isValid(sensorRaw)) {
-      tryDecodeAndSet(sensorRaw);
-      return;
+      decodedMeals = this._tryDecode(sensorRaw, profile.encodingFields, (msg) => { decodeError = msg; });
+      // If helper exists and is valid and out of sync, update helper
+      if (helperObj && isValid(helperRaw) && sensorRaw !== helperRaw) {
+        this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
+      }
+    } else if (helperObj && isValid(helperRaw)) {
+      decodedMeals = this._tryDecode(helperRaw, profile.encodingFields, (msg) => { decodeError = msg; });
+    } else {
+      decodeError = "No valid meal plan data found: neither helper nor a valid sensor value is present.";
+      decodedMeals = [];
     }
 
-    // Sensor not valid, try helper
-    if (!isValid(sensorRaw) && helperObj && isValid(helperRaw)) {
-      tryDecodeAndSet(helperRaw);
-      return;
-    }
-
-    // Neither is valid
-    this._decodeError = "No valid meal plan data found: neither helper nor a valid sensor value is present.";
-    this._setMealsFromDecoded([]);
+    this._decodeError = decodeError;
+    this._setPersistedMeals(decodedMeals);
+    this._setMealsIfNotEditing(decodedMeals);
   }
 
+  private _tryDecode(
+    raw: string,
+    encodingFields: any,
+    setError: (msg: string) => void
+  ): FeedingTime[] | undefined | null {
+    try {
+      return decodeMealPlanData(raw, { encodingFields });
+    } catch (err) {
+      setError((err as Error).message || "Failed to decode meal plan data.");
+      return [];
+    }
+  }
 
 
 
@@ -223,7 +203,7 @@ export class MealPlanCard extends LitElement {
           ? renderScheduleView({
               profile,
               hass: this.hass,
-              viewMeals: [...this._meals],
+              viewMeals: this._meals,
               editForm: this._editForm,
               editError: this._editError,
               editDialogOpen: this._editDialogOpen,
@@ -261,6 +241,8 @@ export class MealPlanCard extends LitElement {
               onCancel: () => {
                 this._dialogOpen = false;
                 this.resetEditState();
+                // When closing schedule view without saving, reset _meals to match _persistedMeals (latest backend state)
+                this._meals = Array.isArray(this._persistedMeals) ? [...this._persistedMeals] : [];
                 this.requestUpdate();
               },
               onSave: () => {
@@ -326,6 +308,19 @@ export class MealPlanCard extends LitElement {
     console.log("[MealPlanCard] _onScheduleMealsChanged called", e);
     this._meals = e.detail.meals;
     this._saveMealsToSensor();
+  }
+
+  private _setPersistedMeals(meals: FeedingTime[] | undefined | null) {
+    this._persistedMeals = Array.isArray(meals) ? meals : [];
+  }
+  private _setMealsIfNotEditing(meals: FeedingTime[] | undefined | null) {
+    if (!this._dialogOpen && !this._editDialogOpen) {
+      this._meals = Array.isArray(meals) ? meals : [];
+    } else {
+      // Warn if backend tried to update meals while editing
+      const msg = "[MealPlanCard] Backend update to meals ignored because user is editing or viewing schedule.";
+      console.warn(msg);
+    }
   }
 }
 
