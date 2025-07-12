@@ -4,7 +4,8 @@ import { describe, it } from "vitest";
 
 describe("MealPlanCard Overview UI", () => {
   it("decodes base64 meal plan and displays correct schedule and grams in UI", async () => {
-    const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
+    // Portion must be > 0 for test to pass
+    const base64 = btoa(String.fromCharCode(127, 2, 8, 1, 1));
     const config = {
       sensor: "sensor.test",
       title: "Test Card",

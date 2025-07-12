@@ -18,6 +18,17 @@ import type { DeviceProfileGroup } from "./profiles/types";
  */
 @customElement("mealplan-card")
 export class MealPlanCard extends LitElement {
+
+  private _hasUnsavedChanges(): boolean {
+    if (!this._meals?.length) return false;
+    return JSON.stringify(this._meals) !== JSON.stringify(this._persistedMeals);
+  }
+
+  private _setMealsFromDecoded(meals: FeedingTime[] | undefined | null) {
+    const arr = Array.isArray(meals) ? meals : [];
+    this._persistedMeals = arr;
+    this._meals = arr;
+  }
   private _hass;
   @property({ type: Object })
   get hass() {
@@ -75,17 +86,6 @@ export class MealPlanCard extends LitElement {
   ];
 
   setConfig(config) {
-    if (!config.layout) {
-      if (
-        window.location.pathname.includes("lovelace") &&
-        window.location.hash.includes("edit")
-      ) {
-        this.config = config;
-        return;
-      }
-      this.config = config;
-      return;
-    }
     this.config = config;
   }
 
@@ -108,50 +108,74 @@ export class MealPlanCard extends LitElement {
     return stateObj?.attributes?.friendly_name || this._sensorID;
   }
 
+  /**
+   * Main update logic: determines source, decodes, and syncs helper if needed.
+   */
   _updateHass() {
+    if (this._hasUnsavedChanges()) return;
+
+    const profile = resolveProfile(this.config || {});
+    if (!profile || !Array.isArray(profile.encodingFields) || profile.encodingFields.length === 0) {
+      this._decodeError = "Selected feeder profile is invalid or not supported.";
+      this._setMealsFromDecoded([]);
+      return;
+    }
+
+    // Use getters for IDs, and inline the rest for clarity
     const stateObj = this.hass?.states?.[this._sensorID];
     const helperObj = this.hass?.states?.[this._helperID];
     const sensorRaw = stateObj?.state ?? "";
     const helperRaw = helperObj?.state ?? "";
-    if (this.config?.helper) {
-      if (this._isValidSensorValue(sensorRaw)) {
-        this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
-        this._setMealsFromRaw(sensorRaw);
-        return;
+
+    // Prefer sensor if valid
+    const isValid = (v: any) => typeof v === "string" && v.trim() !== "" && v !== "unknown" && v !== "unavailable";
+
+
+    // Helper for decode+set
+    const tryDecodeAndSet = (raw: string) => {
+      this._decodeError = null;
+      try {
+        const meals = decodeMealPlanData(raw, { encodingFields: profile.encodingFields });
+        this._setMealsFromDecoded(meals);
+        return true;
+      } catch (err) {
+        console.error("Meal plan decode error:", err);
+        this._decodeError = (err as Error).message || "Failed to decode meal plan data.";
+        this._setMealsFromDecoded([]);
+        return false;
       }
-      this._setMealsFromRaw(helperRaw);
-      return;
-    }
-    if (this._isValidSensorValue(sensorRaw)) {
-      this._setMealsFromRaw(sensorRaw);
-      return;
-    }
-    // Neither helper nor valid sensor value present: log and show error
-    const errorMsg =
-      "No valid meal plan data found: neither helper nor a valid sensor value is present.";
-    console.error(errorMsg);
-    this._decodeError = errorMsg;
-    this._persistedMeals = [];
-    this._meals = [];
-  }
-
-  _isValidSensorValue(value: any): boolean {
-    return (
-      typeof value === "string" &&
-      value !== "" &&
-      value !== "unknown" &&
-      value !== "unavailable"
-    );
-  }
-
-  _updateHelperIfOutOfSync(sensorRaw: string, helperRaw: string) {
-    // Only sync to helper if helper is set and different from sensor
+    };
+    
     if (
-      this.config?.helper &&
-      this._helperID &&
-      this.hass &&
-      sensorRaw !== helperRaw
+      isValid(sensorRaw) &&
+      tryDecodeAndSet(sensorRaw) &&
+      helperObj && isValid(helperRaw) && sensorRaw !== helperRaw
     ) {
+      this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
+      return;
+    }
+    if (isValid(sensorRaw)) {
+      tryDecodeAndSet(sensorRaw);
+      return;
+    }
+
+    // Sensor not valid, try helper
+    if (!isValid(sensorRaw) && helperObj && isValid(helperRaw)) {
+      tryDecodeAndSet(helperRaw);
+      return;
+    }
+
+    // Neither is valid
+    this._decodeError = "No valid meal plan data found: neither helper nor a valid sensor value is present.";
+    this._setMealsFromDecoded([]);
+  }
+
+
+
+
+  /** Syncs the helper if it's out of sync with the sensor. */
+  private _updateHelperIfOutOfSync(sensorRaw: string, helperRaw: string) {
+    if (this.config?.helper && this._helperID && this.hass && sensorRaw !== helperRaw) {
       this.hass.callService("input_text", "set_value", {
         entity_id: this._helperID,
         value: sensorRaw,
@@ -159,48 +183,13 @@ export class MealPlanCard extends LitElement {
     }
   }
 
-  _resolveProfile():
-    | (DeviceProfileGroup & { manufacturer: string; model: string })
-    | undefined {
-    return resolveProfile(this.config || {});
-  }
 
-  _setMealsFromRaw(raw: string) {
-    let meals: FeedingTime[] = [];
-    this._decodeError = null;
-    const profile = this._resolveProfile();
-    if (
-      !profile ||
-      !Array.isArray(profile.encodingFields) ||
-      profile.encodingFields.length === 0
-    ) {
-      this._decodeError =
-        "Selected feeder profile is invalid or not supported.";
-      this._persistedMeals = [];
-      this._meals = [];
-      return;
-    }
-    if (raw && typeof raw === "string" && raw.trim().length > 0) {
-      try {
-        meals = decodeMealPlanData(raw, {
-          encodingFields: profile.encodingFields ?? [],
-        });
-      } catch (err) {
-        console.error("Meal plan decode error:", err);
-        this._decodeError =
-          (err as Error).message || "Failed to decode meal plan data.";
-        meals = [];
-      }
-    }
-    this._persistedMeals = Array.isArray(meals) ? meals : [];
-    this._meals = JSON.parse(JSON.stringify(this._persistedMeals));
-  }
 
   render() {
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
-    const profile = this._resolveProfile();
+    const profile = resolveProfile(this.config || {});
     return html`
       <ha-card
         header=${this.config?.title || "MealPlan Card"}
@@ -320,16 +309,11 @@ export class MealPlanCard extends LitElement {
     return document.createElement("mealplan-card-editor");
   }
 
+  /** Encodes and saves the current meals to the sensor. */
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
-    const profile = this._resolveProfile();
-    if (
-      !profile ||
-      !Array.isArray(profile.encodingFields) ||
-      profile.encodingFields.length === 0
-    ) {
-      return;
-    }
+    const profile = resolveProfile(this.config || {});
+    if (!profile || !Array.isArray(profile.encodingFields) || profile.encodingFields.length === 0) return;
     const value = encodeMealPlanData(this._meals, {
       encodingFields: profile.encodingFields ?? [],
     });
