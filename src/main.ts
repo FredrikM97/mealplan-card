@@ -11,7 +11,6 @@ import { localize, setLanguage } from "./locales/localize";
 import { renderScheduleView } from "./views/scheduleView";
 import { renderOverview } from "./views/overview";
 import { resolveProfile } from "./profiles/resolveProfile";
-import type { DeviceProfileGroup } from "./profiles/types";
 
 /**
  * MealPlan Card
@@ -75,17 +74,6 @@ export class MealPlanCard extends LitElement {
   ];
 
   setConfig(config) {
-    if (!config.layout) {
-      if (
-        window.location.pathname.includes("lovelace") &&
-        window.location.hash.includes("edit")
-      ) {
-        this.config = config;
-        return;
-      }
-      this.config = config;
-      return;
-    }
     this.config = config;
   }
 
@@ -108,50 +96,66 @@ export class MealPlanCard extends LitElement {
     return stateObj?.attributes?.friendly_name || this._sensorID;
   }
 
+  /**
+   * Main update logic: determines source, decodes, and syncs helper if needed.
+   */
   _updateHass() {
+    const profile = resolveProfile(this.config || {});
+    if (!profile || !Array.isArray(profile.encodingFields) || profile.encodingFields.length === 0) {
+      this._decodeError = "Selected feeder profile is invalid or not supported.";
+      this._setPersistedMeals([]);
+      this._setMealsIfNotEditing([]);
+      return;
+    }
+
+    // Use getters for IDs, and inline the rest for clarity
     const stateObj = this.hass?.states?.[this._sensorID];
     const helperObj = this.hass?.states?.[this._helperID];
     const sensorRaw = stateObj?.state ?? "";
     const helperRaw = helperObj?.state ?? "";
-    if (this.config?.helper) {
-      if (this._isValidSensorValue(sensorRaw)) {
+
+    // Prefer sensor if valid
+    const isValid = (v: any) => typeof v === "string" && v.trim() !== "" && v !== "unknown" && v !== "unavailable";
+
+    let decodedMeals: FeedingTime[] | undefined | null = [];
+    let decodeError: string | null = null;
+
+    if (isValid(sensorRaw)) {
+      decodedMeals = this._tryDecode(sensorRaw, profile.encodingFields, (msg) => { decodeError = msg; });
+      // If helper exists and is valid and out of sync, update helper
+      if (helperObj && isValid(helperRaw) && sensorRaw !== helperRaw) {
         this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
-        this._setMealsFromRaw(sensorRaw);
-        return;
       }
-      this._setMealsFromRaw(helperRaw);
-      return;
+    } else if (helperObj && isValid(helperRaw)) {
+      decodedMeals = this._tryDecode(helperRaw, profile.encodingFields, (msg) => { decodeError = msg; });
+    } else {
+      decodeError = "No valid meal plan data found: neither helper nor a valid sensor value is present.";
+      decodedMeals = [];
     }
-    if (this._isValidSensorValue(sensorRaw)) {
-      this._setMealsFromRaw(sensorRaw);
-      return;
-    }
-    // Neither helper nor valid sensor value present: log and show error
-    const errorMsg =
-      "No valid meal plan data found: neither helper nor a valid sensor value is present.";
-    console.error(errorMsg);
-    this._decodeError = errorMsg;
-    this._persistedMeals = [];
-    this._meals = [];
+
+    this._decodeError = decodeError;
+    this._setPersistedMeals(decodedMeals);
+    this._setMealsIfNotEditing(decodedMeals);
   }
 
-  _isValidSensorValue(value: any): boolean {
-    return (
-      typeof value === "string" &&
-      value !== "" &&
-      value !== "unknown" &&
-      value !== "unavailable"
-    );
+  private _tryDecode(
+    raw: string,
+    encodingFields: any,
+    setError: (msg: string) => void
+  ): FeedingTime[] | undefined | null {
+    try {
+      return decodeMealPlanData(raw, { encodingFields });
+    } catch (err) {
+      setError((err as Error).message || "Failed to decode meal plan data.");
+      return [];
+    }
   }
 
-  _updateHelperIfOutOfSync(sensorRaw: string, helperRaw: string) {
-    // Only sync to helper if helper is set and different from sensor
-    if (
-      this.config?.helper &&
-      this._helperID &&
-      this.hass &&
-      sensorRaw !== helperRaw
-    ) {
+
+
+  /** Syncs the helper if it's out of sync with the sensor. */
+  private _updateHelperIfOutOfSync(sensorRaw: string, helperRaw: string) {
+    if (this.config?.helper && this._helperID && this.hass && sensorRaw !== helperRaw) {
       this.hass.callService("input_text", "set_value", {
         entity_id: this._helperID,
         value: sensorRaw,
@@ -159,48 +163,13 @@ export class MealPlanCard extends LitElement {
     }
   }
 
-  _resolveProfile():
-    | (DeviceProfileGroup & { manufacturer: string; model: string })
-    | undefined {
-    return resolveProfile(this.config || {});
-  }
 
-  _setMealsFromRaw(raw: string) {
-    let meals: FeedingTime[] = [];
-    this._decodeError = null;
-    const profile = this._resolveProfile();
-    if (
-      !profile ||
-      !Array.isArray(profile.encodingFields) ||
-      profile.encodingFields.length === 0
-    ) {
-      this._decodeError =
-        "Selected feeder profile is invalid or not supported.";
-      this._persistedMeals = [];
-      this._meals = [];
-      return;
-    }
-    if (raw && typeof raw === "string" && raw.trim().length > 0) {
-      try {
-        meals = decodeMealPlanData(raw, {
-          encodingFields: profile.encodingFields ?? [],
-        });
-      } catch (err) {
-        console.error("Meal plan decode error:", err);
-        this._decodeError =
-          (err as Error).message || "Failed to decode meal plan data.";
-        meals = [];
-      }
-    }
-    this._persistedMeals = Array.isArray(meals) ? meals : [];
-    this._meals = JSON.parse(JSON.stringify(this._persistedMeals));
-  }
 
   render() {
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
-    const profile = this._resolveProfile();
+    const profile = resolveProfile(this.config || {});
     return html`
       <ha-card
         header=${this.config?.title || "MealPlan Card"}
@@ -234,7 +203,7 @@ export class MealPlanCard extends LitElement {
           ? renderScheduleView({
               profile,
               hass: this.hass,
-              viewMeals: [...this._meals],
+              viewMeals: this._meals,
               editForm: this._editForm,
               editError: this._editError,
               editDialogOpen: this._editDialogOpen,
@@ -272,6 +241,8 @@ export class MealPlanCard extends LitElement {
               onCancel: () => {
                 this._dialogOpen = false;
                 this.resetEditState();
+                // When closing schedule view without saving, reset _meals to match _persistedMeals (latest backend state)
+                this._meals = Array.isArray(this._persistedMeals) ? [...this._persistedMeals] : [];
                 this.requestUpdate();
               },
               onSave: () => {
@@ -320,16 +291,11 @@ export class MealPlanCard extends LitElement {
     return document.createElement("mealplan-card-editor");
   }
 
+  /** Encodes and saves the current meals to the sensor. */
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
-    const profile = this._resolveProfile();
-    if (
-      !profile ||
-      !Array.isArray(profile.encodingFields) ||
-      profile.encodingFields.length === 0
-    ) {
-      return;
-    }
+    const profile = resolveProfile(this.config || {});
+    if (!profile || !Array.isArray(profile.encodingFields) || profile.encodingFields.length === 0) return;
     const value = encodeMealPlanData(this._meals, {
       encodingFields: profile.encodingFields ?? [],
     });
@@ -342,6 +308,19 @@ export class MealPlanCard extends LitElement {
     console.log("[MealPlanCard] _onScheduleMealsChanged called", e);
     this._meals = e.detail.meals;
     this._saveMealsToSensor();
+  }
+
+  private _setPersistedMeals(meals: FeedingTime[] | undefined | null) {
+    this._persistedMeals = Array.isArray(meals) ? meals : [];
+  }
+  private _setMealsIfNotEditing(meals: FeedingTime[] | undefined | null) {
+    if (!this._dialogOpen && !this._editDialogOpen) {
+      this._meals = Array.isArray(meals) ? meals : [];
+    } else {
+      // Warn if backend tried to update meals while editing
+      const msg = "[MealPlanCard] Backend update to meals ignored because user is editing or viewing schedule.";
+      console.warn(msg);
+    }
   }
 }
 
