@@ -2,6 +2,5 @@
   "name": "MealPlan Card",
   "filename": "mealplan-card.js",
   "hide_default_branch": true,
-  "country": ["SE"],
   "render_readme": true
 }
