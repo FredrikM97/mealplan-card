@@ -21,5 +21,14 @@
       { "enabled": 1, "hour": 14, "minute": 0, "portion": 4 },
       { "enabled": 1, "hour": 14, "minute": 30, "portion": 6 }
     ]
+  },
+   {
+    "manufacturer": "PetNest",
+    "encoded": "fwAABX8FATh/BwJx",
+    "decoded": [
+      { "days": 127, "portion": 0, "hour": 0, "minute": 5 },
+      { "days": 127, "portion": 5, "hour": 5, "minute": 12 },
+      { "days": 127, "portion": 7, "hour": 10, "minute": 25 }
+    ]
   }
 ]
