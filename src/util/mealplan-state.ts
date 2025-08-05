@@ -30,7 +30,6 @@ export interface FeedingTime {
   enabled: 0 | 1;
 }
 
-
 export function getNextSchedule(feedingTimes: FeedingTime[]): string {
   if (!feedingTimes || feedingTimes.length === 0) return "-";
   const enabled = feedingTimes.filter((t) => t.enabled === 1);
@@ -133,7 +132,6 @@ export function encodeMealPlanData(
   const bytes: number[] = [];
   rawData.forEach((item, idx) => {
     for (const field of fields) {
-      console.log("Fields to encode", field)
       const prop = field;
       if (!(prop in item) || typeof (item as any)[prop] === "undefined") {
         throw new Error(
@@ -143,7 +141,6 @@ export function encodeMealPlanData(
       bytes.push(Number((item as any)[prop]));
     }
   });
-  console.log("what is bytes...", bytes)
   return btoa(String.fromCharCode(...bytes));
 }
 
@@ -157,7 +154,6 @@ export function convertFromDecoded(rawData: any[], profile: { encodingFields: an
       delete entry.minute_low;
       delete entry.minute_high;
     }
-    console.log("Sanitized", sanitizedEntry)
     return sanitizedEntry;
   });
 }
