@@ -1,33 +1,11 @@
-// import { ScheduleEncodingFieldKey } from '../profiles/types';
-
 // Returns null if valid, or an error string if invalid
-export function validateFeedingTime(
-  entry: Partial<FeedingTime>,
-): string | null {
-  if (
-    typeof entry.hour !== "number" ||
-    typeof entry.minute !== "number" ||
-    isNaN(entry.hour) ||
-    isNaN(entry.minute) ||
-    entry.hour < 0 ||
-    entry.hour > 23 ||
-    entry.minute < 0 ||
-    entry.minute > 59
-  ) {
-    return "Please enter a valid time.";
-  }
-  if (!entry.portion || entry.portion < 1) {
-    return "Portion must be at least 1.";
-  }
-  return null;
-}
 
 export interface FeedingTime {
-  hour: number;
-  minute: number;
-  portion: number;
+  hour?: number;
+  minute?: number;
+  portion?: number;
   days?: number;
-  enabled: 0 | 1;
+  enabled?: 0 | 1;
 }
 
 export function getNextSchedule(feedingTimes: FeedingTime[]): string {

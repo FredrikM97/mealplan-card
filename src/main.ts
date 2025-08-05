@@ -7,6 +7,7 @@ import {
 import type { FeedingTime } from "./util/mealplan-state.js";
 import { loadHaComponents } from "@kipk/load-ha-components";
 import { localize, setLanguage } from "./locales/localize";
+import { validateFeedingTime } from "./util/mealplan-validate.js";
 
 import { renderScheduleView } from "./views/scheduleView";
 import { renderOverview } from "./views/overview";
@@ -279,6 +280,12 @@ export class MealPlanCard extends LitElement {
               },
               onEditSave: () => {
                 if (!this._editForm) return;
+                const validationError = validateFeedingTime(this._editForm);
+                if (validationError) {
+                  this._editError = validationError;
+                  this.requestUpdate();
+                  return;
+                }
                 const idx = this._editForm._idx;
                 if (idx !== undefined && idx !== null && idx >= 0) {
                   this._meals = this._meals.map((m, i) =>
