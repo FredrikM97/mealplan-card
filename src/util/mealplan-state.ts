@@ -144,22 +144,32 @@ export function encodeMealPlanData(
   return btoa(String.fromCharCode(...bytes));
 }
 
-export function convertFromDecoded(rawData: any[], profile: { encodingFields: any[] }): FeedingTime[] {
+export function convertFromDecoded(
+  rawData: any[],
+  profile: { encodingFields: any[] },
+): FeedingTime[] {
   return rawData.map((entry) => {
-    const sanitizedEntry = entry;
-    if (profile.encodingFields.includes("minute_high") && profile.encodingFields.includes("minute_low")) {
-      const totalMinutes = entry.minute_low + (entry.minute_high << 8); 
+    const { minute_high, minute_low, ...sanitizedEntry } = entry;
+    if (
+      profile.encodingFields.includes("minute_high") &&
+      profile.encodingFields.includes("minute_low")
+    ) {
+      const totalMinutes = minute_low + (minute_high << 8);
       sanitizedEntry.hour = Math.floor(totalMinutes / 60);
       sanitizedEntry.minute = totalMinutes % 60;
-      delete entry.minute_low;
-      delete entry.minute_high;
     }
     return sanitizedEntry;
   });
 }
 
-export function convertToEncoded(mealPlan: FeedingTime[], profile: { encodingFields: any[] }): any[] {
-  if (profile.encodingFields.includes("minute_high") && profile.encodingFields.includes("minute_low")) {
+export function convertToEncoded(
+  mealPlan: FeedingTime[],
+  profile: { encodingFields: any[] },
+): any[] {
+  if (
+    profile.encodingFields.includes("minute_high") &&
+    profile.encodingFields.includes("minute_low")
+  ) {
     return mealPlan.map((entry) => {
       const { hour, minute, ...rest } = entry;
       if (hour !== undefined && minute !== undefined) {
@@ -169,7 +179,7 @@ export function convertToEncoded(mealPlan: FeedingTime[], profile: { encodingFie
         return {
           ...rest,
           minute_high: highByte,
-          minute_low: lowByte
+          minute_low: lowByte,
         };
       }
       return rest;

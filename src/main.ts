@@ -101,8 +101,13 @@ export class MealPlanCard extends LitElement {
    */
   _updateHass() {
     const profile = resolveProfile(this.config || {});
-    if (!profile || !Array.isArray(profile.encodingFields) || profile.encodingFields.length === 0) {
-      this._decodeError = "Selected feeder profile is invalid or not supported.";
+    if (
+      !profile ||
+      !Array.isArray(profile.encodingFields) ||
+      profile.encodingFields.length === 0
+    ) {
+      this._decodeError =
+        "Selected feeder profile is invalid or not supported.";
       this._setPersistedMeals([]);
       this._setMealsIfNotEditing([]);
       return;
@@ -115,21 +120,38 @@ export class MealPlanCard extends LitElement {
     const helperRaw = helperObj?.state ?? "";
 
     // Prefer sensor if valid
-    const isValid = (v: any) => typeof v === "string" && v.trim() !== "" && v !== "unknown" && v !== "unavailable";
+    const isValid = (v: any) =>
+      typeof v === "string" &&
+      v.trim() !== "" &&
+      v !== "unknown" &&
+      v !== "unavailable";
 
     let decodedMeals: FeedingTime[] | undefined | null = [];
     let decodeError: string | null = null;
 
     if (isValid(sensorRaw)) {
-      decodedMeals = this._tryDecode(sensorRaw, profile.encodingFields, (msg) => { decodeError = msg; });
+      decodedMeals = this._tryDecode(
+        sensorRaw,
+        profile.encodingFields,
+        (msg) => {
+          decodeError = msg;
+        },
+      );
       // If helper exists and is valid and out of sync, update helper
       if (helperObj && isValid(helperRaw) && sensorRaw !== helperRaw) {
         this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
       }
     } else if (helperObj && isValid(helperRaw)) {
-      decodedMeals = this._tryDecode(helperRaw, profile.encodingFields, (msg) => { decodeError = msg; });
+      decodedMeals = this._tryDecode(
+        helperRaw,
+        profile.encodingFields,
+        (msg) => {
+          decodeError = msg;
+        },
+      );
     } else {
-      decodeError = "No valid meal plan data found: neither helper nor a valid sensor value is present.";
+      decodeError =
+        "No valid meal plan data found: neither helper nor a valid sensor value is present.";
       decodedMeals = [];
     }
 
@@ -141,7 +163,7 @@ export class MealPlanCard extends LitElement {
   private _tryDecode(
     raw: string,
     encodingFields: any,
-    setError: (msg: string) => void
+    setError: (msg: string) => void,
   ): FeedingTime[] | undefined | null {
     try {
       return decodeMealPlanData(raw, { encodingFields });
@@ -151,19 +173,20 @@ export class MealPlanCard extends LitElement {
     }
   }
 
-
-
   /** Syncs the helper if it's out of sync with the sensor. */
   private _updateHelperIfOutOfSync(sensorRaw: string, helperRaw: string) {
-    if (this.config?.helper && this._helperID && this.hass && sensorRaw !== helperRaw) {
+    if (
+      this.config?.helper &&
+      this._helperID &&
+      this.hass &&
+      sensorRaw !== helperRaw
+    ) {
       this.hass.callService("input_text", "set_value", {
         entity_id: this._helperID,
         value: sensorRaw,
       });
     }
   }
-
-
 
   render() {
     if (!this._haComponentsReady) {
@@ -242,7 +265,9 @@ export class MealPlanCard extends LitElement {
                 this._dialogOpen = false;
                 this.resetEditState();
                 // When closing schedule view without saving, reset _meals to match _persistedMeals (latest backend state)
-                this._meals = Array.isArray(this._persistedMeals) ? [...this._persistedMeals] : [];
+                this._meals = Array.isArray(this._persistedMeals)
+                  ? [...this._persistedMeals]
+                  : [];
                 this.requestUpdate();
               },
               onSave: () => {
@@ -295,7 +320,12 @@ export class MealPlanCard extends LitElement {
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
     const profile = resolveProfile(this.config || {});
-    if (!profile || !Array.isArray(profile.encodingFields) || profile.encodingFields.length === 0) return;
+    if (
+      !profile ||
+      !Array.isArray(profile.encodingFields) ||
+      profile.encodingFields.length === 0
+    )
+      return;
     const value = encodeMealPlanData(this._meals, {
       encodingFields: profile.encodingFields ?? [],
     });
@@ -318,7 +348,8 @@ export class MealPlanCard extends LitElement {
       this._meals = Array.isArray(meals) ? meals : [];
     } else {
       // Warn if backend tried to update meals while editing
-      const msg = "[MealPlanCard] Backend update to meals ignored because user is editing or viewing schedule.";
+      const msg =
+        "[MealPlanCard] Backend update to meals ignored because user is editing or viewing schedule.";
       console.warn(msg);
     }
   }

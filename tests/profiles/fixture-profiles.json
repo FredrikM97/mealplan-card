@@ -12,14 +12,14 @@
   },
   {
     "manufacturer": "HoneyGuardian",
+    "encoded": "DAABAQweAgENAAQBDR4DAQ4ABAEOHgYB",
     "decoded": [
-      { "days": 0, "enabled": 1, "hour": 12, "minute": 0, "portion": 1 },
-      { "days": 0, "enabled": 1, "hour": 12, "minute": 30, "portion": 2 },
-      { "days": 0, "enabled": 1, "hour": 13, "minute": 0, "portion": 4 },
-      { "days": 0, "enabled": 1, "hour": 13, "minute": 30, "portion": 3 },
-      { "days": 0, "enabled": 1, "hour": 14, "minute": 0, "portion": 4 },
-      { "days": 0, "enabled": 1, "hour": 14, "minute": 30, "portion": 6 }
-    ],
-    "encoded": "DAABAQweAgENAAQBDR4DAQ4ABAEOHgYB"
+      { "enabled": 1, "hour": 12, "minute": 0, "portion": 1 },
+      { "enabled": 1, "hour": 12, "minute": 30, "portion": 2 },
+      { "enabled": 1, "hour": 13, "minute": 0, "portion": 4 },
+      { "enabled": 1, "hour": 13, "minute": 30, "portion": 3 },
+      { "enabled": 1, "hour": 14, "minute": 0, "portion": 4 },
+      { "enabled": 1, "hour": 14, "minute": 30, "portion": 6 }
+    ]
   }
 ]
