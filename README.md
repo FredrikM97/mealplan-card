@@ -44,6 +44,7 @@ The following devices are known to work with this card:
 
 - **Cleverio PF100**
 - **Honeyguardian**
+- **PetNest**
 
 ## Support
 
