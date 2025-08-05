@@ -14,6 +14,8 @@ export enum EncodingField {
   MINUTE = "minute",
   PORTION = "portion",
   ENABLED = "enabled",
+  MINUTE_HIGH = "minute_high",
+  MINUTE_LOW = "minute_low"
 }
 
 export interface DeviceProfile {
