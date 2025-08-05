@@ -25,6 +25,6 @@ export const profiles: DeviceProfileGroup[] = [
   {
     profiles: [{ manufacturer: "PetNest", default: true, models: [] }],
     fields: [pf.TIME, pf.PORTION, pf.DAYS, pf.EDIT, pf.DELETE, pf.ADD],
-    encodingFields: [ef.DAYS, ef.PORTION, ef.MINUTE_LOW, ef.MINUTE_HIGH]
+    encodingFields: [ef.DAYS, ef.PORTION, ef.MINUTE_LOW, ef.MINUTE_HIGH],
   },
 ];
