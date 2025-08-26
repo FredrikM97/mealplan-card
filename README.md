@@ -49,4 +49,4 @@ The following devices are known to work with this card:
 
 ## Support
 
-For issues, feature requests, or contributions, please open an issue or pull request on [GitHub](https://github.com/FredrikM97/cleverio-pf100-feeder-card).
+For issues, feature requests, or contributions, please open an issue or pull request on [GitHub](https://github.com/FredrikM97/mealplan-card).
