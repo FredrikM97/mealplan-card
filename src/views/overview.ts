@@ -1,5 +1,5 @@
 import { html } from "lit";
-import { getTotalFoodPerDay, getTodaysFoodGrams } from "../util/mealplan-state";
+import { getTotalFoodPerDay, getTodaysFoodGrams } from "../util/mealplan-metrics";
 
 export function renderOverview({
   meals,

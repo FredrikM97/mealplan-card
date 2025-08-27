@@ -8,68 +8,6 @@ export interface FeedingTime {
   enabled?: 0 | 1;
 }
 
-export function getNextSchedule(feedingTimes: FeedingTime[]): string {
-  if (!feedingTimes || feedingTimes.length === 0) return "-";
-  const enabled = feedingTimes.filter((t) => t.enabled === 1);
-  if (enabled.length === 0) return "-";
-  enabled.sort((a, b) => {
-    if (a.hour !== b.hour) return a.hour - b.hour;
-    return a.minute - b.minute;
-  });
-  return formatHourMinute(enabled[0].hour, enabled[0].minute);
-}
-
-export function getTotalFoodPerDay(feedingTimes: FeedingTime[]): number[] {
-  const totals = Array(7).fill(0);
-  feedingTimes.forEach((t, idx) => {
-    if (t.enabled !== 1) return;
-    if (typeof t.days !== "number") {
-      console.error(
-        `FeedingTime entry #${idx} is missing required 'days' field.`,
-      );
-      return;
-    }
-    if (typeof t.portion !== "number") {
-      console.error(
-        `FeedingTime entry #${idx} is missing required 'portion' field.`,
-      );
-      return;
-    }
-    for (let i = 0; i < 7; i++) {
-      if (t.days & (1 << i)) {
-        totals[i] += t.portion;
-      }
-    }
-  });
-  return totals;
-}
-
-export function getTodaysFoodGrams(
-  feedingTimes: FeedingTime[],
-  dayIdx: number,
-): number {
-  let total = 0;
-  feedingTimes.forEach((t, idx) => {
-    if (t.enabled !== 1) return;
-    if (typeof t.days !== "number") {
-      console.error(
-        `FeedingTime entry #${idx} is missing required 'days' field.`,
-      );
-      return;
-    }
-    if (typeof t.portion !== "number") {
-      console.error(
-        `FeedingTime entry #${idx} is missing required 'portion' field.`,
-      );
-      return;
-    }
-    if (t.days & (1 << dayIdx)) {
-      total += t.portion;
-    }
-  });
-  return total;
-}
-
 export function decodeMealPlanData(
   base64String: string,
   profile: { encodingFields: any[] },
