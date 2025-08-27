@@ -49,5 +49,11 @@ export const profiles: DeviceProfileGroup[] = [
     fields: [pf.TIME, pf.PORTION, pf.DAYS, pf.ENABLED, pf.EDIT, pf.DELETE, pf.ADD],
     encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
     maxLength: 128,
+  },
+  {
+    profiles: [{ manufacturer: "PetLibro", default: true, models: [] }],
+    fields: [pf.TIME, pf.PORTION, pf.DAYS, pf.ENABLED, pf.EDIT, pf.DELETE, pf.ADD],
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+    maxLength: 128,
   }
 ];
