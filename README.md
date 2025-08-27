@@ -37,7 +37,7 @@ When the user makes changes and presses save on the schedule view, the config is
 1. Click the **Add to HACS** button above, or manually add this repository as a custom repository in HACS (category: Lovelace).
 2. Find "Mealplan Card" in HACS under Frontend and install it.
 3. Search for Mealplan Pet Feeder in the card selector view.
-**After update ensure to hard refresh page/clean cache**
+   **After update ensure to hard refresh page/clean cache**
 
 ## Supported Devices
 
