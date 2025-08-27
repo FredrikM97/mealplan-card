@@ -1,6 +1,5 @@
 name: Release Drafter
 
-
 on:
   push:
     branches:

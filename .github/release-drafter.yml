@@ -4,45 +4,45 @@ template: |
 
   ## Contributors
   $CONTRIBUTORS
-name-template: 'v$NEXT_PATCH_VERSION'
-tag-template: 'v$NEXT_PATCH_VERSION'
+name-template: "v$NEXT_PATCH_VERSION"
+tag-template: "v$NEXT_PATCH_VERSION"
 categories:
-  - title: 'Features'
+  - title: "Features"
     labels:
-      - 'feature'
+      - "feature"
     commit-message:
-      - '/^feat/i'
-  - title: 'Fixes'
+      - "/^feat/i"
+  - title: "Fixes"
     labels:
-      - 'bug'
+      - "bug"
     commit-message:
-      - '/^fix/i'
-  - title: 'Maintenance'
+      - "/^fix/i"
+  - title: "Maintenance"
     labels:
-      - 'chore'
+      - "chore"
     commit-message:
-      - '/^chore/i'
-change-template: '- $TITLE (#$NUMBER)'
-no-changes-template: '- No changes'
+      - "/^chore/i"
+change-template: "- $TITLE (#$NUMBER)"
+no-changes-template: "- No changes"
 
 autolabeler:
-  - label: 'feature'
+  - label: "feature"
     files:
-      - 'src/**'
-  - label: 'chore'
+      - "src/**"
+  - label: "chore"
     files:
-      - '.github/**'
+      - ".github/**"
 
 exclude-labels:
-  - 'skip-changelog'
+  - "skip-changelog"
 version-resolver:
   major:
     labels:
-      - 'breaking'
+      - "breaking"
   minor:
     labels:
-      - 'feature'
+      - "feature"
   patch:
     labels:
-      - 'fix'
+      - "fix"
   default: patch
