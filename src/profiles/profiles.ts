@@ -65,7 +65,7 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED]
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
   {
     profiles: [{ manufacturer: "Arlec", default: true, models: [] }],
@@ -78,7 +78,7 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED]
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
   {
     profiles: [{ manufacturer: "PetLibro", default: true, models: [] }],
@@ -91,6 +91,6 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED]
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
 ];
