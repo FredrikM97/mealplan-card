@@ -30,5 +30,16 @@
       { "days": 127, "portion": 5, "hour": 5, "minute": 12 },
       { "days": 127, "portion": 7, "hour": 10, "minute": 25 }
     ]
-  }
+  },
+  {
+    "manufacturer": "Fukumaru-W",
+    "encoded": "fwEAAQB/CgACAX8PAAEBfxUAAgEIEgABAA==",
+    "decoded": [
+      { "days": 127, "portion": 1, "hour": 5, "minute": 0, "enabled": 0 },
+      { "days": 127, "portion": 2, "hour": 10, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 1, "hour": 16, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 2, "hour": 22, "minute": 0, "enabled": 1 },
+      { "days": 8, "portion": 1, "hour": 19, "minute": 0, "enabled": 0 }
+    ]
+}
 ]
