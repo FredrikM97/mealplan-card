@@ -29,31 +29,68 @@ export const profiles: DeviceProfileGroup[] = [
   },
   {
     profiles: [{ manufacturer: "Fukumaru-W", default: true, models: [] }],
-    fields: [pf.TIME, pf.PORTION, pf.DAYS, pf.ENABLED, pf.EDIT, pf.DELETE, pf.ADD],
+    fields: [
+      pf.TIME,
+      pf.PORTION,
+      pf.DAYS,
+      pf.ENABLED,
+      pf.EDIT,
+      pf.DELETE,
+      pf.ADD,
+    ],
     encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
   {
     profiles: [{ manufacturer: "Yuposl", default: true, models: [] }],
-    fields: [pf.TIME, pf.PORTION, pf.DAYS, pf.ENABLED, pf.EDIT, pf.DELETE, pf.ADD],
+    fields: [
+      pf.TIME,
+      pf.PORTION,
+      pf.DAYS,
+      pf.ENABLED,
+      pf.EDIT,
+      pf.DELETE,
+      pf.ADD,
+    ],
     encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
     maxLength: 128,
   },
   {
     profiles: [{ manufacturer: "Yuposl", default: true, models: [] }],
-    fields: [pf.TIME, pf.PORTION, pf.DAYS, pf.ENABLED, pf.EDIT, pf.DELETE, pf.ADD],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
-    maxLength: 128,
+    fields: [
+      pf.TIME,
+      pf.PORTION,
+      pf.DAYS,
+      pf.ENABLED,
+      pf.EDIT,
+      pf.DELETE,
+      pf.ADD,
+    ],
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED]
   },
   {
     profiles: [{ manufacturer: "Arlec", default: true, models: [] }],
-    fields: [pf.TIME, pf.PORTION, pf.DAYS, pf.ENABLED, pf.EDIT, pf.DELETE, pf.ADD],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
-    maxLength: 128,
+    fields: [
+      pf.TIME,
+      pf.PORTION,
+      pf.DAYS,
+      pf.ENABLED,
+      pf.EDIT,
+      pf.DELETE,
+      pf.ADD,
+    ],
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED]
   },
   {
     profiles: [{ manufacturer: "PetLibro", default: true, models: [] }],
-    fields: [pf.TIME, pf.PORTION, pf.DAYS, pf.ENABLED, pf.EDIT, pf.DELETE, pf.ADD],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
-    maxLength: 128,
-  }
+    fields: [
+      pf.TIME,
+      pf.PORTION,
+      pf.DAYS,
+      pf.ENABLED,
+      pf.EDIT,
+      pf.DELETE,
+      pf.ADD,
+    ],
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED]
+  },
 ];

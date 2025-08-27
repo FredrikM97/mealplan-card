@@ -33,47 +33,47 @@
   },
   {
     "manufacturer": "Fukumaru-W",
-    "encoded": "fwEAAQB/CgACAX8PAAEBfxUAAgEIEgABAA==",
+    "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 5, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 10, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 16, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 22, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 19, "minute": 0, "enabled": 0 }
+      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
+      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
-},
-{
+  },
+  {
     "manufacturer": "Yuposl",
-    "encoded": "fwEAAQB/CgACAX8PAAEBfxUAAgEIEgABAA==",
+    "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 5, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 10, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 16, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 22, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 19, "minute": 0, "enabled": 0 }
+      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
+      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
-},
+  },
 
-{
+  {
     "manufacturer": "Arlec",
-    "encoded": "fwEAAQB/CgACAX8PAAEBfxUAAgEIEgABAA==",
+    "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 5, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 10, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 16, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 22, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 19, "minute": 0, "enabled": 0 }
+      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
+      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
-},
-{
+  },
+  {
     "manufacturer": "PetLibro",
-    "encoded": "fwEAAQB/CgACAX8PAAEBfxUAAgEIEgABAA==",
+    "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 5, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 10, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 16, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 22, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 19, "minute": 0, "enabled": 0 }
+      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
+      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
-}
+  }
 ]

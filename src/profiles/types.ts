@@ -29,5 +29,4 @@ export interface DeviceProfileGroup {
   fields: ProfileField[];
   encodingFields: EncodingField[];
   featureFields?: ProfileField[];
-  maxLength?: number;
 }
