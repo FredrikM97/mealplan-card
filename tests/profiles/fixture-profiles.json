@@ -23,15 +23,6 @@
     ]
   },
   {
-    "manufacturer": "PetNest",
-    "encoded": "fwAFAH8FOAF/B3EC",
-    "decoded": [
-      { "days": 127, "portion": 0, "hour": 0, "minute": 5 },
-      { "days": 127, "portion": 5, "hour": 5, "minute": 12 },
-      { "days": 127, "portion": 7, "hour": 10, "minute": 25 }
-    ]
-  },
-  {
     "manufacturer": "Fukumaru-W",
     "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [

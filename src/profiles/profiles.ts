@@ -23,11 +23,6 @@ export const profiles: DeviceProfileGroup[] = [
     encodingFields: [ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
   {
-    profiles: [{ manufacturer: "PetNest", default: true, models: [] }],
-    fields: [pf.TIME, pf.PORTION, pf.DAYS, pf.EDIT, pf.DELETE, pf.ADD],
-    encodingFields: [ef.DAYS, ef.PORTION, ef.MINUTE_LOW, ef.MINUTE_HIGH],
-  },
-  {
     profiles: [{ manufacturer: "Fukumaru-W", default: true, models: [] }],
     fields: [
       pf.TIME,
