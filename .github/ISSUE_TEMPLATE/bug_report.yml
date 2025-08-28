@@ -26,7 +26,7 @@ body:
       label: Raw input
       placeholder: "Base64 encoded string"
       description: >-
-        Provide a raw base64 string from the application. Can look like 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA=='. 
+        Provide a raw base64 string from the application. Can look like 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA=='.
   - type: textarea
     validations:
       required: true
