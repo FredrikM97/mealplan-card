@@ -36,7 +36,8 @@ body:
       label: Additional information, example stack trace, logs, etc..
       description: >
         If you have any additional information for us, use the field below.
-  - type: checkboxes
+  - type: 
+    checkboxes:
       id: confirm
       attributes:
         label: Confirmation

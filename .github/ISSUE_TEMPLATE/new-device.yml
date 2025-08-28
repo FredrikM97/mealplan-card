@@ -3,16 +3,18 @@ description: Report a bug or issue with the MealPlan Card custom component.
 body:
   - type: input
     id: productid
+    validations:
+      required: true
     attributes:
-      label: Product ID
+      label: Manufacturer name
       description: |
-        The product ID or productKey for the device.
-        You can get this from the HA log when using cloud assisted setup with tuya-local 2024.11.0 and later. Otherwise the same iot.tuya.com API functions that provide the local key or from `tinytuya scan` or other tools doing local discovery. **Do not provide your device id here, that is private info unique to your personal device.**
+        The manufacturer name for the device
+    
   - type: input
-    id: productname
+    id: modelname
     attributes:
-      label: Product Name
-      description: The product name (usually brand and model name/number)
+      label: Model Name
+      description: The model name of a specific manufacturer device
   - type: input
     id: version
     validations:
