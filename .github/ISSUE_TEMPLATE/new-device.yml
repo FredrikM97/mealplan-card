@@ -1,5 +1,7 @@
 name: Report an issue with MealPlan Card
 description: Report a bug or issue with the MealPlan Card custom component.
+labels: feature
+assignees: FredrikM97
 body:
   - type: input
     id: productid
@@ -25,12 +27,16 @@ body:
       description: >
         Can be found in the HACS UI or in the card's resource URL.
   - type: textarea
+    validations:
+      required: true
     attributes:
       label: Raw input
       placeholder: "Base64 encoded string"
       description: >-
         Provide a raw base64 string from the application. Can look like 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA=='. 
   - type: textarea
+    validations:
+      required: true
     attributes:
       label: Data model information
       placeholder: "Description of the bytes in correct order. "
