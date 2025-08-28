@@ -36,20 +36,19 @@ body:
       label: Additional information, example stack trace, logs, etc..
       description: >
         If you have any additional information for us, use the field below.
-  - type: 
-    checkboxes:
-      id: confirm
-      attributes:
-        label: Confirmation
-        description: |
-          Please select if the following are applicable
-        options:
-          - label: I am sure this is a bug or improvement, that is well enough described that it can be implemented.
-            required: true
-          - label: I have cleared the cache and hard reset page.
-            required: true
-          - label: |
-              I have provided the raw base64 encoded string
-            required: true
-      validations:
-        required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      description: |
+        Please select if the following are applicable
+      options:
+        - label: I am sure this is a bug or improvement, that is well enough described that it can be implemented.
+          required: true
+        - label: I have cleared the cache and hard reset page.
+          required: true
+        - label: |
+            I have provided the raw base64 encoded string
+          required: true
+    validations:
+      required: true
