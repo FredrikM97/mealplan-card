@@ -1,7 +1,7 @@
 name: New Device
 description: Suggest a new device
 labels: ["new device"]
-assignees: 
+assignees:
   - FredrikM97
 body:
   - type: input
