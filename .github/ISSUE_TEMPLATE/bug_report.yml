@@ -1,58 +1,62 @@
 name: Report an issue with MealPlan Card
 description: Report a bug or issue with the MealPlan Card custom component.
+labels: ["bug"]
+assignees: 
+  - FredrikM97
 body:
   - type: textarea
-    validations:
-      required: true
     attributes:
       label: The problem
       description: >-
         Describe the issue you are experiencing here, to communicate to the maintainers. Tell us what you were trying to do and what happened.
 
         Provide a clear and concise description of what the problem is.
-  - type: input
-    id: version
     validations:
       required: true
+
+  - type: input
+    id: version
     attributes:
       label: What version of MealPlan Card has the issue?
       placeholder: v1.2.3
       description: >
         Can be found in the HACS UI or in the card's resource URL.
-  - type: textarea
     validations:
       required: true
+
+  - type: textarea
     attributes:
       label: Raw input
       placeholder: "Base64 encoded string"
       description: >-
-        Provide a raw base64 string from the application. Can look like 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA=='.
-  - type: textarea
+        Provide a raw base64 string from the application. Can look like 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA=='. 
     validations:
       required: true
+
+  - type: textarea
     attributes:
       label: Diagnostics information
-      placeholder: "Description of the bytes in correct order. "
+      placeholder: "Description of the bytes in correct order."
       description: >-
         If possible provide a description of the fields or a link to tuya-local on the fields provided by the api (example https://github.com/make-all/tuya-local/issues/3677)
+    validations:
+      required: true
+
   - type: textarea
     attributes:
       label: Additional information, example stack trace, logs, etc..
       description: >
         If you have any additional information for us, use the field below.
+
   - type: checkboxes
     id: confirm
     attributes:
       label: Confirmation
       description: |
-        Please select if the following are applicable
+        Please confirm the following:
       options:
         - label: I am sure this is a bug or improvement, that is well enough described that it can be implemented.
-          required: true
         - label: I have cleared the cache and hard reset page.
-          required: true
-        - label: |
-            I have provided the raw base64 encoded string
-          required: true
+        - label: I have provided the raw base64 encoded string
     validations:
       required: true
