@@ -1,0 +1,43 @@
+name: Report an issue with MealPlan Card
+description: Report a bug or issue with the MealPlan Card custom component.
+body:
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: The problem
+      description: >-
+        Describe the issue you are experiencing here, to communicate to the maintainers. Tell us what you were trying to do and what happened.
+
+        Provide a clear and concise description of what the problem is.
+  - type: input
+    id: version
+    validations:
+      required: true
+    attributes:
+      label: What version of MealPlan Card has the issue?
+      placeholder: v1.2.3
+      description: >
+        Can be found in the HACS UI or in the card's resource URL.
+  - type: textarea
+    attributes:
+      label: Raw input
+      placeholder: "Base64 encoded string"
+      description: >-
+        Provide a raw base64 string from the application. Can look like 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA=='. 
+  - type: textarea
+    attributes:
+      label: Diagnostics information
+      placeholder: "Base64 encoded string"
+      description: >-
+        If possible provide a description of the fields or a link to tuya-local on the fields provided by the api (example https://github.com/make-all/tuya-local/issues/3677)
+  - type: textarea
+    attributes:
+      label: Anything in the logs that might be useful for us?
+      description: For example, error message, or stack traces.
+      render: txt
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: >
+        If you have any additional information for us, use the field below.
