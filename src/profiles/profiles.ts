@@ -79,4 +79,17 @@ export const profiles: DeviceProfileGroup[] = [
     ],
     encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
+  {
+    profiles: [{ manufacturer: "MolyPet", default: true, models: [] }],
+    fields: [
+      pf.TIME,
+      pf.PORTION,
+      pf.DAYS,
+      pf.ENABLED,
+      pf.EDIT,
+      pf.DELETE,
+      pf.ADD,
+    ],
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+  },
 ];
