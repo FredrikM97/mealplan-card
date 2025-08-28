@@ -1,5 +1,5 @@
-name: Report an issue with MealPlan Card
-description: Report a bug or issue with the MealPlan Card custom component.
+name: New Device
+description: Suggest a new device
 labels: ["feature"]
 assignees: 
   - FredrikM97

@@ -5,6 +5,7 @@ assignees:
   - FredrikM97
 body:
   - type: textarea
+    id: problem
     attributes:
       label: The problem
       description: >-
@@ -25,6 +26,7 @@ body:
       required: true
 
   - type: textarea
+    id: rawinput
     attributes:
       label: Raw input
       placeholder: "Base64 encoded string"
@@ -34,6 +36,7 @@ body:
       required: true
 
   - type: textarea
+    id: diagnostics
     attributes:
       label: Diagnostics information
       placeholder: "Description of the bytes in correct order."
@@ -43,6 +46,7 @@ body:
       required: true
 
   - type: textarea
+    id: additional
     attributes:
       label: Additional information, example stack trace, logs, etc..
       description: >
