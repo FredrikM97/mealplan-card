@@ -1,6 +1,6 @@
 name: New Device
 description: Suggest a new device
-labels: ["feature"]
+labels: ["new device"]
 assignees: 
   - FredrikM97
 body:
