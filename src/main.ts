@@ -19,7 +19,7 @@ import { resolveProfile } from "./profiles/resolveProfile";
 export class MealPlanCard extends LitElement {
   private _hass;
 
-  private encoder;
+  private encoder!: EncoderBase;
   @property({ type: Object })
   get hass() {
     return this._hass;
@@ -133,13 +133,23 @@ export class MealPlanCard extends LitElement {
     let decodeError: string | null = null;
 
     if (isValid(sensorRaw)) {
-      decodedMeals = this.encoder.decode(sensorRaw)
+      try {
+        decodedMeals = this.encoder.decode(sensorRaw)
+      }catch (err) {
+        this._decodeError ="Failed to decode meal plan data.";
+        return [];
+      }
       // If helper exists and is valid and out of sync, update helper
       if (helperObj && isValid(helperRaw) && sensorRaw !== helperRaw) {
         this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
       }
     } else if (helperObj && isValid(helperRaw)) {
-      decodedMeals = this.encoder.decode(helperRaw);
+      try {
+        decodedMeals = this.encoder.decode(helperRaw)
+      }catch (err) {
+        this._decodeError ="Failed to decode meal plan data.";
+        return [];
+      }
     } else {
       decodeError =
         "No valid meal plan data found: neither helper nor a valid sensor value is present.";
@@ -304,6 +314,7 @@ export class MealPlanCard extends LitElement {
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
     const value = this.encoder.encode(this._meals);
+    console.debug("Call service with data %s", value)
     this.hass.callService("text", "set_value", {
       entity_id: this._sensorID,
       value,
