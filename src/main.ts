@@ -107,7 +107,11 @@ export class MealPlanCard extends LitElement {
       !Array.isArray(profile.encodingFields) ||
       profile.encodingFields.length === 0
     ) {
-      console.warn("Selected feeder profile %s on config %s is invalid or not supported.", profile, this.config )
+      console.warn(
+        "Selected feeder profile %s on config %s is invalid or not supported.",
+        profile,
+        this.config,
+      );
       this._decodeError =
         "Selected feeder profile is invalid or not supported.";
       this._setPersistedMeals([]);
@@ -136,7 +140,7 @@ export class MealPlanCard extends LitElement {
         decodedMeals = this.encoder.decode(sensorRaw);
       } catch (err) {
         this._decodeError = "Failed to decode meal plan data.";
-        console.warn("Failed to decode sensor %s", sensorRaw , err)
+        console.warn("Failed to decode sensor %s", sensorRaw, err);
         return [];
       }
       // If helper exists and is valid and out of sync, update helper
@@ -148,13 +152,13 @@ export class MealPlanCard extends LitElement {
         decodedMeals = this.encoder.decode(helperRaw);
       } catch (err) {
         this._decodeError = "Failed to decode meal plan data.";
-        console.warn("Failed to decode from helper %s", helperRaw, err)
+        console.warn("Failed to decode from helper %s", helperRaw, err);
         return [];
       }
     } else {
       decodeError =
         "No valid meal plan data found: neither helper nor a valid sensor value is present.";
-      console.warn(decodeError)
+      console.warn(decodeError);
       decodedMeals = [];
     }
 
@@ -171,7 +175,11 @@ export class MealPlanCard extends LitElement {
       this.hass &&
       sensorRaw !== helperRaw
     ) {
-      console.debug("Update helper %s with value %s", this._helperID, sensorRaw)
+      console.debug(
+        "Update helper %s with value %s",
+        this._helperID,
+        sensorRaw,
+      );
       try {
         this.hass.callService("input_text", "set_value", {
           entity_id: this._helperID,
@@ -321,7 +329,11 @@ export class MealPlanCard extends LitElement {
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
     const value = this.encoder.encode(this._meals);
-    console.debug("Call service to sensor %s with data %s", this._sensorID, value);
+    console.debug(
+      "Call service to sensor %s with data %s",
+      this._sensorID,
+      value,
+    );
     try {
       this.hass.callService("text", "set_value", {
         entity_id: this._sensorID,
