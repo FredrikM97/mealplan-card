@@ -23,15 +23,6 @@
     ]
   },
   {
-    "manufacturer": "PetNest",
-    "encoded": "fwAFAH8FOAF/B3EC",
-    "decoded": [
-      { "days": 127, "portion": 0, "hour": 0, "minute": 5 },
-      { "days": 127, "portion": 5, "hour": 5, "minute": 12 },
-      { "days": 127, "portion": 7, "hour": 10, "minute": 25 }
-    ]
-  },
-  {
     "manufacturer": "Fukumaru-W",
     "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
@@ -85,6 +76,20 @@
       { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
       { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+    ]
+  },
+  {
+    "manufacturer": "PetNest",
+    "encoded": "7f17000200000007f20000210000007f02000100000007f07000200000007f09000200000007f12000200000007f15000200000007f0400020000000",
+    "decoded": [
+      { "days": 127, "hour": 17, "minute": 0, "portion": 2, "enabled": 0 },
+      { "days": 127, "hour": 20, "minute": 0, "portion": 2, "enabled": 1 },
+      { "days": 127, "hour": 2, "minute": 0, "portion": 1, "enabled": 0 },
+      { "days": 127, "hour": 7, "minute": 0, "portion": 2, "enabled": 0 },
+      { "days": 127, "hour": 9, "minute": 0, "portion": 2, "enabled": 0 },
+      { "days": 127, "hour": 12, "minute": 0, "portion": 2, "enabled": 0 },
+      { "days": 127, "hour": 15, "minute": 0, "portion": 2, "enabled": 0 },
+      { "days": 127, "hour": 4, "minute": 0, "portion": 2, "enabled": 0 }
     ]
   }
 ]

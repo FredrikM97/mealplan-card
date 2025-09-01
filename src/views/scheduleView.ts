@@ -3,7 +3,7 @@ import { renderDaySelector } from "../day-selector";
 import { localize } from "../locales/localize";
 import "../day-selector";
 import { renderEditView } from "./editView";
-import { formatHourMinute } from "../util/mealplan-state";
+import { formatHourMinute } from "../util/days-util";
 
 export function renderScheduleView({
   profile,

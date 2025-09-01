@@ -1,6 +1,6 @@
 import { T } from "vitest/dist/chunks/reporters.d.BFLkQcL6";
-import { FeedingTime } from "./mealplan-state";
-import { formatHourMinute } from "./mealplan-state";
+import { FeedingTime } from "./serializer";
+import { formatHourMinute } from "./days-util";
 
 export function getNextSchedule(feedingTimes: FeedingTime[]): string {
   if (!feedingTimes || feedingTimes.length === 0) return "-";

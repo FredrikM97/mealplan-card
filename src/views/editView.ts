@@ -1,7 +1,7 @@
 import { html } from "lit";
 import { renderDaySelector } from "../day-selector";
 import { localize } from "../locales/localize";
-import { formatHourMinute } from "../util/mealplan-state";
+import { formatHourMinute } from "../util/days-util";
 
 // Static list of predefined feeding times
 export const PREDEFINED_TIMES = ["06:00", "08:00", "12:00", "18:00", "21:00"];

@@ -3,8 +3,8 @@ import {
   getNextSchedule,
   getTotalFoodPerDay,
   getTodaysFoodGrams,
-} from "../../src/util/mealplan-metrics";
-import type { FeedingTime } from "../../src/util/mealplan-state";
+} from "../../src/util/metrics";
+import type { FeedingTime } from "../../src/util/serializer";
 
 describe("Overview statistics", () => {
   it('getNextSchedule returns "-" if no enabled times', () => {

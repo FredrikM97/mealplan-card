@@ -1,4 +1,4 @@
-import type { FeedingTime } from "./mealplan-state";
+import type { FeedingTime } from "./serializer";
 
 export function validateFeedingTime(
   entry: Partial<FeedingTime>,

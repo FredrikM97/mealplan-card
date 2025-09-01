@@ -2,7 +2,7 @@ import { html } from "lit";
 import {
   getTotalFoodPerDay,
   getTodaysFoodGrams,
-} from "../util/mealplan-metrics";
+} from "../util/metrics";
 
 export function renderOverview({
   meals,
