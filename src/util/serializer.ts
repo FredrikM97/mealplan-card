@@ -20,27 +20,24 @@ export abstract class EncoderBase {
 }
 
 class Base64Encoder extends EncoderBase {
-
   encode(data: FeedingTime[]): string {
-  const fields = this.profile.encodingFields;
-  const rawData = this.convertToEncoded(data);
-  const bytes: number[] = [];
-  rawData.forEach((item, idx) => {
-    for (const field of fields) {
-      const prop = field;
-      if (!(prop in item) || typeof (item as any)[prop] === "undefined") {
-        throw new Error(
-          `Meal plan encode error: missing field '${prop}' in entry #${idx}. Possible layout mismatch or incomplete FeedingTime.`,
-        );
+    const fields = this.profile.encodingFields;
+    const rawData = this.convertToEncoded(data);
+    const bytes: number[] = [];
+    rawData.forEach((item, idx) => {
+      for (const field of fields) {
+        const prop = field;
+        if (!(prop in item) || typeof (item as any)[prop] === "undefined") {
+          throw new Error(
+            `Meal plan encode error: missing field '${prop}' in entry #${idx}. Possible layout mismatch or incomplete FeedingTime.`,
+          );
+        }
+        bytes.push(Number((item as any)[prop]));
       }
-      bytes.push(Number((item as any)[prop]));
-    }
-  });
-  return btoa(String.fromCharCode(...bytes));
-
-
+    });
+    return btoa(String.fromCharCode(...bytes));
   }
-  decode(data: string): FeedingTime[] { 
+  decode(data: string): FeedingTime[] {
     if (!data || data === "unknown") return [];
     const fields = this.profile.encodingFields;
     const entrySize = fields.length;
@@ -64,9 +61,7 @@ class Base64Encoder extends EncoderBase {
     return this.convertFromDecoded(rawData);
   }
 
-  convertToEncoded(
-    mealPlan: FeedingTime[]
-  ): any[] {
+  convertToEncoded(mealPlan: FeedingTime[]): any[] {
     if (
       this.profile.encodingFields.includes(EncodingField.MINUTE_HIGH) &&
       this.profile.encodingFields.includes(EncodingField.MINUTE_LOW)
@@ -89,9 +84,7 @@ class Base64Encoder extends EncoderBase {
     return mealPlan;
   }
 
-  convertFromDecoded(
-    rawData: any[],
-  ): FeedingTime[] {
+  convertFromDecoded(rawData: any[]): FeedingTime[] {
     return rawData.map((entry) => {
       const { minute_high, minute_low, ...sanitizedEntry } = entry;
       if (
@@ -105,27 +98,25 @@ class Base64Encoder extends EncoderBase {
       return sanitizedEntry;
     });
   }
-
 }
 
 class HexEncoder extends EncoderBase {
   encode(data: FeedingTime[]): string {
     return data
-    .map((entry) => {
-      const days = (entry.days ?? 0).toString(16).padStart(2, "0");
-      const hour = (entry.hour ?? 0).toString().padStart(2, "0");
-      const minute = (entry.minute ?? 0).toString().padStart(2, "0");
-      const portion = (entry.portion ?? 0).toString().padStart(2, "0");
-      const enabled = (entry.enabled ?? 0).toString();
-      const filler = "000000"; 
-      return `${days}${hour}${minute}${portion}${enabled}${filler}`;
-    })
-    .join("");
-   }
-  decode(data: string): FeedingTime[] { 
+      .map((entry) => {
+        const days = (entry.days ?? 0).toString(16).padStart(2, "0");
+        const hour = (entry.hour ?? 0).toString().padStart(2, "0");
+        const minute = (entry.minute ?? 0).toString().padStart(2, "0");
+        const portion = (entry.portion ?? 0).toString().padStart(2, "0");
+        const enabled = (entry.enabled ?? 0).toString();
+        const filler = "000000";
+        return `${days}${hour}${minute}${portion}${enabled}${filler}`;
+      })
+      .join("");
+  }
+  decode(data: string): FeedingTime[] {
     const schedules: FeedingTime[] = [];
-    if (data.length % 15 !== 0)
-      throw new Error("Invalid meal plan length");
+    if (data.length % 15 !== 0) throw new Error("Invalid meal plan length");
     for (let i = 0; i < data.length; i += 15) {
       const chunk = data.slice(i, i + 15);
       if (chunk.length < 15) break;
@@ -135,14 +126,11 @@ class HexEncoder extends EncoderBase {
       const portion = parseInt(chunk.slice(6, 8), 10);
       const enabled = parseInt(chunk.slice(8, 9), 10) as 0 | 1;
 
-
       schedules.push({ days, hour, minute, portion, enabled });
     }
     return schedules;
-
-   }
+  }
 }
-
 
 export enum EncodingType {
   BASE64 = "base64",
@@ -154,10 +142,9 @@ const ENCODERS = {
   [EncodingType.HEX]: HexEncoder,
 };
 
-
 export function getEncoder(profile: DeviceProfileGroup) {
   if (!profile) {
-      throw new Error("Device profile is required for encoder initialization");
+    throw new Error("Device profile is required for encoder initialization");
   }
   const EncoderClass = ENCODERS[profile.encodingType ?? "base64"];
   return new EncoderClass(profile);

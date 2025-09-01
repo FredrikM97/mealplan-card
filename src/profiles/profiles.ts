@@ -101,5 +101,5 @@ export const profiles: DeviceProfileGroup[] = [
       pf.ADD,
     ],
     encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
-  }
+  },
 ];

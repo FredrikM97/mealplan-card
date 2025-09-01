@@ -163,7 +163,7 @@ describe("MealPlanCard uncovered lines", () => {
     card.hass = undefined;
     expect(() => card._saveMealsToSensor()).to.not.throw();
   });
-  
+
   it("_onScheduleMealsChanged updates meals and calls _saveMealsToSensor", () => {
     const card = new MealPlanCard();
     card._meals = [];

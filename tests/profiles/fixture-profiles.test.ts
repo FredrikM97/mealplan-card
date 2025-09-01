@@ -1,9 +1,7 @@
 import { describe, it, expect } from "vitest";
-import {
-  getEncoder,
-} from "../../src/util/serializer";
+import { getEncoder } from "../../src/util/serializer";
 import fixtureProfiles from "./fixture-profiles.json";
-import {resolveProfile} from '../../src/profiles/resolveProfile'
+import { resolveProfile } from "../../src/profiles/resolveProfile";
 const INVALID_BASE64 = "!@#$";
 
 describe.each(fixtureProfiles as any[])(
@@ -15,7 +13,7 @@ describe.each(fixtureProfiles as any[])(
       it.skip(`${manufacturer}: profile not found in source profiles`, () => {});
       return;
     }
-    const encoder = getEncoder(profileGroup)
+    const encoder = getEncoder(profileGroup);
     it(`${manufacturer}: encodes feedingTimes to base64`, () => {
       const result = encoder.encode(decoded);
       if (encoded) {
@@ -36,9 +34,7 @@ describe.each(fixtureProfiles as any[])(
       expect(decodedResult).toEqual(decoded);
     });
     it(`${manufacturer}: throws on invalid base64`, () => {
-      expect(() =>
-        encoder.decode(INVALID_BASE64),
-      ).toThrow();
+      expect(() => encoder.decode(INVALID_BASE64)).toThrow();
     });
   },
 );

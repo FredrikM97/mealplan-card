@@ -56,7 +56,6 @@ export function isValidDayBitmask(mask: number): boolean {
   return (mask & ~all) === 0;
 }
 
-
 // Utility for UI formatting only
 export function formatHourMinute(hour?: number, minute?: number): string {
   if (

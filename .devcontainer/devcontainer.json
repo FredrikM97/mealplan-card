@@ -9,7 +9,7 @@
     }
   },
   "mounts": [
-    "type=volume,source=ha-core-containers,target=/workspaces"
+    "type=volume,source=ha-core-containers,target=/workspaces/shared-data"
   ],
   "postCreateCommand": "npm install && npm test"
 }
