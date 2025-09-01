@@ -164,23 +164,6 @@ describe("MealPlanCard uncovered lines", () => {
     expect(() => card._saveMealsToSensor()).to.not.throw();
   });
 
-  it("_saveMealsToSensor returns early if no valid profile or encodingFields", () => {
-    const card = new MealPlanCard();
-    card._meals = [];
-    Object.defineProperty(card, "_sensorID", { get: () => "sensor.test" });
-    card.hass = { callService: vi.fn() };
-    card._resolveProfile = () => undefined;
-    expect(() => card._saveMealsToSensor()).to.not.throw();
-    card._resolveProfile = () => ({
-      encodingFields: [],
-      profiles: [],
-      fields: [],
-      manufacturer: "",
-      model: "",
-    });
-    expect(() => card._saveMealsToSensor()).to.not.throw();
-  });
-
   it("_onScheduleMealsChanged updates meals and calls _saveMealsToSensor", () => {
     const card = new MealPlanCard();
     card._meals = [];

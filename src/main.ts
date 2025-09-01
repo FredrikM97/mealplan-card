@@ -1,13 +1,10 @@
 ﻿import { LitElement, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import {
-  decodeMealPlanData,
-  encodeMealPlanData,
-} from "./util/mealplan-state.js";
-import type { FeedingTime } from "./util/mealplan-state.js";
+import { getEncoder, EncoderBase } from "./util/serializer.js";
+import type { FeedingTime } from "./util/serializer.js";
 import { loadHaComponents } from "@kipk/load-ha-components";
 import { localize, setLanguage } from "./locales/localize";
-import { validateFeedingTime } from "./util/mealplan-validate.js";
+import { validateFeedingTime } from "./util/validate.js";
 
 import { renderScheduleView } from "./views/scheduleView";
 import { renderOverview } from "./views/overview";
@@ -19,6 +16,8 @@ import { resolveProfile } from "./profiles/resolveProfile";
 @customElement("mealplan-card")
 export class MealPlanCard extends LitElement {
   private _hass;
+
+  private encoder!: EncoderBase;
   @property({ type: Object })
   get hass() {
     return this._hass;
@@ -102,6 +101,7 @@ export class MealPlanCard extends LitElement {
    */
   _updateHass() {
     const profile = resolveProfile(this.config || {});
+
     if (
       !profile ||
       !Array.isArray(profile.encodingFields) ||
@@ -113,7 +113,7 @@ export class MealPlanCard extends LitElement {
       this._setMealsIfNotEditing([]);
       return;
     }
-
+    this.encoder = getEncoder(profile);
     // Use getters for IDs, and inline the rest for clarity
     const stateObj = this.hass?.states?.[this._sensorID];
     const helperObj = this.hass?.states?.[this._helperID];
@@ -131,25 +131,23 @@ export class MealPlanCard extends LitElement {
     let decodeError: string | null = null;
 
     if (isValid(sensorRaw)) {
-      decodedMeals = this._tryDecode(
-        sensorRaw,
-        profile.encodingFields,
-        (msg) => {
-          decodeError = msg;
-        },
-      );
+      try {
+        decodedMeals = this.encoder.decode(sensorRaw);
+      } catch (err) {
+        this._decodeError = "Failed to decode meal plan data.";
+        return [];
+      }
       // If helper exists and is valid and out of sync, update helper
       if (helperObj && isValid(helperRaw) && sensorRaw !== helperRaw) {
         this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
       }
     } else if (helperObj && isValid(helperRaw)) {
-      decodedMeals = this._tryDecode(
-        helperRaw,
-        profile.encodingFields,
-        (msg) => {
-          decodeError = msg;
-        },
-      );
+      try {
+        decodedMeals = this.encoder.decode(helperRaw);
+      } catch (err) {
+        this._decodeError = "Failed to decode meal plan data.";
+        return [];
+      }
     } else {
       decodeError =
         "No valid meal plan data found: neither helper nor a valid sensor value is present.";
@@ -159,19 +157,6 @@ export class MealPlanCard extends LitElement {
     this._decodeError = decodeError;
     this._setPersistedMeals(decodedMeals);
     this._setMealsIfNotEditing(decodedMeals);
-  }
-
-  private _tryDecode(
-    raw: string,
-    encodingFields: any,
-    setError: (msg: string) => void,
-  ): FeedingTime[] | undefined | null {
-    try {
-      return decodeMealPlanData(raw, { encodingFields });
-    } catch (err) {
-      setError((err as Error).message || "Failed to decode meal plan data.");
-      return [];
-    }
   }
 
   /** Syncs the helper if it's out of sync with the sensor. */
@@ -319,23 +304,15 @@ export class MealPlanCard extends LitElement {
     `;
   }
   static async getConfigElement() {
-    await import("./card-editor");
+    await import("./card-editor.js");
     return document.createElement("mealplan-card-editor");
   }
 
   /** Encodes and saves the current meals to the sensor. */
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
-    const profile = resolveProfile(this.config || {});
-    if (
-      !profile ||
-      !Array.isArray(profile.encodingFields) ||
-      profile.encodingFields.length === 0
-    )
-      return;
-    const value = encodeMealPlanData(this._meals, {
-      encodingFields: profile.encodingFields ?? [],
-    });
+    const value = this.encoder.encode(this._meals);
+    console.debug("Call service with data %s", value);
     this.hass.callService("text", "set_value", {
       entity_id: this._sensorID,
       value,

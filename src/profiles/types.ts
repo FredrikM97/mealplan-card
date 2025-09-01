@@ -1,3 +1,5 @@
+import { EncodingType } from "../util/serializer";
+
 export enum ProfileField {
   TIME = "time",
   PORTION = "portion",
@@ -26,6 +28,7 @@ export interface DeviceProfile {
 
 export interface DeviceProfileGroup {
   profiles: DeviceProfile[];
+  encodingType?: EncodingType;
   fields: ProfileField[];
   encodingFields: EncodingField[];
   featureFields?: ProfileField[];
