@@ -171,11 +171,14 @@ export class MealPlanCard extends LitElement {
       this.hass &&
       sensorRaw !== helperRaw
     ) {
-      console.debug("Update helper %s with value %s", this._helperID, sensorRaw)
-      this.hass.callService("input_text", "set_value", {
-        entity_id: this._helperID,
-        value: sensorRaw,
-      });
+      try {
+        this.hass.callService("input_text", "set_value", {
+          entity_id: this._helperID,
+          value: sensorRaw,
+        });
+      } catch (err) {
+        console.error("Failed to call service:", err);
+      }
     }
   }
 
@@ -317,11 +320,15 @@ export class MealPlanCard extends LitElement {
   _saveMealsToSensor() {
     if (!this.hass || !this._sensorID) return;
     const value = this.encoder.encode(this._meals);
-    console.debug("Call service to sensor %s with data %s", this._sensorID, value);
-    this.hass.callService("text", "set_value", {
-      entity_id: this._sensorID,
-      value,
-    });
+    console.debug("Call service with data %s", value);
+    try {
+      this.hass.callService("text", "set_value", {
+        entity_id: this._sensorID,
+        value,
+      });
+    } catch (err) {
+      console.error("Failed to call service:", err);
+    }
   }
   _onScheduleMealsChanged(e) {
     console.log("[MealPlanCard] _onScheduleMealsChanged called", e);
