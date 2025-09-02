@@ -86,7 +86,7 @@ export class MealPlanCardEditor extends LitElement {
         .value=${this.config.sensor || ""}
         .configValue=${"sensor"}
         @value-changed=${this._valueChanged}
-        .includeDomains=${["sensor", "text"]}
+        .includeDomains=${["sensor", "text", "input_text"]}
       ></ha-entity-picker>
       <div style="height: 20px;"></div>
       <label for="helper-picker" style="display:block;margin-bottom:4px;"
