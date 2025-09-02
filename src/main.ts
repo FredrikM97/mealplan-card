@@ -181,7 +181,8 @@ export class MealPlanCard extends LitElement {
         sensorRaw,
       );
       try {
-        this.hass.callService("input_text", "set_value", {
+        const domain = this._helperID?.split(".")[0];
+        this.hass.callService(domain, "set_value", {
           entity_id: this._helperID,
           value: sensorRaw,
         });
@@ -335,7 +336,8 @@ export class MealPlanCard extends LitElement {
       value,
     );
     try {
-      this.hass.callService("text", "set_value", {
+      const domain = this._sensorID?.split(".")[0];
+      this.hass.callService(domain, "set_value", {
         entity_id: this._sensorID,
         value,
       });
