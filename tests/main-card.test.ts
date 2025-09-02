@@ -58,14 +58,14 @@ describe("MealPlanCard integration", () => {
   it("calls hass.callService when schedule Save is pressed", async () => {
     const base64 = "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==";
     const config = {
-      sensor: "sensor.test",
+      sensor: "text.test",
       title: "Test Card",
       device_manufacturer: "Cleverio",
       device_model: "",
     };
     const callService = vi.fn();
     const hass = {
-      states: { "sensor.test": { state: base64, attributes: {} } },
+      states: { "text.test": { state: base64, attributes: {} } },
       callService,
     };
     const el = await fixture<any>(
@@ -92,7 +92,7 @@ describe("MealPlanCard integration", () => {
       (c) => c[0] === "text" && c[1] === "set_value",
     );
     expect(call, "callService should be called with text.set_value").to.exist;
-    if (call) expect(call[2].entity_id).to.equal("sensor.test");
+    if (call) expect(call[2].entity_id).to.equal("text.test");
   });
 });
 
