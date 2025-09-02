@@ -5,7 +5,7 @@ export interface FeedingTime {
   minute?: number;
   portion?: number;
   days?: number;
-  enabled?: 0 | 1;
+  enabled?: number;
 }
 
 export abstract class EncoderBase {
