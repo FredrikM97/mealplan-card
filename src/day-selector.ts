@@ -40,14 +40,11 @@ export function renderDaySelector({
     dayLabels && dayLabels.length === 7 ? dayLabels : defaultLabels;
   const handleClick = (i: number) => {
     if (!editable) return;
-    // Map UI index to original bit index (reverse shift)
     const bit = (i - firstDay + 7) % 7;
     const newDays = days ^ (1 << bit);
     if (onDaysChanged) onDaysChanged(newDays);
   };
-  // Shift the bitmask so bit 0 always matches the first visible day (firstDay)
   const shiftMask = (mask: number, shift: number) => {
-    // left rotate 7 bits
     return ((mask << shift) | (mask >> (7 - shift))) & 0x7f;
   };
   const shiftedDays = shiftMask(days, firstDay);
