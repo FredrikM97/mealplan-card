@@ -91,5 +91,13 @@
       { "days": 127, "hour": 15, "minute": 0, "portion": 2, "enabled": 0 },
       { "days": 127, "hour": 4, "minute": 0, "portion": 2, "enabled": 0 }
     ]
+  },
+  {
+    "manufacturer": "Petrust",
+    "encoded": "AwseAQE=",
+    "decoded": [
+      { "days": 3, "hour": 11, "minute": 30, "portion": 1, "enabled": 1 }
+     
+    ]
   }
 ]

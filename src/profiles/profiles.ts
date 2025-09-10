@@ -1,4 +1,5 @@
 // Unified grouped config for all supported device profiles
+import { Day } from "../util/days-util";
 import { EncodingType } from "../util/serializer";
 import type { DeviceProfileGroup } from "./types";
 
@@ -91,6 +92,20 @@ export const profiles: DeviceProfileGroup[] = [
   {
     profiles: [{ manufacturer: "PetNest", default: true, models: [] }],
     encodingType: EncodingType.HEX,
+    fields: [
+      pf.TIME,
+      pf.PORTION,
+      pf.DAYS,
+      pf.ENABLED,
+      pf.EDIT,
+      pf.DELETE,
+      pf.ADD,
+    ],
+    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+  },
+  {
+    profiles: [{ manufacturer: "Petrust", default: true, models: [] }],
+    firstDay: Day.Saturday,
     fields: [
       pf.TIME,
       pf.PORTION,
