@@ -33,5 +33,5 @@ export interface DeviceProfileGroup {
   fields: ProfileField[];
   encodingFields: EncodingField[];
   featureFields?: ProfileField[];
-  firstDay?: Day; 
+  firstDay?: Day;
 }

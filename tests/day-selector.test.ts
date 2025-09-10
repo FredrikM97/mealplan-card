@@ -1,4 +1,3 @@
-
 import { it, expect, afterEach } from "vitest";
 import { render } from "lit-html";
 import { renderDaySelector } from "../src/day-selector";
@@ -299,7 +298,7 @@ it("renders correct DOM structure for all prop combinations", () => {
 });
 
 it("highlights correct days for bitmask and firstDay", () => {
-  const days = 0b0000011 
+  const days = 0b0000011;
   const firstDay = 5;
   const labels = ["M", "T", "W", "T", "F", "S", "S"];
   const el = document.createElement("div");
@@ -315,8 +314,18 @@ it("highlights correct days for bitmask and firstDay", () => {
   );
   document.body.appendChild(el);
   const cells = el.querySelectorAll(".day-cell");
-  const selected = Array.from(cells).map((c) => c.classList.contains("selected"));
-  expect(selected).to.deep.equal([false, false, false, false, false, true, true]);
+  const selected = Array.from(cells).map((c) =>
+    c.classList.contains("selected"),
+  );
+  expect(selected).to.deep.equal([
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+  ]);
 });
 
 it("toggles correct day in mask when firstDay is Saturday (edit mode)", () => {
@@ -341,13 +350,17 @@ it("toggles correct day in mask when firstDay is Saturday (edit mode)", () => {
   renderSelector();
   document.body.appendChild(el);
   const cells = () => el.querySelectorAll(".day-cell");
-  cells()[Day.Saturday].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  cells()[Day.Saturday].dispatchEvent(
+    new MouseEvent("click", { bubbles: true }),
+  );
   renderSelector();
   expect(mask).to.equal(0b0000001);
   cells()[Day.Sunday].dispatchEvent(new MouseEvent("click", { bubbles: true }));
   renderSelector();
   expect(mask).to.equal(0b0000011);
-  cells()[Day.Saturday].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  cells()[Day.Saturday].dispatchEvent(
+    new MouseEvent("click", { bubbles: true }),
+  );
   renderSelector();
   expect(mask).to.equal(0b0000010);
 });

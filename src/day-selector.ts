@@ -27,7 +27,7 @@ export function renderDaySelector({
   editable = false,
   dayLabels,
   onDaysChanged,
-  firstDay = 0
+  firstDay = 0,
 }: {
   days: number;
   editable: boolean;
@@ -36,7 +36,8 @@ export function renderDaySelector({
   firstDay?: number;
 }): import("lit").TemplateResult {
   const defaultLabels = ["M", "T", "W", "T", "F", "S", "S"];
-  const labels = dayLabels && dayLabels.length === 7 ? dayLabels : defaultLabels;
+  const labels =
+    dayLabels && dayLabels.length === 7 ? dayLabels : defaultLabels;
   const handleClick = (i: number) => {
     if (!editable) return;
     // Map UI index to original bit index (reverse shift)
@@ -104,14 +105,14 @@ export function renderDaySelector({
       ${labels.map(
         (d, i) => html`
           <span
-            class="day-cell${shiftedDays & (1 << i) ? " selected" : ""}${editable
-              ? ""
-              : " readonly"}"
+            class="day-cell${shiftedDays & (1 << i)
+              ? " selected"
+              : ""}${editable ? "" : " readonly"}"
             @click=${() => handleClick(i)}
             >${d}</span
           >
         `,
       )}
     </div>
-`;
+  `;
 }

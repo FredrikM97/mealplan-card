@@ -66,7 +66,7 @@ export function renderScheduleView({
           renderDaySelector({
             days: row.days,
             editable: false,
-            firstDay: profile.firstDay
+            firstDay: profile.firstDay,
           }),
       };
     }
