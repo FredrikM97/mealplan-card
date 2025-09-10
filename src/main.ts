@@ -143,8 +143,8 @@ export class MealPlanCard extends LitElement {
         console.warn("Failed to decode sensor %s", sensorRaw, err);
         return [];
       }
-      // If helper exists and is valid and out of sync, update helper
-      if (helperObj && isValid(helperRaw) && sensorRaw !== helperRaw) {
+      // If helper exists and out of sync, update helper
+      if (helperObj && sensorRaw !== helperRaw) {
         this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
       }
     } else if (helperObj && isValid(helperRaw)) {
