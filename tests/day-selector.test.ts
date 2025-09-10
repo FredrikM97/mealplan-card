@@ -350,17 +350,14 @@ it("toggles correct day in mask when firstDay is Saturday (edit mode)", () => {
   renderSelector();
   document.body.appendChild(el);
   const cells = () => el.querySelectorAll(".day-cell");
-
   cells()[Day.Saturday].dispatchEvent(
     new MouseEvent("click", { bubbles: true }),
   );
-
   renderSelector();
   expect(mask).to.equal(0b0000001);
   cells()[Day.Sunday].dispatchEvent(new MouseEvent("click", { bubbles: true }));
   renderSelector();
   expect(mask).to.equal(0b0000011);
-
   cells()[Day.Saturday].dispatchEvent(
     new MouseEvent("click", { bubbles: true }),
   );
