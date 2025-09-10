@@ -1,6 +1,7 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { it, expect, afterEach } from "vitest";
 import { render } from "lit-html";
 import { renderDaySelector } from "../src/day-selector";
+import { Day } from "../src/util/days-util";
 
 afterEach(() => {
   document.querySelectorAll("div").forEach((div) => {
@@ -294,4 +295,72 @@ it("renders correct DOM structure for all prop combinations", () => {
   expect(
     Array.from(el.querySelectorAll(".day-cell")).map((c) => c.textContent),
   ).to.deep.equal(["A", "B", "C", "D", "E", "F", "G"]);
+});
+
+it("highlights correct days for bitmask and firstDay", () => {
+  const days = 0b0000011;
+  const firstDay = 5;
+  const labels = ["M", "T", "W", "T", "F", "S", "S"];
+  const el = document.createElement("div");
+  el.innerHTML = "";
+  render(
+    renderDaySelector({
+      days,
+      editable: false,
+      firstDay,
+      dayLabels: labels,
+    }),
+    el,
+  );
+  document.body.appendChild(el);
+  const cells = el.querySelectorAll(".day-cell");
+  const selected = Array.from(cells).map((c) =>
+    c.classList.contains("selected"),
+  );
+  expect(selected).to.deep.equal([
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+  ]);
+});
+
+it("toggles correct day in mask when firstDay is Saturday (edit mode)", () => {
+  let mask = 0;
+  const firstDay = 5; // Saturday
+  const labels = ["M", "T", "W", "T", "F", "S", "S"];
+  const el = document.createElement("div");
+  el.innerHTML = "";
+  const renderSelector = () =>
+    render(
+      renderDaySelector({
+        days: mask,
+        editable: true,
+        firstDay,
+        dayLabels: labels,
+        onDaysChanged: (m) => {
+          mask = m;
+        },
+      }),
+      el,
+    );
+  renderSelector();
+  document.body.appendChild(el);
+  const cells = () => el.querySelectorAll(".day-cell");
+  cells()[Day.Saturday].dispatchEvent(
+    new MouseEvent("click", { bubbles: true }),
+  );
+  renderSelector();
+  expect(mask).to.equal(0b0000001);
+  cells()[Day.Sunday].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  renderSelector();
+  expect(mask).to.equal(0b0000011);
+  cells()[Day.Saturday].dispatchEvent(
+    new MouseEvent("click", { bubbles: true }),
+  );
+  renderSelector();
+  expect(mask).to.equal(0b0000010);
 });

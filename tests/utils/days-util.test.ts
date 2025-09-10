@@ -1,4 +1,3 @@
-// Remove legacy API tests, keep only tests for bitmaskToDays and daysToBitmask
 import { describe, expect, it } from "vitest";
 import { bitmaskToDays, daysToBitmask, Day } from "../../src/util/days-util";
 

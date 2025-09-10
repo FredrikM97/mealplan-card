@@ -1,3 +1,4 @@
+import { Day } from "../util/days-util";
 import { EncodingType } from "../util/serializer";
 
 export enum ProfileField {
@@ -32,4 +33,5 @@ export interface DeviceProfileGroup {
   fields: ProfileField[];
   encodingFields: EncodingField[];
   featureFields?: ProfileField[];
+  firstDay?: Day;
 }

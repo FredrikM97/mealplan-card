@@ -2,13 +2,13 @@
  * Enum for days of the week, using bitmask values directly.
  */
 export enum Day {
-  Monday = 1 << 0,
-  Tuesday = 1 << 1,
-  Wednesday = 1 << 2,
-  Thursday = 1 << 3,
-  Friday = 1 << 4,
-  Saturday = 1 << 5,
-  Sunday = 1 << 6,
+  Monday = 0,
+  Tuesday = 1,
+  Wednesday = 2,
+  Thursday = 3,
+  Friday = 4,
+  Saturday = 5,
+  Sunday = 6,
 }
 
 /**
@@ -33,7 +33,8 @@ function getAllDays(): Day[] {
  */
 export function bitmaskToDays(mask: number): Day[] {
   if (!mask) return [];
-  return getAllDays().filter((day) => (mask & day) !== 0);
+  // Day enum values are now 0-6 (indices), so check (mask & (1 << day))
+  return getAllDays().filter((day) => (mask & (1 << day)) !== 0);
 }
 
 /**
@@ -43,7 +44,7 @@ export function bitmaskToDays(mask: number): Day[] {
  */
 export function daysToBitmask(days: Day[]): number {
   if (!Array.isArray(days) || days.length === 0) return 0;
-  return days.reduce((mask, day) => mask | day, 0);
+  return days.reduce((mask, day) => mask | (1 << day), 0);
 }
 
 /**
