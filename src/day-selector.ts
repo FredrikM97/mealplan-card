@@ -27,21 +27,29 @@ export function renderDaySelector({
   editable = false,
   dayLabels,
   onDaysChanged,
+  firstDay = 0
 }: {
   days: number;
   editable: boolean;
   dayLabels?: string[];
   onDaysChanged?: (newDays: number) => void;
+  firstDay?: number;
 }): import("lit").TemplateResult {
-  const labels =
-    dayLabels && dayLabels.length === 7
-      ? dayLabels
-      : ["M", "T", "W", "T", "F", "S", "S"];
+  const defaultLabels = ["M", "T", "W", "T", "F", "S", "S"];
+  const labels = dayLabels && dayLabels.length === 7 ? dayLabels : defaultLabels;
   const handleClick = (i: number) => {
     if (!editable) return;
-    const newDays = days ^ (1 << i);
+    // Map UI index to original bit index (reverse shift)
+    const bit = (i - firstDay + 7) % 7;
+    const newDays = days ^ (1 << bit);
     if (onDaysChanged) onDaysChanged(newDays);
   };
+  // Shift the bitmask so bit 0 always matches the first visible day (firstDay)
+  const shiftMask = (mask: number, shift: number) => {
+    // left rotate 7 bits
+    return ((mask << shift) | (mask >> (7 - shift))) & 0x7f;
+  };
+  const shiftedDays = shiftMask(days, firstDay);
   return html`
     <style>
       .days-row {
@@ -96,7 +104,7 @@ export function renderDaySelector({
       ${labels.map(
         (d, i) => html`
           <span
-            class="day-cell${days & (1 << i) ? " selected" : ""}${editable
+            class="day-cell${shiftedDays & (1 << i) ? " selected" : ""}${editable
               ? ""
               : " readonly"}"
             @click=${() => handleClick(i)}
@@ -105,5 +113,5 @@ export function renderDaySelector({
         `,
       )}
     </div>
-  `;
+`;
 }

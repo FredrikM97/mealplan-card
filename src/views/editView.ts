@@ -34,6 +34,7 @@ export function renderEditView({
             days: editForm?.days ?? 0,
             editable: true,
             onDaysChanged: (newDays: number) => onUpdate({ days: newDays }),
+            firstDay: profile.firstDay
           })
         : ""}
       <div class="edit-form-group">
