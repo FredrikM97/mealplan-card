@@ -14,6 +14,22 @@ body:
         Provide a clear and concise description of what the problem is.
     validations:
       required: true
+  - type: input
+    id: productid
+    attributes:
+      label: Manufacturer name
+      description: |
+        The manufacturer name for the device
+    validations:
+      required: true
+
+  - type: input
+    id: modelname
+    attributes:
+      label: Model Name
+      description: The model name of a specific manufacturer device
+    validations:
+      required: true
 
   - type: input
     id: version
@@ -25,7 +41,7 @@ body:
     validations:
       required: true
 
-  - type: textarea
+  - type: input
     id: rawinput
     attributes:
       label: Raw input
@@ -41,7 +57,7 @@ body:
       label: Diagnostics information
       placeholder: "Description of the bytes in correct order."
       description: >-
-        If possible provide a description of the fields or a link to tuya-local on the fields provided by the api (example https://github.com/make-all/tuya-local/issues/3677)
+        If possible provide a description of the fields or a link to tuya-local on the fields provided by the api (example https://github.com/make-all/tuya-local/issues/3677). Alternative an explaination of expected fields from the rawinput
     validations:
       required: true
 
