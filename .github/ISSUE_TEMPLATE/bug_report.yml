@@ -1,6 +1,7 @@
 name: Report an issue with MealPlan Card
 description: Report a bug or issue with the MealPlan Card custom component.
 labels: ["bug"]
+projects: ["FredrikM97/7"]
 assignees:
   - FredrikM97
 body:

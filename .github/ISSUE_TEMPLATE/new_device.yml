@@ -1,6 +1,7 @@
 name: New Device
 description: Suggest a new device
 labels: ["new device"]
+projects: ["FredrikM97/7"]
 assignees:
   - FredrikM97
 body:
