@@ -1,10 +1,12 @@
 # MealPlanCard
 
-A HACS card for Home Assistant to monitor and control your pet feeder using a meal_plan base64 format. This card is designed for Tuya Mealplan data, but can work for other feeders if they use a compatible meal_plan or similar base64-encoded format. This integration work best with [Tuya-local](https://github.com/make-all/tuya-local)
+A HACS card for Home Assistant to monitor and control your pet feeder using a meal_plan base64 format. This card is designed for Tuya Mealplan data, but can work for other feeders if they use a compatible meal_plan/schedule entity. Support both hex and base64 data. This integration work best with [Tuya-local](https://github.com/make-all/tuya-local)
+
+If your device is missing from the list feel free to open an issue with related info and it will be added. 
 
 <img width="430" src="https://github.com/user-attachments/assets/13882cf0-ca0e-4768-89e9-fcbc15d50aef" ce/>
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=mealplan-card&category=plugin)
+[![Add to HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=mealplan-card&categoryplugin) 
 
 ## Features
 
@@ -39,13 +41,6 @@ When the user makes changes and presses save on the schedule view, the config is
 3. Search for Mealplan Pet Feeder in the card selector view.
    **After update ensure to hard refresh page/clean cache**
 
-## Supported Devices
-
-The following devices are known to work with this card:
-
-- **Cleverio PF100**
-- **Honeyguardian**
-- **PetNest**
 
 ## Support
 
