@@ -33,5 +33,6 @@
   ],
   "avg_week": "Avg/week",
   "select_layout": "Select layout...",
-  "mealplan_layout": "Meal plan layout"
+  "mealplan_layout": "Meal plan layout",
+  "portions_label": "Number of portions"
 }
