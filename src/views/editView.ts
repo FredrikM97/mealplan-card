@@ -68,7 +68,6 @@ export function renderEditView({
                   });
                 }}
               />
-              <div class="helper">1 portion = 6 grams</div>
             </div>
           `
         : ""}
