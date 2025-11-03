@@ -150,7 +150,8 @@ export class MealPlanCardEditor extends LitElement {
         min="1"
         .value=${this.config.portions ?? ""}
         @input=${this._onInput}
-        .label=${this.hass?.localize?.("ui.card.config.portions_label") || "Portions"}
+        .label=${this.hass?.localize?.("ui.card.config.portions_label") ||
+        "Portions"}
         placeholder="Number of portions"
       />
       <div style="height: 20px;"></div>

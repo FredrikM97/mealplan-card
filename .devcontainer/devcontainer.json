@@ -8,8 +8,5 @@
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
     }
   },
-  "mounts": [
-    "type=volume,source=ha-core-containers,target=/workspaces/shared-data"
-  ],
   "postCreateCommand": "npm install && npm test"
 }
