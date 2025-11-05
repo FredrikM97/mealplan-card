@@ -117,7 +117,7 @@ export const profiles: DeviceProfileGroup[] = [
     ],
     encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
-   {
+  {
     profiles: [{ manufacturer: "Meowmatic", default: true, models: [] }],
     firstDay: Day.Saturday,
     fields: [

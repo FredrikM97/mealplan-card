@@ -101,8 +101,8 @@
   },
   {
     "manufacturer": "Meowmatic",
-     "encoded": "PwgAAQF/CgABAX8MAAEAfw4AAQF+EAABAX8SAAEBfxQAAQB/FgABAQ==",
-     "decoded": [
+    "encoded": "PwgAAQF/CgABAX8MAAEAfw4AAQF+EAABAX8SAAEBfxQAAQB/FgABAQ==",
+    "decoded": [
       { "days": 63, "hour": 8, "minute": 0, "portion": 1, "enabled": 1 },
       { "days": 127, "hour": 10, "minute": 0, "portion": 1, "enabled": 1 },
       { "days": 127, "hour": 12, "minute": 0, "portion": 1, "enabled": 0 },
@@ -114,6 +114,3 @@
     ]
   }
 ]
-
-
-
