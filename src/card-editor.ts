@@ -19,6 +19,7 @@ export class MealPlanCardEditor extends LitElement {
     helper: string;
     device_model?: string;
     device_manufacturer?: string;
+    portions?: number;
   } = { sensor: "", title: "", helper: "" };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
@@ -29,6 +30,7 @@ export class MealPlanCardEditor extends LitElement {
     helper: string;
     device_model?: string;
     device_manufacturer?: string;
+    portions?: number;
   }) {
     this.config = { ...config };
   }
@@ -141,6 +143,17 @@ export class MealPlanCardEditor extends LitElement {
         .label=${this.hass?.localize?.("ui.card.config.title_label") || "Title"}
         placeholder="Title"
       ></ha-textfield>
+      <ha-textfield
+        id="portions"
+        name="portions"
+        type="number"
+        min="1"
+        .value=${this.config.portions ?? ""}
+        @input=${this._onInput}
+        .label=${this.hass?.localize?.("ui.card.config.portions_label") ||
+        "Portions"}
+        placeholder="Number of portions"
+      />
       <div style="height: 20px;"></div>
       ${!this._validateConfig()
         ? html`<div style="color: var(--error-color, red); margin-top: 8px;">

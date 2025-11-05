@@ -209,6 +209,7 @@ export class MealPlanCard extends LitElement {
           : ""}
         ${renderOverview({
           meals: this._meals,
+          portions: this.config?.portions || 6,
           localize,
         })}
         <div

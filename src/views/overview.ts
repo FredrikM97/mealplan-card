@@ -3,14 +3,16 @@ import { getTotalFoodPerDay, getTodaysFoodGrams } from "../util/metrics";
 
 export function renderOverview({
   meals,
+  portions,
   localize,
 }: {
   meals: any[];
+  portions: number;
   localize: (k: string) => string;
 }) {
   const enabledMeals = meals.filter((m: any) => m.enabled);
   const today = new Date().getDay();
-  const totalToday = getTodaysFoodGrams(enabledMeals, today) * 6;
+  const totalToday = getTodaysFoodGrams(enabledMeals, today) * portions;
   const totals = getTotalFoodPerDay(enabledMeals);
   const avg = totals.reduce((a, b) => a + b, 0) / 7;
   return html`
