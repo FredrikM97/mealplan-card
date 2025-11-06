@@ -23,7 +23,7 @@
     "typescript": "^5.8.3",
     "vite": "^6.4.1",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.7"
   },
   "dependencies": {
     "@kipk/load-ha-components": "^1.0.3",
