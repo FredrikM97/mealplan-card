@@ -1,11 +1,11 @@
-import type { DeviceProfileGroup } from "./types";
-import { profiles } from "./profiles";
+import type { DeviceProfileGroup } from './types';
+import { profiles } from './profiles';
 
 function findManufacturerProfile(group, device_manufacturer, device_model) {
   for (const manu of group.profiles) {
     if (manu.manufacturer === device_manufacturer) {
       const models = Array.isArray(manu.models) ? manu.models : [];
-      const model = device_model ?? models[0] ?? "";
+      const model = device_model ?? models[0] ?? '';
       if (!device_model || models.includes(model) || models.length === 0) {
         return { ...group, manufacturer: manu.manufacturer, model };
       }
@@ -20,7 +20,7 @@ export function resolveProfile(config: {
 }): (DeviceProfileGroup & { manufacturer: string; model: string }) | undefined {
   const { device_manufacturer, device_model } = config || {};
   if (!device_manufacturer) {
-    console.warn("No device_manufacturer specified in config");
+    console.warn('No device_manufacturer specified in config');
     return undefined;
   }
   for (const group of profiles) {
@@ -32,7 +32,7 @@ export function resolveProfile(config: {
     if (result) return result;
   }
   console.warn(
-    "No matching profile found for",
+    'No matching profile found for',
     device_manufacturer,
     device_model,
   );
@@ -41,7 +41,7 @@ export function resolveProfile(config: {
 
 // Helper to find a profile group by manufacturer and model
 export function findProfileByKey(profiles: DeviceProfileGroup[], key: string) {
-  const [manufacturer, model] = key.split(":");
+  const [manufacturer, model] = key.split(':');
   return profiles.find((group) =>
     group.profiles.some((p) => {
       const models = Array.isArray(p.models) ? p.models : [];
@@ -58,12 +58,12 @@ export function getProfileDropdownItems(profiles: DeviceProfileGroup[]) {
   return profiles.flatMap((group) =>
     group.profiles.flatMap((manu) => {
       const models = Array.isArray(manu.models) ? manu.models : [];
-      return (models.length ? models : [""]).map((model) => {
+      return (models.length ? models : ['']).map((model) => {
         const isSingle = models.length <= 1;
-        let label = "";
+        let label = '';
         if (!manu.manufacturer) {
-          label = "[Missing manufacturer]";
-          console.warn("Device profile missing manufacturer:", manu);
+          label = '[Missing manufacturer]';
+          console.warn('Device profile missing manufacturer:', manu);
         } else if (isSingle || !model) {
           label = manu.manufacturer;
         } else {

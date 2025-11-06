@@ -1,26 +1,26 @@
-import { beforeAll } from "vitest";
+import { beforeAll } from 'vitest';
 
 beforeAll(() => {
   globalThis.__DEMO__ = false;
   // Expanded list of HA and common custom elements used in tests/components
   const haElements = [
-    "ha-card",
-    "ha-card-header", // Add ha-card-header for tests
-    "ha-button",
-    "ha-textfield",
-    "ha-switch",
-    "ha-icon",
-    "ha-select",
-    "ha-checkbox",
-    "ha-slider",
-    "ha-list-item",
-    "ha-formfield",
-    "ha-radio",
-    "ha-chip",
-    "ha-alert",
-    "ha-svg-icon",
-    "ha-circular-progress",
-    "edit-view",
+    'ha-card',
+    'ha-card-header', // Add ha-card-header for tests
+    'ha-button',
+    'ha-textfield',
+    'ha-switch',
+    'ha-icon',
+    'ha-select',
+    'ha-checkbox',
+    'ha-slider',
+    'ha-list-item',
+    'ha-formfield',
+    'ha-radio',
+    'ha-chip',
+    'ha-alert',
+    'ha-svg-icon',
+    'ha-circular-progress',
+    'edit-view',
   ];
   haElements.forEach((tag) => {
     if (!customElements.get(tag)) {
@@ -29,7 +29,7 @@ beforeAll(() => {
   });
 
   // Patch ha-data-table to render a minimal table for tests, using .data property and template functions
-  if (!customElements.get("ha-data-table")) {
+  if (!customElements.get('ha-data-table')) {
     class DummyDataTable extends HTMLElement {
       private _data: any[] = [];
       private _columns: Record<string, any> = {};
@@ -51,7 +51,7 @@ beforeAll(() => {
         return this._columns || {};
       }
       connectedCallback() {
-        this.attachShadow({ mode: "open" });
+        this.attachShadow({ mode: 'open' });
         this.render();
       }
       render() {
@@ -60,31 +60,31 @@ beforeAll(() => {
         const data = this.data;
         const colKeys = Object.keys(cols);
         // Clear shadowRoot
-        this.shadowRoot.innerHTML = "";
-        const table = document.createElement("table");
-        const header = document.createElement("tr");
+        this.shadowRoot.innerHTML = '';
+        const table = document.createElement('table');
+        const header = document.createElement('tr');
         colKeys.forEach((k) => {
-          const th = document.createElement("th");
+          const th = document.createElement('th');
           th.textContent =
-            typeof cols[k].title === "string" ? cols[k].title : "";
+            typeof cols[k].title === 'string' ? cols[k].title : '';
           header.appendChild(th);
         });
         table.appendChild(header);
         data.forEach((row) => {
-          const tr = document.createElement("tr");
+          const tr = document.createElement('tr');
           colKeys.forEach((k) => {
-            const td = document.createElement("td");
+            const td = document.createElement('td');
             if (cols[k].template) {
               // Render the template function result (Lit TemplateResult)
               const litResult = cols[k].template(row);
               // If it's a Node, append it; if not, set as innerHTML
               if (
-                typeof litResult.values !== "undefined" &&
+                typeof litResult.values !== 'undefined' &&
                 Array.isArray(litResult.values)
               ) {
                 // Try to render as HTML string
-                const tmp = document.createElement("div");
-                tmp.innerHTML = litResult.strings.join("");
+                const tmp = document.createElement('div');
+                tmp.innerHTML = litResult.strings.join('');
                 while (tmp.firstChild) td.appendChild(tmp.firstChild);
               } else if (litResult instanceof HTMLElement) {
                 td.appendChild(litResult);
@@ -92,7 +92,7 @@ beforeAll(() => {
                 td.innerHTML = String(litResult);
               }
             } else {
-              td.textContent = row[k] ?? "";
+              td.textContent = row[k] ?? '';
             }
             tr.appendChild(td);
           });
@@ -101,7 +101,7 @@ beforeAll(() => {
         this.shadowRoot.appendChild(table);
       }
     }
-    customElements.define("ha-data-table", DummyDataTable);
+    customElements.define('ha-data-table', DummyDataTable);
   }
 
   // Global helper to register any custom element by tag name

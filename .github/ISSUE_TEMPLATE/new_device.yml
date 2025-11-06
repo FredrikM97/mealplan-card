@@ -1,7 +1,7 @@
 name: New Device
 description: Suggest a new device
-labels: ["new device"]
-projects: ["FredrikM97/7"]
+labels: ['new device']
+projects: ['FredrikM97/7']
 assignees:
   - FredrikM97
 body:
@@ -36,7 +36,7 @@ body:
     id: rawinput
     attributes:
       label: Raw input
-      placeholder: "Base64 encoded string"
+      placeholder: 'Base64 encoded string'
       description: >-
         Provide a raw base64 string from the application. Can look like 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA=='.
     validations:
@@ -46,7 +46,7 @@ body:
     id: datamodel
     attributes:
       label: Data model information
-      placeholder: "Description of the bytes in correct order."
+      placeholder: 'Description of the bytes in correct order.'
       description: >-
         If possible provide a description of the fields or a link to tuya-local on the fields provided by the api (example https://github.com/make-all/tuya-local/issues/3677)
     validations:
