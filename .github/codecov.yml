@@ -15,6 +15,11 @@ coverage:
       default:
         target: 90%
         threshold: 1%
+comment:
+  layout: "diff"
+  behavior: default
+  require_changes: true
+
 ignore:
   - tests/
   - docs/
