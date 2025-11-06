@@ -1,19 +1,19 @@
-﻿import { LitElement, html, css } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { getEncoder, EncoderBase } from "./util/serializer.js";
-import type { FeedingTime } from "./util/serializer.js";
-import { loadHaComponents } from "@kipk/load-ha-components";
-import { localize, setLanguage } from "./locales/localize";
-import { validateFeedingTime } from "./util/validate.js";
+﻿import { LitElement, html, css } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { getEncoder, EncoderBase } from './util/serializer.js';
+import type { FeedingTime } from './util/serializer.js';
+import { loadHaComponents } from '@kipk/load-ha-components';
+import { localize, setLanguage } from './locales/localize';
+import { validateFeedingTime } from './util/validate.js';
 
-import { renderScheduleView } from "./views/scheduleView";
-import { renderOverview } from "./views/overview";
-import { resolveProfile } from "./profiles/resolveProfile";
+import { renderScheduleView } from './views/scheduleView';
+import { renderOverview } from './views/overview';
+import { resolveProfile } from './profiles/resolveProfile';
 
 /**
  * MealPlan Card
  */
-@customElement("mealplan-card")
+@customElement('mealplan-card')
 export class MealPlanCard extends LitElement {
   private _hass;
 
@@ -26,7 +26,7 @@ export class MealPlanCard extends LitElement {
     const old = this._hass;
     this._hass = val;
     this._updateHass();
-    this.requestUpdate("hass", old);
+    this.requestUpdate('hass', old);
   }
   @property({ type: Object }) accessor config;
   @state() accessor _meals: FeedingTime[];
@@ -79,7 +79,7 @@ export class MealPlanCard extends LitElement {
 
   async connectedCallback() {
     await setLanguage(this.hass.language); // Only loads once, even if called multiple times
-    await loadHaComponents(["ha-button", "ha-data-table", "ha-dialog"]);
+    await loadHaComponents(['ha-button', 'ha-data-table', 'ha-dialog']);
     this._haComponentsReady = true;
     super.connectedCallback();
   }
@@ -108,12 +108,12 @@ export class MealPlanCard extends LitElement {
       profile.encodingFields.length === 0
     ) {
       console.warn(
-        "Selected feeder profile %s on config %s is invalid or not supported.",
+        'Selected feeder profile %s on config %s is invalid or not supported.',
         profile,
         this.config,
       );
       this._decodeError =
-        "Selected feeder profile is invalid or not supported.";
+        'Selected feeder profile is invalid or not supported.';
       this._setPersistedMeals([]);
       this._setMealsIfNotEditing([]);
       return;
@@ -122,15 +122,15 @@ export class MealPlanCard extends LitElement {
     // Use getters for IDs, and inline the rest for clarity
     const stateObj = this.hass?.states?.[this._sensorID];
     const helperObj = this.hass?.states?.[this._helperID];
-    const sensorRaw = stateObj?.state ?? "";
-    const helperRaw = helperObj?.state ?? "";
+    const sensorRaw = stateObj?.state ?? '';
+    const helperRaw = helperObj?.state ?? '';
 
     // Prefer sensor if valid
     const isValid = (v: any) =>
-      typeof v === "string" &&
-      v.trim() !== "" &&
-      v !== "unknown" &&
-      v !== "unavailable";
+      typeof v === 'string' &&
+      v.trim() !== '' &&
+      v !== 'unknown' &&
+      v !== 'unavailable';
 
     let decodedMeals: FeedingTime[] | undefined | null = [];
     let decodeError: string | null = null;
@@ -139,8 +139,8 @@ export class MealPlanCard extends LitElement {
       try {
         decodedMeals = this.encoder.decode(sensorRaw);
       } catch (err) {
-        this._decodeError = "Failed to decode meal plan data.";
-        console.warn("Failed to decode sensor %s", sensorRaw, err);
+        this._decodeError = 'Failed to decode meal plan data.';
+        console.warn('Failed to decode sensor %s', sensorRaw, err);
         return [];
       }
       // If helper exists and out of sync, update helper
@@ -151,13 +151,13 @@ export class MealPlanCard extends LitElement {
       try {
         decodedMeals = this.encoder.decode(helperRaw);
       } catch (err) {
-        this._decodeError = "Failed to decode meal plan data.";
-        console.warn("Failed to decode from helper %s", helperRaw, err);
+        this._decodeError = 'Failed to decode meal plan data.';
+        console.warn('Failed to decode from helper %s', helperRaw, err);
         return [];
       }
     } else {
       decodeError =
-        "No valid meal plan data found: neither helper nor a valid sensor value is present.";
+        'No valid meal plan data found: neither helper nor a valid sensor value is present.';
       console.warn(decodeError);
       decodedMeals = [];
     }
@@ -176,18 +176,18 @@ export class MealPlanCard extends LitElement {
       sensorRaw !== helperRaw
     ) {
       console.debug(
-        "Update helper %s with value %s",
+        'Update helper %s with value %s',
         this._helperID,
         sensorRaw,
       );
       try {
-        const domain = this._helperID?.split(".")[0];
-        this.hass.callService(domain, "set_value", {
+        const domain = this._helperID?.split('.')[0];
+        this.hass.callService(domain, 'set_value', {
           entity_id: this._helperID,
           value: sensorRaw,
         });
       } catch (err) {
-        console.error("Failed to call service:", err);
+        console.error('Failed to call service:', err);
       }
     }
   }
@@ -199,14 +199,14 @@ export class MealPlanCard extends LitElement {
     const profile = resolveProfile(this.config || {});
     return html`
       <ha-card
-        header=${this.config?.title || "MealPlan Card"}
+        header=${this.config?.title || 'MealPlan Card'}
         style="height: 100%;"
       >
         ${this._decodeError
           ? html`<div style="color: var(--error-color, red); margin: 8px;">
               ${this._decodeError}
             </div>`
-          : ""}
+          : ''}
         ${renderOverview({
           meals: this._meals,
           portions: this.config?.portions || 6,
@@ -223,7 +223,7 @@ export class MealPlanCard extends LitElement {
             }}
           >
             <ha-icon icon="mdi:table-edit"></ha-icon>
-            ${localize("manage_schedules")}
+            ${localize('manage_schedules')}
           </ha-button>
         </div>
         <slot></slot>
@@ -306,7 +306,7 @@ export class MealPlanCard extends LitElement {
               onToggleEnabled: (idx, e) => {
                 const target = e.target as HTMLInputElement | null;
                 const checked =
-                  target && typeof target.checked === "boolean"
+                  target && typeof target.checked === 'boolean'
                     ? target.checked
                     : false;
                 this._meals = this._meals.map((m, i) =>
@@ -318,13 +318,13 @@ export class MealPlanCard extends LitElement {
                 JSON.stringify(this._meals) !==
                 JSON.stringify(this._persistedMeals),
             })
-          : ""}
+          : ''}
       </ha-card>
     `;
   }
   static async getConfigElement() {
-    await import("./card-editor.js");
-    return document.createElement("mealplan-card-editor");
+    await import('./card-editor.js');
+    return document.createElement('mealplan-card-editor');
   }
 
   /** Encodes and saves the current meals to the sensor. */
@@ -332,22 +332,22 @@ export class MealPlanCard extends LitElement {
     if (!this.hass || !this._sensorID) return;
     const value = this.encoder.encode(this._meals);
     console.debug(
-      "Call service to sensor %s with data %s",
+      'Call service to sensor %s with data %s',
       this._sensorID,
       value,
     );
     try {
-      const domain = this._sensorID?.split(".")[0];
-      this.hass.callService(domain, "set_value", {
+      const domain = this._sensorID?.split('.')[0];
+      this.hass.callService(domain, 'set_value', {
         entity_id: this._sensorID,
         value,
       });
     } catch (err) {
-      console.error("Failed to call service:", err);
+      console.error('Failed to call service:', err);
     }
   }
   _onScheduleMealsChanged(e) {
-    console.log("[MealPlanCard] _onScheduleMealsChanged called", e);
+    console.log('[MealPlanCard] _onScheduleMealsChanged called', e);
     this._meals = e.detail.meals;
     this._saveMealsToSensor();
   }
@@ -361,7 +361,7 @@ export class MealPlanCard extends LitElement {
     } else {
       // Warn if backend tried to update meals while editing
       const msg =
-        "[MealPlanCard] Backend update to meals ignored because user is editing or viewing schedule.";
+        '[MealPlanCard] Backend update to meals ignored because user is editing or viewing schedule.';
       console.warn(msg);
     }
   }
@@ -369,5 +369,5 @@ export class MealPlanCard extends LitElement {
 
 // Exported stub for test coverage
 export function loadTranslations() {
-  throw new Error("Function not implemented.");
+  throw new Error('Function not implemented.');
 }

@@ -1,9 +1,9 @@
-import { loadHaComponents } from "@kipk/load-ha-components";
-import { LitElement, html, css } from "lit";
-import { property, customElement } from "lit/decorators.js";
-import { profiles } from "./profiles/profiles";
-import { getProfileDropdownItems } from "./profiles/resolveProfile";
-import { localize } from "./locales/localize";
+import { loadHaComponents } from '@kipk/load-ha-components';
+import { LitElement, html, css } from 'lit';
+import { property, customElement } from 'lit/decorators.js';
+import { profiles } from './profiles/profiles';
+import { getProfileDropdownItems } from './profiles/resolveProfile';
+import { localize } from './locales/localize';
 
 declare global {
   interface Window {
@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-@customElement("mealplan-card-editor")
+@customElement('mealplan-card-editor')
 export class MealPlanCardEditor extends LitElement {
   @property({ attribute: false }) config: {
     sensor: string;
@@ -20,7 +20,7 @@ export class MealPlanCardEditor extends LitElement {
     device_model?: string;
     device_manufacturer?: string;
     portions?: number;
-  } = { sensor: "", title: "", helper: "" };
+  } = { sensor: '', title: '', helper: '' };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
 
@@ -36,14 +36,14 @@ export class MealPlanCardEditor extends LitElement {
   }
 
   async connectedCallback() {
-    await loadHaComponents(["ha-entity-picker", "ha-form", "ha-textfield"]);
+    await loadHaComponents(['ha-entity-picker', 'ha-form', 'ha-textfield']);
     this._haComponentsReady = true;
     super.connectedCallback();
   }
 
   configChanged(newConfig) {
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: { config: newConfig },
         bubbles: true,
         composed: true,
@@ -85,10 +85,10 @@ export class MealPlanCardEditor extends LitElement {
       <ha-entity-picker
         id="sensor-picker"
         .hass=${this.hass}
-        .value=${this.config.sensor || ""}
-        .configValue=${"sensor"}
+        .value=${this.config.sensor || ''}
+        .configValue=${'sensor'}
         @value-changed=${this._valueChanged}
-        .includeDomains=${["text", "input_text"]}
+        .includeDomains=${['text', 'input_text']}
       ></ha-entity-picker>
       <div style="height: 20px;"></div>
       <label for="helper-picker" style="display:block;margin-bottom:4px;"
@@ -107,10 +107,10 @@ export class MealPlanCardEditor extends LitElement {
       <ha-entity-picker
         id="helper-picker"
         .hass=${this.hass}
-        .value=${this.config.helper || ""}
-        .configValue=${"helper"}
+        .value=${this.config.helper || ''}
+        .configValue=${'helper'}
         @value-changed=${this._valueChanged}
-        .includeDomains=${["input_text"]}
+        .includeDomains=${['input_text']}
       ></ha-entity-picker>
       <div style="height: 20px;"></div>
       <label for="profile-combo" style="display:block;margin-bottom:4px;"
@@ -119,17 +119,17 @@ export class MealPlanCardEditor extends LitElement {
       <ha-combo-box
         id="profile-combo"
         .items=${[
-          { value: "", label: localize("select_layout") },
+          { value: '', label: localize('select_layout') },
           ...getProfileDropdownItems(profiles),
         ]}
         .value=${this.config.device_manufacturer
-          ? `${this.config.device_manufacturer}:${this.config.device_model || ""}`
-          : ""}
+          ? `${this.config.device_manufacturer}:${this.config.device_model || ''}`
+          : ''}
         @value-changed=${(e: CustomEvent) => {
           // Store both device_manufacturer and device_model in config
           const [device_manufacturer, device_model] = (
-            e.detail.value || ""
-          ).split(":");
+            e.detail.value || ''
+          ).split(':');
           this.config = { ...this.config, device_manufacturer, device_model };
           this.configChanged(this.config);
         }}
@@ -138,9 +138,9 @@ export class MealPlanCardEditor extends LitElement {
       <ha-textfield
         id="title"
         name="title"
-        .value=${this.config.title || ""}
+        .value=${this.config.title || ''}
         @input=${this._onInput}
-        .label=${this.hass?.localize?.("ui.card.config.title_label") || "Title"}
+        .label=${this.hass?.localize?.('ui.card.config.title_label') || 'Title'}
         placeholder="Title"
       ></ha-textfield>
       <ha-textfield
@@ -148,10 +148,10 @@ export class MealPlanCardEditor extends LitElement {
         name="portions"
         type="number"
         min="1"
-        .value=${this.config.portions ?? ""}
+        .value=${this.config.portions ?? ''}
         @input=${this._onInput}
-        .label=${this.hass?.localize?.("ui.card.config.portions_label") ||
-        "Portions"}
+        .label=${this.hass?.localize?.('ui.card.config.portions_label') ||
+        'Portions'}
         placeholder="Number of portions"
       />
       <div style="height: 20px;"></div>
@@ -159,7 +159,7 @@ export class MealPlanCardEditor extends LitElement {
         ? html`<div style="color: var(--error-color, red); margin-top: 8px;">
             Please select a feeder entity (sensor or text).
           </div>`
-        : ""}
+        : ''}
       <!-- mwc-tooltip handles its own styling -->
     `;
   }
@@ -167,8 +167,8 @@ export class MealPlanCardEditor extends LitElement {
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "mealplan-card",
-  name: "Mealplan Card",
+  type: 'mealplan-card',
+  name: 'Mealplan Card',
   preview: false,
-  description: "Mealplan card to decode/encode base64 meal_plan",
+  description: 'Mealplan card to decode/encode base64 meal_plan',
 });

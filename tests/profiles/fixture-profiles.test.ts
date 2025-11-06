@@ -1,11 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { getEncoder } from "../../src/util/serializer";
-import fixtureProfiles from "./fixture-profiles.json";
-import { resolveProfile } from "../../src/profiles/resolveProfile";
-const INVALID_BASE64 = "!@#$";
+import { describe, it, expect } from 'vitest';
+import { getEncoder } from '../../src/util/serializer';
+import fixtureProfiles from './fixture-profiles.json';
+import { resolveProfile } from '../../src/profiles/resolveProfile';
+const INVALID_BASE64 = '!@#$';
 
 describe.each(fixtureProfiles as any[])(
-  "fixture-profiles encode/decode: %o",
+  'fixture-profiles encode/decode: %o',
   (fixture) => {
     const { manufacturer, decoded, encoded } = fixture;
     const profileGroup = resolveProfile({ device_manufacturer: manufacturer });
@@ -19,7 +19,7 @@ describe.each(fixtureProfiles as any[])(
       if (encoded) {
         expect(result).toBe(encoded);
       } else {
-        expect(typeof result).toBe("string");
+        expect(typeof result).toBe('string');
       }
     });
     it(`${manufacturer}: decodes base64 to feedingTimes`, () => {

@@ -1,9 +1,9 @@
-import { html } from "lit";
-import { renderDaySelector } from "../day-selector";
-import { localize } from "../locales/localize";
-import "../day-selector";
-import { renderEditView } from "./editView";
-import { formatHourMinute } from "../util/days-util";
+import { html } from 'lit';
+import { renderDaySelector } from '../day-selector';
+import { localize } from '../locales/localize';
+import '../day-selector';
+import { renderEditView } from './editView';
+import { formatHourMinute } from '../util/days-util';
 
 export function renderScheduleView({
   profile,
@@ -44,24 +44,24 @@ export function renderScheduleView({
   const buildColumns = (profile: any) => {
     const columns: any = {};
     columns.time = {
-      title: localize("time"),
+      title: localize('time'),
       sortable: true,
-      minWidth: "80px",
-      valueColumn: "hourMinute",
+      minWidth: '80px',
+      valueColumn: 'hourMinute',
       template: (row: any) => formatHourMinute(row.hour, row.minute),
     };
-    if (fields.includes("portion")) {
+    if (fields.includes('portion')) {
       columns.portion = {
-        title: localize("portion"),
+        title: localize('portion'),
         sortable: true,
-        minWidth: "80px",
+        minWidth: '80px',
       };
     }
-    if (fields.includes("days")) {
+    if (fields.includes('days')) {
       columns.days = {
-        title: localize("days"),
+        title: localize('days'),
         sortable: false,
-        minWidth: "130px",
+        minWidth: '130px',
         template: (row: any) =>
           renderDaySelector({
             days: row.days,
@@ -70,11 +70,11 @@ export function renderScheduleView({
           }),
       };
     }
-    if (fields.includes("enabled")) {
+    if (fields.includes('enabled')) {
       columns.enabled = {
-        title: localize("enabled"),
+        title: localize('enabled'),
         sortable: true,
-        minWidth: "60px",
+        minWidth: '60px',
         template: (row: any) => html`
           <div
             style="display: flex; align-items: center; justify-content: center; height: 48px;"
@@ -89,20 +89,20 @@ export function renderScheduleView({
       };
     }
     columns.actions = {
-      title: localize("actions"),
+      title: localize('actions'),
       sortable: false,
-      minWidth: "140px",
+      minWidth: '140px',
       template: (row: any) => html`
         <ha-icon-button @click=${() => onOpenEditDialog(row._idx)} title="Edit">
           <ha-icon icon="mdi:pencil"></ha-icon>
         </ha-icon-button>
-        ${fields.includes("delete")
+        ${fields.includes('delete')
           ? html`
               <ha-icon-button @click=${() => onDelete(row._idx)} title="Delete">
                 <ha-icon icon="mdi:delete"></ha-icon>
               </ha-icon-button>
             `
-          : ""}
+          : ''}
       `,
     };
     return columns;
@@ -169,8 +169,8 @@ export function renderScheduleView({
       open=${editDialogOpen}
       scrimClickAction
       heading=${editDialogOpen
-        ? localize("edit_feeding_time")
-        : localize("manage_schedules")}
+        ? localize('edit_feeding_time')
+        : localize('manage_schedules')}
     >
       ${editDialogOpen
         ? renderEditView({
@@ -194,30 +194,30 @@ export function renderScheduleView({
       ${editDialogOpen
         ? html`
             <ha-button slot="secondaryAction" @click=${onCloseEditDialog}
-              >${localize("back")}</ha-button
+              >${localize('back')}</ha-button
             >
             <ha-button
               slot="primaryAction"
               class="ha-primary"
               @click=${onEditSave}
-              >${localize("save")}</ha-button
+              >${localize('save')}</ha-button
             >
           `
         : html`
-            ${fields.includes("add")
+            ${fields.includes('add')
               ? html`<ha-button slot="secondaryAction" @click=${onOpenAddDialog}
-                  >${localize("add_meal")}</ha-button
+                  >${localize('add_meal')}</ha-button
                 >`
-              : ""}
+              : ''}
             <ha-button slot="secondaryAction" @click=${onCancel}
-              >${localize("cancel")}</ha-button
+              >${localize('cancel')}</ha-button
             >
             <ha-button
               slot="primaryAction"
               class="ha-primary"
               @click=${onSave}
               ?disabled=${!hasUnsavedChanges}
-              >${localize("save")}</ha-button
+              >${localize('save')}</ha-button
             >
           `}
     </ha-dialog>
