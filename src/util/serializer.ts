@@ -1,4 +1,4 @@
-import { DeviceProfileGroup, EncodingField } from "../profiles/types";
+import { DeviceProfileGroup, EncodingField } from '../profiles/types';
 
 export interface FeedingTime {
   hour?: number;
@@ -12,7 +12,7 @@ export abstract class EncoderBase {
   protected profile: DeviceProfileGroup;
   constructor(profile: DeviceProfileGroup) {
     if (!profile || !Array.isArray(profile.encodingFields))
-      throw new Error("Invalid device profile for encoding/decoding");
+      throw new Error('Invalid device profile for encoding/decoding');
     this.profile = profile;
   }
   abstract encode(data: FeedingTime[]): string;
@@ -27,7 +27,7 @@ class Base64Encoder extends EncoderBase {
     rawData.forEach((item, idx) => {
       for (const field of fields) {
         const prop = field;
-        if (!(prop in item) || typeof (item as any)[prop] === "undefined") {
+        if (!(prop in item) || typeof (item as any)[prop] === 'undefined') {
           throw new Error(
             `Meal plan encode error: missing field '${prop}' in entry #${idx}. Possible layout mismatch or incomplete FeedingTime.`,
           );
@@ -38,18 +38,18 @@ class Base64Encoder extends EncoderBase {
     return btoa(String.fromCharCode(...bytes));
   }
   decode(data: string): FeedingTime[] {
-    if (!data || data === "unknown") return [];
+    if (!data || data === 'unknown') return [];
     const fields = this.profile.encodingFields;
     const entrySize = fields.length;
     let binary: string;
     try {
       binary = atob(data);
     } catch {
-      throw new Error("Invalid base64");
+      throw new Error('Invalid base64');
     }
     const bytes = new Uint8Array([...binary].map((char) => char.charCodeAt(0)));
     if (bytes.length % entrySize !== 0)
-      throw new Error("Invalid meal plan length");
+      throw new Error('Invalid meal plan length');
     const rawData = Array.from({ length: bytes.length / entrySize }, (_, i) => {
       const entry: any = {};
       for (let j = 0; j < fields.length; j++) {
@@ -104,19 +104,19 @@ class HexEncoder extends EncoderBase {
   encode(data: FeedingTime[]): string {
     return data
       .map((entry) => {
-        const days = (entry.days ?? 0).toString(16).padStart(2, "0");
-        const hour = (entry.hour ?? 0).toString().padStart(2, "0");
-        const minute = (entry.minute ?? 0).toString().padStart(2, "0");
-        const portion = (entry.portion ?? 0).toString().padStart(2, "0");
+        const days = (entry.days ?? 0).toString(16).padStart(2, '0');
+        const hour = (entry.hour ?? 0).toString().padStart(2, '0');
+        const minute = (entry.minute ?? 0).toString().padStart(2, '0');
+        const portion = (entry.portion ?? 0).toString().padStart(2, '0');
         const enabled = (entry.enabled ?? 0).toString();
-        const filler = "000000";
+        const filler = '000000';
         return `${days}${hour}${minute}${portion}${enabled}${filler}`;
       })
-      .join("");
+      .join('');
   }
   decode(data: string): FeedingTime[] {
     const schedules: FeedingTime[] = [];
-    if (data.length % 15 !== 0) throw new Error("Invalid meal plan length");
+    if (data.length % 15 !== 0) throw new Error('Invalid meal plan length');
     for (let i = 0; i < data.length; i += 15) {
       const chunk = data.slice(i, i + 15);
       if (chunk.length < 15) break;
@@ -133,8 +133,8 @@ class HexEncoder extends EncoderBase {
 }
 
 export enum EncodingType {
-  BASE64 = "base64",
-  HEX = "hex",
+  BASE64 = 'base64',
+  HEX = 'hex',
 }
 
 const ENCODERS = {
@@ -144,8 +144,8 @@ const ENCODERS = {
 
 export function getEncoder(profile: DeviceProfileGroup) {
   if (!profile) {
-    throw new Error("Device profile is required for encoder initialization");
+    throw new Error('Device profile is required for encoder initialization');
   }
-  const EncoderClass = ENCODERS[profile.encodingType ?? "base64"];
+  const EncoderClass = ENCODERS[profile.encodingType ?? 'base64'];
   return new EncoderClass(profile);
 }

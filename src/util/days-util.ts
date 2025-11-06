@@ -60,15 +60,15 @@ export function isValidDayBitmask(mask: number): boolean {
 // Utility for UI formatting only
 export function formatHourMinute(hour?: number, minute?: number): string {
   if (
-    typeof hour !== "number" ||
+    typeof hour !== 'number' ||
     isNaN(hour) ||
-    typeof minute !== "number" ||
+    typeof minute !== 'number' ||
     isNaN(minute) ||
     hour < 0 ||
     hour > 23 ||
     minute < 0 ||
     minute > 59
   )
-    return "--:--";
-  return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+    return '--:--';
+  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 }

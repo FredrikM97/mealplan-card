@@ -1,5 +1,5 @@
-import { html } from "lit";
-import { getTotalFoodPerDay, getTodaysFoodGrams } from "../util/metrics";
+import { html } from 'lit';
+import { getTotalFoodPerDay, getTodaysFoodGrams } from '../util/metrics';
 
 export function renderOverview({
   meals,
@@ -19,22 +19,22 @@ export function renderOverview({
     <div class="overview-row">
       <ha-chip class="overview-schedules">
         <ha-icon icon="mdi:calendar-clock"></ha-icon>
-        ${localize("schedules")}:
+        ${localize('schedules')}:
         <span style="white-space:nowrap;">${meals.length}</span>
       </ha-chip>
       <ha-chip class="overview-active">
         <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-        ${localize("active_schedules")}:
+        ${localize('active_schedules')}:
         <span style="white-space:nowrap;">${enabledMeals.length}</span>
       </ha-chip>
       <ha-chip class="overview-grams">
         <ha-icon icon="mdi:food-drumstick"></ha-icon>
-        ${localize("today")}:
+        ${localize('today')}:
         <span style="white-space:nowrap;">${totalToday}g</span>
       </ha-chip>
       <ha-chip class="overview-average">
         <ha-icon icon="mdi:scale-balance"></ha-icon>
-        ${localize("avg_week")}:
+        ${localize('avg_week')}:
         <span style="white-space:nowrap;">${(avg * 6).toFixed(1)}g</span>
       </ha-chip>
     </div>

@@ -1,4 +1,4 @@
-import { html } from "lit";
+import { html } from 'lit';
 
 /**
  * Renders a day selector row as a Lit template (function version).
@@ -34,8 +34,8 @@ export function renderDaySelector({
   dayLabels?: string[];
   onDaysChanged?: (newDays: number) => void;
   firstDay?: number;
-}): import("lit").TemplateResult {
-  const defaultLabels = ["M", "T", "W", "T", "F", "S", "S"];
+}): import('lit').TemplateResult {
+  const defaultLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const labels =
     dayLabels && dayLabels.length === 7 ? dayLabels : defaultLabels;
   const handleClick = (i: number) => {
@@ -98,13 +98,13 @@ export function renderDaySelector({
         cursor: default;
       }
     </style>
-    <div class="days-row${editable ? " edit-mode" : ""}">
+    <div class="days-row${editable ? ' edit-mode' : ''}">
       ${labels.map(
         (d, i) => html`
           <span
             class="day-cell${shiftedDays & (1 << i)
-              ? " selected"
-              : ""}${editable ? "" : " readonly"}"
+              ? ' selected'
+              : ''}${editable ? '' : ' readonly'}"
             @click=${() => handleClick(i)}
             >${d}</span
           >

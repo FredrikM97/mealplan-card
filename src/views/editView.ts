@@ -1,10 +1,10 @@
-import { html } from "lit";
-import { renderDaySelector } from "../day-selector";
-import { localize } from "../locales/localize";
-import { formatHourMinute } from "../util/days-util";
+import { html } from 'lit';
+import { renderDaySelector } from '../day-selector';
+import { localize } from '../locales/localize';
+import { formatHourMinute } from '../util/days-util';
 
 // Static list of predefined feeding times
-export const PREDEFINED_TIMES = ["06:00", "08:00", "12:00", "18:00", "21:00"];
+export const PREDEFINED_TIMES = ['06:00', '08:00', '12:00', '18:00', '21:00'];
 /**
  * Renders the edit form for a feeding time.
  * @param {object} params - The parameters for rendering.
@@ -28,35 +28,35 @@ export function renderEditView({
   const fields = profile.fields || [];
   return html`
     <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
-      ${editError ? html`<div class="error">${editError}</div>` : ""}
-      ${fields.includes("days")
+      ${editError ? html`<div class="error">${editError}</div>` : ''}
+      ${fields.includes('days')
         ? renderDaySelector({
             days: editForm?.days ?? 0,
             editable: true,
             onDaysChanged: (newDays: number) => onUpdate({ days: newDays }),
             firstDay: profile.firstDay,
           })
-        : ""}
+        : ''}
       <div class="edit-form-group">
-        <label for="edit-time">${localize("time")}</label>
+        <label for="edit-time">${localize('time')}</label>
         <input
           id="edit-time"
           class="edit-time"
           type="time"
           .value=${editForm
             ? formatHourMinute(editForm.hour, editForm.minute)
-            : ""}
+            : ''}
           @input=${(e: Event) => {
             const val = (e.target as HTMLInputElement).value;
-            const [h, m] = val.split(":").map(Number);
+            const [h, m] = val.split(':').map(Number);
             onUpdate({ hour: h, minute: m });
           }}
         />
       </div>
-      ${fields.includes("portion")
+      ${fields.includes('portion')
         ? html`
             <div class="edit-form-group">
-              <label for="edit-portion">${localize("portion")}</label>
+              <label for="edit-portion">${localize('portion')}</label>
               <input
                 id="edit-portion"
                 type="number"
@@ -70,14 +70,14 @@ export function renderEditView({
               />
             </div>
           `
-        : ""}
+        : ''}
       <div class="edit-predefined-times">
         ${PREDEFINED_TIMES.map(
           (time) => html`
             <ha-button
               type="button"
               @click=${() => {
-                const [h, m] = time.split(":").map(Number);
+                const [h, m] = time.split(':').map(Number);
                 onUpdate({ hour: h, minute: m });
               }}
               >${time}</ha-button
