@@ -1,5 +1,16 @@
 # MealPlanCard
 
+[![Home Assistant][ha-versions-shield]][homeassistant]
+[![GitHub Release][releases-shield]][releases]
+[![License][license-shield]](LICENSE.md)
+![Downloads][downloads-shield]
+[![Build Status][build-shield]][build]
+[![Code Coverage][codecov-shield]][codecov]
+[![Documentation Status][wiki-shield]][wiki]
+[![Open in Dev Containers][devcontainer-shield]][devcontainer]
+
+## About
+
 A HACS card for Home Assistant to monitor and control your pet feeder using a meal_plan base64 format. This card is designed for Tuya Mealplan data, but can work for other feeders if they use a compatible meal_plan/schedule entity. Support both hex and base64 data. This integration work best with [Tuya-local](https://github.com/make-all/tuya-local)
 
 If your device is missing from the list feel free to open an issue with related info and it will be added.
@@ -44,3 +55,18 @@ When the user makes changes and presses save on the schedule view, the config is
 ## Support
 
 For issues, feature requests, or contributions, please open an issue or pull request on [GitHub](https://github.com/FredrikM97/mealplan-card).
+
+[build-shield]: https://github.com/FredrikM97/mealplan-card/actions/workflows/test.yaml/badge.svg
+[build]: https://github.com/FredrikM97/mealplan-card/actions
+[codecov-shield]: https://codecov.io/gh/FredrikM97/mealplan-card/branch/dev/graph/badge.svg
+[codecov]: https://codecov.io/gh/FredrikM97/mealplan-card
+[license-shield]: https://img.shields.io/github/license/FredrikM97/mealplan-card.svg
+[devcontainer-shield]: https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode
+[devcontainer]: https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/FredrikM97/mealplan-card
+[ha-versions-shield]: https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/FredrikM97/mealplan-card/main/hacs.json&label=homeassistant&query=$.homeassistant&color=blue&logo=homeassistant
+[releases-shield]: https://img.shields.io/github/release/FredrikM97/mealplan-card.svg
+[releases]: https://github.com/FredrikM97/mealplan-card/releases
+[wiki-shield]: https://img.shields.io/badge/docs-wiki-blue.svg
+[wiki]: https://github.com/FredrikM97/mealplan-card/wiki
+[homeassistant]: https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=mealplan-card&category=plugin
+[downloads-shield]: https://img.shields.io/github/downloads/FredrikM97/mealplan-card/total.svg
