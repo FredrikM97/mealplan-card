@@ -2,5 +2,6 @@
   "name": "MealPlan Card",
   "filename": "mealplan-card.js",
   "hide_default_branch": true,
-  "render_readme": true
+  "render_readme": true,
+  "homeassistant": "2025.10.1"
 }
