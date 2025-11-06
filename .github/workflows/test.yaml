@@ -17,11 +17,11 @@ jobs:
         uses: actions/setup-node@v4
 
       - name: Install dependencies
-        run: npm ci 
-    
+        run: npm ci
+
       - name: Run tests
         run: npm test
-        
+
       - name: Build
         run: |
           npm run build
