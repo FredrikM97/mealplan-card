@@ -4,9 +4,12 @@
   "features": {},
   "customizations": {
     "vscode": {
-      "settings": {},
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+      },
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
     }
   },
-  "postCreateCommand": "npm install && npm test"
+  "postCreateCommand": "npm install && npx husky init && echo 'npx prettier --write .' > .husky/pre-commit && chmod +x .husky/pre-commit"
 }
