@@ -37,7 +37,7 @@ export default defineConfig({
         'src/**/*.jsx',
         'src/**/*.tsx',
       ],
-      reporter: ['text', 'html'],
+      reporter: ['text', 'html', 'lcov'],
       provider: 'v8',
       reportsDirectory: 'coverage',
     },
