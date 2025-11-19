@@ -11,5 +11,8 @@
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
     }
   },
+  "mounts": [
+    "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh"
+  ],
   "postCreateCommand": "npm install && npx husky init && echo 'npx prettier --write .' > .husky/pre-commit && chmod +x .husky/pre-commit"
 }
