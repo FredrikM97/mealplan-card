@@ -16,7 +16,7 @@ coverage:
         target: 90%
         threshold: 1%
 comment:
-  layout: "diff"
+  layout: 'diff'
   behavior: default
   require_changes: true
 
