@@ -7,12 +7,17 @@ version: 2
 updates:
   - package-ecosystem: 'npm'
     directory: '/'
-    schedule:
-      interval: 'weekly'
+    schedule: { interval: 'weekly' }
     open-pull-requests-limit: 5
+    groups:
+      build-tools:
+        patterns: ['vite*', '@vitejs/*', 'typescript', '@types/*', 'terser']
+      test-tools:
+        patterns: ['vitest*', '@vitest/*', '*test*', '@open-wc/*', 'jsdom']
+      minor-and-patch:
+        update-types: ['minor', 'patch']
 
   - package-ecosystem: 'github-actions'
     directory: '/'
-    schedule:
-      interval: 'weekly'
+    schedule: { interval: 'weekly' }
     open-pull-requests-limit: 3
