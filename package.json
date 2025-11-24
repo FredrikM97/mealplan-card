@@ -17,7 +17,7 @@
     "@open-wc/testing": "^4.0.0",
     "@vitest/coverage-v8": "^4.0.10",
     "husky": "^9.1.7",
-    "jsdom": "^27.1.0",
+    "jsdom": "^27.2.0",
     "prettier": "^3.6.2",
     "terser": "^5.44.1",
     "typescript": "^5.9.3",
