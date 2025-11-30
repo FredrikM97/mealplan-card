@@ -17,12 +17,10 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
   {
     profiles: [{ manufacturer: 'HoneyGuardian', default: true, models: [] }],
     fields: [pf.TIME, pf.PORTION, pf.ENABLED, pf.EDIT],
-    encodingFields: [ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
   },
   {
     profiles: [{ manufacturer: 'Fukumaru-W', default: true, models: [] }],
@@ -35,7 +33,7 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+    encodingTemplate: '{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}',
   },
   {
     profiles: [{ manufacturer: 'Yuposl', default: true, models: [] }],
@@ -48,7 +46,8 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+    encodingTemplate:
+      '{DAYS:h2}{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}{FILL:h6}',
   },
   {
     profiles: [{ manufacturer: 'Arlec', default: true, models: [] }],
@@ -61,7 +60,8 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+    encodingTemplate:
+      '{DAYS:h2}{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}{FILL:h6}',
   },
   {
     profiles: [{ manufacturer: 'PetLibro', default: true, models: [] }],
@@ -74,7 +74,8 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+    encodingTemplate:
+      '{DAYS:h2}{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}{FILL:h6}',
   },
   {
     profiles: [{ manufacturer: 'MolyPet', default: true, models: [] }],
@@ -87,11 +88,14 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+    encodingTemplate:
+      '{DAYS:h2}{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}{FILL:h6}',
   },
   {
     profiles: [{ manufacturer: 'PetNest', default: true, models: [] }],
     encodingType: EncodingType.HEX,
+    encodingTemplate:
+      '{DAYS:h2}{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}{FILL:h6}',
     fields: [
       pf.TIME,
       pf.PORTION,
@@ -101,7 +105,8 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+    encodingTemplate:
+      '{DAYS:h2}{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}{FILL:h6}',
   },
   {
     profiles: [{ manufacturer: 'Petrust', default: true, models: [] }],
@@ -115,7 +120,8 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+    encodingTemplate:
+      '{DAYS:h2}{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}{FILL:h6}',
   },
   {
     profiles: [{ manufacturer: 'Meowmatic', default: true, models: [] }],
@@ -129,6 +135,7 @@ export const profiles: DeviceProfileGroup[] = [
       pf.DELETE,
       pf.ADD,
     ],
-    encodingFields: [ef.DAYS, ef.HOUR, ef.MINUTE, ef.PORTION, ef.ENABLED],
+    encodingTemplate:
+      '{DAYS:h2}{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}{FILL:h6}',
   },
 ];

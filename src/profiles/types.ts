@@ -11,16 +11,6 @@ export enum ProfileField {
   ADD = 'add',
 }
 
-export enum EncodingField {
-  DAYS = 'days',
-  HOUR = 'hour',
-  MINUTE = 'minute',
-  PORTION = 'portion',
-  ENABLED = 'enabled',
-  MINUTE_HIGH = 'minute_high',
-  MINUTE_LOW = 'minute_low',
-}
-
 export interface DeviceProfile {
   manufacturer: string;
   default?: boolean;
@@ -31,7 +21,7 @@ export interface DeviceProfileGroup {
   profiles: DeviceProfile[];
   encodingType?: EncodingType;
   fields: ProfileField[];
-  encodingFields: EncodingField[];
+  encodingTemplate?: string;
   featureFields?: ProfileField[];
   firstDay?: Day;
 }
