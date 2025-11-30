@@ -46,9 +46,9 @@ describe('parseTemplate', () => {
 describe('chunkLength', () => {
   it('calculates total length correctly', () => {
     const tokens = [
-      { name: 'DAYS', type: 'hex' as const, length: 2 },
-      { name: 'HOUR', type: 'hex' as const, length: 2 },
-      { name: 'MINUTE', type: 'hex' as const, length: 2 },
+      { name: 'DAYS', length: 2 },
+      { name: 'HOUR', length: 2 },
+      { name: 'MINUTE', length: 2 },
     ];
     expect(chunkLength(tokens)).toBe(6);
   });

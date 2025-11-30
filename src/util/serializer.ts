@@ -34,7 +34,6 @@ export function parseTemplate(template: string): TemplateToken[] {
 
   const tokens: TemplateToken[] = [];
   TOKEN_REGEX.lastIndex = 0;
-  0;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -160,8 +159,6 @@ export class TemplateEncoder {
       : value;
   }
 }
-
-// end inlined template / mapping utilities
 
 export interface FeedingTime {
   hour?: number;
