@@ -26,10 +26,10 @@ export function getNextSchedule(feedingTimes: FeedingTime[]): string {
 
 export function getTotalFoodPerDay(
   feedingTimes: FeedingTime[],
-  profile?: { encodingFields?: string[] },
+  profile?: { encodingTemplate?: string },
 ): number[] {
   const totals = Array(7).fill(0);
-  const hasEnabled = profile?.encodingFields?.includes('enabled');
+  const hasEnabled = profile?.encodingTemplate?.includes('ENABLED');
   const relevant = hasEnabled
     ? feedingTimes.filter((t) => t.enabled === 1)
     : feedingTimes;
@@ -58,10 +58,10 @@ export function getTotalFoodPerDay(
 export function getTodaysFoodGrams(
   feedingTimes: FeedingTime[],
   dayIdx: number,
-  profile?: { encodingFields?: string[] },
+  profile?: { encodingTemplate?: string },
 ): number {
   let total = 0;
-  const hasEnabled = profile?.encodingFields?.includes('enabled');
+  const hasEnabled = profile?.encodingTemplate?.includes('ENABLED');
   const relevant = hasEnabled
     ? feedingTimes.filter((t) => t.enabled === 1)
     : feedingTimes;

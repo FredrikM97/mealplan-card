@@ -102,11 +102,7 @@ export class MealPlanCard extends LitElement {
   _updateHass() {
     const profile = resolveProfile(this.config || {});
 
-    if (
-      !profile ||
-      !Array.isArray(profile.encodingFields) ||
-      profile.encodingFields.length === 0
-    ) {
+    if (!profile || !profile.encodingTemplate) {
       console.warn(
         'Selected feeder profile %s on config %s is invalid or not supported.',
         profile,

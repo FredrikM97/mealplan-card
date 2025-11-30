@@ -53,7 +53,7 @@ describe('Overview statistics', () => {
       { hour: 10, minute: 0, days: 0b1000001, portion: 1, enabled: 1 },
     ];
     const profile = {
-      encodingFields: ['hour', 'minute', 'portion', 'days', 'enabled'],
+      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}{ENABLED:h2}',
     };
     const totals = getTotalFoodPerDay(feedingTimes, profile);
     expect(totals[0]).toBe(1);
@@ -67,7 +67,7 @@ describe('Overview statistics', () => {
       { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 0 },
     ];
     const profile = {
-      encodingFields: ['hour', 'minute', 'portion', 'days', 'enabled'],
+      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}{ENABLED:h2}',
     };
     const totals = getTotalFoodPerDay(feedingTimes, profile);
     expect(Object.values(totals).every((v) => v === 0)).toBe(true);
@@ -77,7 +77,9 @@ describe('Overview statistics', () => {
     const feedingTimes: FeedingTime[] = [
       { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 0 },
     ];
-    const profile = { encodingFields: ['hour', 'minute', 'portion', 'days'] };
+    const profile = {
+      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}',
+    };
     const totals = getTotalFoodPerDay(feedingTimes, profile);
     expect(totals).toEqual([2, 2, 2, 2, 2, 2, 2]);
   });
