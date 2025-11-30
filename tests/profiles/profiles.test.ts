@@ -29,7 +29,6 @@ describe('profiles default enforcement', () => {
           { manufacturer: 'TestBrand', default: true, models: [] },
         ],
         fields: [],
-        encodingFields: [],
       },
     ];
     // Inline enforcement logic
