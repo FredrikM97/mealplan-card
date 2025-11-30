@@ -4,6 +4,7 @@ import {
   chunkLength,
   getEncoder,
   FeedingTime,
+  EncodingType,
 } from '../../src/util/serializer';
 import { formatHourMinute } from '../../src/util/days-util';
 
@@ -135,5 +136,31 @@ describe('formatHourMinute', () => {
     expect(formatHourMinute(NaN, 0)).toBe('--:--');
     expect(formatHourMinute(-1, 0)).toBe('--:--');
     expect(formatHourMinute(8, 60)).toBe('--:--');
+  });
+});
+
+describe('TemplateEncoder edge cases', () => {
+  it('handles null/undefined values by padding with zeros', () => {
+    const encoder = getEncoder({
+      fields: [],
+      profiles: [],
+      encodingType: EncodingType.HEX,
+      encodingTemplate: '{HOUR:d2}{MINUTE:d2}',
+    });
+    const result = encoder.encode([
+      { hour: null as any, minute: undefined as any },
+    ]);
+    expect(result).toBe('0000');
+  });
+
+  it('handles FILL token correctly', () => {
+    const encoder = getEncoder({
+      fields: [],
+      profiles: [],
+      encodingType: EncodingType.HEX,
+      encodingTemplate: '{HOUR:d2}{FILL:h2}',
+    });
+    const result = encoder.encode([{ hour: 8 }]);
+    expect(result).toBe('0800');
   });
 });

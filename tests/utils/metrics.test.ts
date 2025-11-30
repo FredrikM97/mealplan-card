@@ -83,4 +83,42 @@ describe('Overview statistics', () => {
     const totals = getTotalFoodPerDay(feedingTimes, profile);
     expect(totals).toEqual([2, 2, 2, 2, 2, 2, 2]);
   });
+
+  it('getNextSchedule handles feedingTimes without enabled field', () => {
+    const feedingTimes: FeedingTime[] = [
+      { hour: 12, minute: 30, portion: 1 },
+      { hour: 8, minute: 15, portion: 2 },
+    ];
+    expect(getNextSchedule(feedingTimes)).toBe('08:15');
+  });
+
+  it('getNextSchedule returns - when no enabled times with enabled field', () => {
+    const feedingTimes: FeedingTime[] = [
+      { hour: 8, minute: 0, portion: 1, enabled: 0 },
+      { hour: 9, minute: 0, portion: 1, enabled: 0 },
+    ];
+    expect(getNextSchedule(feedingTimes)).toBe('-');
+  });
+
+  it('getTotalFoodPerDay handles missing portion field gracefully', () => {
+    const feedingTimes: FeedingTime[] = [
+      { hour: 8, minute: 0, days: 0b0000001, enabled: 1 } as any,
+    ];
+    const profile = {
+      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}{ENABLED:h2}',
+    };
+    const totals = getTotalFoodPerDay(feedingTimes, profile);
+    expect(totals).toEqual([0, 0, 0, 0, 0, 0, 0]);
+  });
+
+  it('getTodaysFoodGrams handles missing portion field gracefully', () => {
+    const feedingTimes: FeedingTime[] = [
+      { hour: 8, minute: 0, days: 0b0000001, enabled: 1 } as any,
+    ];
+    const profile = {
+      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}{ENABLED:h2}',
+    };
+    const total = getTodaysFoodGrams(feedingTimes, 0, profile);
+    expect(total).toBe(0);
+  });
 });

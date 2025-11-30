@@ -28,6 +28,12 @@ if (!customElements.get('ha-button'))
   customElements.define('ha-button', class extends HTMLElement {});
 if (!customElements.get('ha-chip'))
   customElements.define('ha-chip', class extends HTMLElement {});
+if (!customElements.get('ha-icon-button'))
+  customElements.define('ha-icon-button', class extends HTMLElement {});
+if (!customElements.get('ha-icon'))
+  customElements.define('ha-icon', class extends HTMLElement {});
+if (!customElements.get('ha-switch'))
+  customElements.define('ha-switch', class extends HTMLElement {});
 
 const sampleMeals = [
   { hour: 8, minute: 0, portion: 2, daysMask: 127, enabled: 1 },
@@ -71,6 +77,46 @@ describe('renderScheduleView (function)', () => {
     expect(dt.data.length).to.equal(2);
     expect(dt.data[0].hour).to.equal(8);
     expect(dt.data[0].portion).to.equal(2);
+    document.body.removeChild(container);
+  });
+
+  it('renders enabled toggle and delete buttons when fields include them', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const onToggle = vi.fn();
+    const onDel = vi.fn();
+
+    render(
+      renderScheduleView({
+        profile: cleverioProfile,
+        hass: {},
+        viewMeals: sampleMeals,
+        editForm: null,
+        editError: null,
+        editDialogOpen: false,
+        onUpdateEditForm: vi.fn(),
+        onOpenEditDialog: vi.fn(),
+        onOpenAddDialog: vi.fn(),
+        onCloseEditDialog: vi.fn(),
+        onDelete: onDel,
+        onCancel: vi.fn(),
+        onSave: vi.fn(),
+        onEditSave: vi.fn(),
+        onToggleEnabled: onToggle,
+        hasUnsavedChanges: false,
+      }),
+      container,
+    );
+
+    await new Promise((r) => setTimeout(r, 10));
+    const dataTable = container.querySelector('ha-data-table') as any;
+    expect(dataTable).to.exist;
+
+    // Check that columns include enabled and actions
+    const columns = dataTable.columns;
+    expect(columns.enabled).to.exist;
+    expect(columns.actions).to.exist;
+
     document.body.removeChild(container);
   });
 });
