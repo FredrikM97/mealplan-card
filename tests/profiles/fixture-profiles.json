@@ -112,5 +112,13 @@
       { "days": 127, "hour": 20, "minute": 0, "portion": 1, "enabled": 0 },
       { "days": 127, "hour": 22, "minute": 0, "portion": 1, "enabled": 1 }
     ]
+  },
+  {
+    "manufacturer": "Puppy Kitty",
+    "encoded": "2019121170191031",
+    "decoded": [
+      { "days": 2, "hour": 19, "minute": 12, "portion": 1, "enabled": 1 },
+      { "days": 67, "hour": 19, "minute": 10, "portion": 3, "enabled": 1 }
+    ]
   }
 ]
