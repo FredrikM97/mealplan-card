@@ -6,6 +6,7 @@ import {
   FeedingTime,
   EncodingType,
 } from '../../src/util/serializer';
+import { f, TemplateFieldName as F } from '../../src/profiles/types';
 import { formatHourMinute } from '../../src/util/days-util';
 
 describe('parseTemplate', () => {
@@ -18,32 +19,26 @@ describe('parseTemplate', () => {
   });
 
   it('throws error for unexpected characters between tokens', () => {
-    expect(() => parseTemplate('{DAYS:h2}INVALID{HOUR:h2}')).toThrow(
-      'Invalid template: unexpected characters between tokens',
-    );
-  });
-
-  it('throws error for unsupported token type', () => {
-    expect(() => parseTemplate('{DAYS:x2}')).toThrow(
-      'Unsupported token type: x',
-    );
+    expect(() =>
+      parseTemplate(`${f(F.DAYS, 2)}INVALID${f(F.HOUR, 2)}`),
+    ).toThrow('Invalid template: unexpected characters between tokens');
   });
 
   it('throws error for invalid token length', () => {
-    expect(() => parseTemplate('{DAYS:h0}')).toThrow('Invalid token length');
+    expect(() => parseTemplate('{DAYS:0}')).toThrow('Invalid token length');
   });
 
   it('throws error if tokens do not cover entire template', () => {
-    expect(() => parseTemplate('{DAYS:h2}EXTRA')).toThrow(
+    expect(() => parseTemplate(`${f(F.DAYS, 2)}EXTRA`)).toThrow(
       'Invalid template: tokens must exactly cover template',
     );
   });
 
   it('parses valid template correctly', () => {
-    const result = parseTemplate('{DAYS:h2}{HOUR:d2}');
+    const result = parseTemplate(`${f(F.DAYS, 2)}${f(F.HOUR, 2)}`);
     expect(result).toEqual([
-      { name: 'DAYS', type: 'hex', length: 2 },
-      { name: 'HOUR', type: 'dec', length: 2 },
+      { name: 'DAYS', length: 2 },
+      { name: 'HOUR', length: 2 },
     ]);
   });
 });
@@ -63,7 +58,7 @@ describe('encoder decode/encode', () => {
   const encoder = getEncoder({
     fields: [],
     profiles: [],
-    encodingTemplate: '{HOUR:d2}{MINUTE:d2}{PORTION:d2}{ENABLED:d1}',
+    encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}`,
   });
 
   it('decode returns [] for unknown base64 string', () => {
@@ -80,7 +75,7 @@ describe('encoder decode/encode', () => {
     const encoder2 = getEncoder({
       fields: [],
       profiles: [],
-      encodingTemplate: '{HOUR:d2}{MINUTE:d2}{DAYS:h2}{PORTION:d2}{ENABLED:d1}',
+      encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.DAYS, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}`,
     });
     const feedingTimes: FeedingTime[] = [
       { hour: 8, minute: 0, days: 0b0111110, portion: 2, enabled: 1 },
@@ -97,7 +92,7 @@ describe('encoder error handling', () => {
     const encoder = getEncoder({
       fields: [],
       profiles: [],
-      encodingTemplate: '{HOUR:d2}',
+      encodingTemplate: f(F.HOUR, 2),
     });
     expect(() => encoder.decode('!@#$')).toThrow('Invalid base64');
   });
@@ -116,7 +111,7 @@ describe('encoder error handling', () => {
     const encoder = getEncoder({
       fields: [],
       profiles: [],
-      encodingTemplate: '{HOUR:d2}{MINUTE:d2}{PORTION:d2}',
+      encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}`,
     });
     expect(() => encoder.decode('AAA=')).toThrow(
       'Invalid templated meal plan length',
@@ -145,7 +140,7 @@ describe('TemplateEncoder edge cases', () => {
       fields: [],
       profiles: [],
       encodingType: EncodingType.HEX,
-      encodingTemplate: '{HOUR:d2}{MINUTE:d2}',
+      encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}`,
     });
     const result = encoder.encode([
       { hour: null as any, minute: undefined as any },
@@ -158,7 +153,7 @@ describe('TemplateEncoder edge cases', () => {
       fields: [],
       profiles: [],
       encodingType: EncodingType.HEX,
-      encodingTemplate: '{HOUR:d2}{FILL:h2}',
+      encodingTemplate: `${f(F.HOUR, 2)}${f(F.FILL, 2)}`,
     });
     const result = encoder.encode([{ hour: 8 }]);
     expect(result).toBe('0800');

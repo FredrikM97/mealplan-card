@@ -1,6 +1,8 @@
 import { Day } from '../util/days-util';
 import { EncodingType } from '../util/serializer';
 
+export const TOKEN_REGEX = /\{([A-Z_]+)\:(\d+)\}/g;
+
 export enum ProfileField {
   TIME = 'time',
   PORTION = 'portion',
@@ -11,29 +13,24 @@ export enum ProfileField {
   ADD = 'add',
 }
 
-// Encoding template field names with their type built-in
-export enum TemplateField {
-  DAYS = 'DAYS:h',
-  HOUR = 'HOUR:h',
-  MINUTE = 'MINUTE:h',
-  PORTION = 'PORTION:h',
-  ENABLED = 'ENABLED:h',
-  FILL = 'FILL:h',
+// Template field names
+export enum TemplateFieldName {
+  DAYS = 'DAYS',
+  HOUR = 'HOUR',
+  MINUTE = 'MINUTE',
+  PORTION = 'PORTION',
+  ENABLED = 'ENABLED',
+  FILL = 'FILL',
 }
 
-export enum TemplateFieldDecimal {
-  DAYS = 'DAYS:d',
-  HOUR = 'HOUR:d',
-  MINUTE = 'MINUTE:d',
-  PORTION = 'PORTION:d',
-  ENABLED = 'ENABLED:d',
-}
+// Fields that use hex encoding (all others use decimal)
+// For BASE64 encodingType profiles: all fields use hex
+// For HEX encodingType profiles: only DAYS uses hex, others use decimal
+export const HEX_FIELDS = new Set([TemplateFieldName.DAYS]);
 
 // Helper function to create template field with length
-export const f = (
-  field: TemplateField | TemplateFieldDecimal,
-  len: number,
-): string => `{${field}${len}}`;
+export const f = (field: TemplateFieldName, len: number): string =>
+  `{${field}:${len}}`;
 
 export interface DeviceProfile {
   manufacturer: string;
@@ -48,4 +45,7 @@ export interface DeviceProfileGroup {
   encodingTemplate?: string;
   featureFields?: ProfileField[];
   firstDay?: Day;
+  // Custom transformers for encoding/decoding days field
+  encode?: (days: number) => number;
+  decode?: (encoded: number) => number;
 }

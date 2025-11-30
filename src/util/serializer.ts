@@ -1,44 +1,57 @@
 import type { DeviceProfileGroup } from '../profiles/types';
-export type TokenType = 'hex' | 'dec' | 'nib' | 'byte' | 'fill';
+import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS } from '../profiles/types';
 
 export interface TemplateToken {
   name: string;
-  type: TokenType;
-  length: number; // number of chars (hex/dec) or number of nibbles for 'nib'
+  length: number;
 }
 
-const TOKEN_RE = /\{([A-Z_]+)\:([a-z]+)(\d+)\}/g;
+function validateTemplateInput(template: string): void {
+  if (!template || typeof template !== 'string') {
+    throw new Error('Invalid template');
+  }
+}
 
-const TYPE_ALIASES: Record<string, TokenType> = {
-  h: 'hex',
-  d: 'dec',
-  n: 'nib',
-  b: 'byte',
-  f: 'fill',
-};
+function validateTokenPosition(
+  matchIndex: number,
+  expectedIndex: number,
+): void {
+  if (matchIndex !== expectedIndex) {
+    throw new Error('Invalid template: unexpected characters between tokens');
+  }
+}
+
+function parseTokenLength(lengthStr: string): number {
+  const len = parseInt(lengthStr, 10);
+  if (!Number.isInteger(len) || len <= 0) {
+    throw new Error('Invalid token length');
+  }
+  return len;
+}
 
 export function parseTemplate(template: string): TemplateToken[] {
-  if (!template || typeof template !== 'string')
-    throw new Error('Invalid template');
+  validateTemplateInput(template);
+
   const tokens: TemplateToken[] = [];
-  let match: RegExpExecArray | null;
-  TOKEN_RE.lastIndex = 0;
+  TOKEN_REGEX.lastIndex = 0;
+  0;
   let lastIndex = 0;
-  while ((match = TOKEN_RE.exec(template)) !== null) {
-    if (match.index !== lastIndex)
-      throw new Error('Invalid template: unexpected characters between tokens');
+  let match: RegExpExecArray | null;
+
+  while ((match = TOKEN_REGEX.exec(template)) !== null) {
+    validateTokenPosition(match.index, lastIndex);
+
     const name = match[1];
-    const rawType = match[2];
-    const len = parseInt(match[3], 10);
-    const mapped = TYPE_ALIASES[rawType];
-    if (!mapped) throw new Error(`Unsupported token type: ${rawType}`);
-    if (!Number.isInteger(len) || len <= 0)
-      throw new Error('Invalid token length');
-    tokens.push({ name, type: mapped, length: len });
-    lastIndex = TOKEN_RE.lastIndex;
+    const length = parseTokenLength(match[2]);
+
+    tokens.push({ name, length });
+    lastIndex = TOKEN_REGEX.lastIndex;
   }
-  if (lastIndex !== template.length)
+
+  if (lastIndex !== template.length) {
     throw new Error('Invalid template: tokens must exactly cover template');
+  }
+
   return tokens;
 }
 
@@ -58,30 +71,45 @@ export class TemplateEncoder {
     this.chunkLen = chunkLength(this.tokens);
   }
 
-  encode(entries: FeedingTime[]): string {
-    return entries.map((entry) => this.encodeEntry(entry)).join('');
+  encode(data: FeedingTime[]): string {
+    return data.map((entry) => this.encodeEntry(entry)).join('');
+  }
+
+  private transformValue(name: string, value: number): number {
+    // Apply custom day encoding if transformer is configured
+    return name === TemplateFieldName.DAYS && this.profile?.encode
+      ? this.profile.encode(value)
+      : value;
   }
 
   private encodeEntry(entry: FeedingTime): string {
     return this.tokens
       .map((t) => {
-        const name = t.name;
-        if (name === 'FILL') {
+        if (t.name === TemplateFieldName.FILL) {
           return '0'.repeat(t.length);
         }
-        const val = (entry as any)[name.toLowerCase()];
-        if (typeof val === 'undefined' || val === null)
+        const rawValue = (entry as any)[t.name.toLowerCase()];
+        if (rawValue === undefined || rawValue === null) {
           return ''.padStart(t.length, '0');
-        switch (t.type) {
-          case 'hex':
-            return Number(val).toString(16).padStart(t.length, '0');
-          case 'dec':
-            return Number(val).toString().padStart(t.length, '0');
-          default:
-            return ''.padStart(t.length, '0');
         }
+        const value = this.transformValue(t.name, rawValue);
+        return this.formatValue(t.name, value, t.length);
       })
       .join('');
+  }
+
+  private formatValue(name: string, value: number, length: number): string {
+    // For BASE64 encoding type, use hex for all fields
+    // For HEX encoding type, use hex only for DAYS field
+    const useHex =
+      !this.profile?.encodingType ||
+      this.profile.encodingType === EncodingType.BASE64
+        ? true
+        : HEX_FIELDS.has(name as TemplateFieldName);
+
+    return useHex
+      ? value.toString(16).padStart(length, '0')
+      : value.toString(10).padStart(length, '0');
   }
 
   decode(data: string): FeedingTime[] {
@@ -98,22 +126,38 @@ export class TemplateEncoder {
   private decodeChunk(chunk: string): FeedingTime {
     let pos = 0;
     const result: any = {};
+
     for (const t of this.tokens) {
       const part = chunk.slice(pos, pos + t.length);
       pos += t.length;
-      if (t.name === 'FILL') continue;
-      switch (t.type) {
-        case 'hex':
-          result[t.name.toLowerCase()] = parseInt(part, 16) || 0;
-          break;
-        case 'dec':
-          result[t.name.toLowerCase()] = parseInt(part, 10) || 0;
-          break;
-        default:
-          break;
-      }
+
+      if (t.name === TemplateFieldName.FILL) continue;
+
+      const rawValue = this.parseValue(t.name, part);
+      const value = this.untransformValue(t.name, rawValue);
+      result[t.name.toLowerCase()] = value;
     }
+
     return result as FeedingTime;
+  }
+
+  private parseValue(name: string, part: string): number {
+    // For BASE64 encoding type, use hex for all fields
+    // For HEX encoding type, use hex only for DAYS field
+    const useHex =
+      !this.profile?.encodingType ||
+      this.profile.encodingType === EncodingType.BASE64
+        ? true
+        : HEX_FIELDS.has(name as TemplateFieldName);
+
+    return useHex ? parseInt(part, 16) || 0 : parseInt(part, 10) || 0;
+  }
+
+  private untransformValue(name: string, value: number): number {
+    // Apply custom day decoding if transformer is configured
+    return name === TemplateFieldName.DAYS && this.profile?.decode
+      ? this.profile.decode(value)
+      : value;
   }
 }
 

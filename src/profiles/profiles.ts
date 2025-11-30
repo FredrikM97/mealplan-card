@@ -1,16 +1,12 @@
 import { Day } from '../util/days-util';
 import { EncodingType } from '../util/serializer';
 import type { DeviceProfileGroup } from './types';
-import {
-  ProfileField as pf,
-  TemplateField as TF,
-  TemplateFieldDecimal as TFD,
-  f,
-} from './types';
+import { ProfileField as pf, TemplateFieldName as F, f } from './types';
+import { puppyKittyDayTransformer } from './dayTransformers';
 
 // Common encoding templates
-const TEMPLATE_FULL = `${f(TF.DAYS, 2)}${f(TF.HOUR, 2)}${f(TF.MINUTE, 2)}${f(TF.PORTION, 2)}${f(TF.ENABLED, 2)}`;
-const TEMPLATE_NO_DAYS = `${f(TF.HOUR, 2)}${f(TF.MINUTE, 2)}${f(TF.PORTION, 2)}${f(TF.ENABLED, 2)}`;
+const TEMPLATE_FULL = `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`;
+const TEMPLATE_NO_DAYS = `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`;
 
 // Common field configurations
 const FIELDS_FULL = [
@@ -68,7 +64,7 @@ export const profiles: DeviceProfileGroup[] = [
   {
     profiles: [{ manufacturer: 'PetNest', default: true, models: [] }],
     encodingType: EncodingType.HEX,
-    encodingTemplate: `${f(TF.DAYS, 2)}${f(TFD.HOUR, 2)}${f(TFD.MINUTE, 2)}${f(TFD.PORTION, 2)}${f(TFD.ENABLED, 1)}${f(TF.FILL, 6)}`,
+    encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}${f(F.FILL, 6)}`,
     fields: FIELDS_FULL,
   },
   {
@@ -84,5 +80,13 @@ export const profiles: DeviceProfileGroup[] = [
     firstDay: Day.Saturday,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
+  },
+  {
+    profiles: [{ manufacturer: 'Puppy Kitty', default: true, models: [] }],
+    encodingType: EncodingType.HEX,
+    firstDay: Day.Saturday,
+    encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 1)}${f(F.ENABLED, 1)}`,
+    fields: FIELDS_FULL,
+    ...puppyKittyDayTransformer,
   },
 ];

@@ -5,6 +5,7 @@ import {
   getTodaysFoodGrams,
 } from '../../src/util/metrics';
 import type { FeedingTime } from '../../src/util/serializer';
+import { f, TemplateFieldName as F } from '../../src/profiles/types';
 
 describe('Overview statistics', () => {
   it('getNextSchedule returns "-" if no enabled times', () => {
@@ -53,7 +54,7 @@ describe('Overview statistics', () => {
       { hour: 10, minute: 0, days: 0b1000001, portion: 1, enabled: 1 },
     ];
     const profile = {
-      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}{ENABLED:h2}',
+      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`,
     };
     const totals = getTotalFoodPerDay(feedingTimes, profile);
     expect(totals[0]).toBe(1);
@@ -67,7 +68,7 @@ describe('Overview statistics', () => {
       { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 0 },
     ];
     const profile = {
-      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}{ENABLED:h2}',
+      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`,
     };
     const totals = getTotalFoodPerDay(feedingTimes, profile);
     expect(Object.values(totals).every((v) => v === 0)).toBe(true);
@@ -78,7 +79,7 @@ describe('Overview statistics', () => {
       { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 0 },
     ];
     const profile = {
-      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}',
+      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}`,
     };
     const totals = getTotalFoodPerDay(feedingTimes, profile);
     expect(totals).toEqual([2, 2, 2, 2, 2, 2, 2]);
@@ -105,7 +106,7 @@ describe('Overview statistics', () => {
       { hour: 8, minute: 0, days: 0b0000001, enabled: 1 } as any,
     ];
     const profile = {
-      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}{ENABLED:h2}',
+      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`,
     };
     const totals = getTotalFoodPerDay(feedingTimes, profile);
     expect(totals).toEqual([0, 0, 0, 0, 0, 0, 0]);
@@ -116,7 +117,7 @@ describe('Overview statistics', () => {
       { hour: 8, minute: 0, days: 0b0000001, enabled: 1 } as any,
     ];
     const profile = {
-      encodingTemplate: '{DAYS:h2}{HOUR:h2}{MINUTE:h2}{PORTION:h2}{ENABLED:h2}',
+      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`,
     };
     const total = getTodaysFoodGrams(feedingTimes, 0, profile);
     expect(total).toBe(0);
