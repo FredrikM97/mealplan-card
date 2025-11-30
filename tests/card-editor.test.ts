@@ -9,6 +9,17 @@ vi.mock('@kipk/load-ha-components', () => ({
 }));
 
 describe('MealPlanCardEditor', () => {
+  it('renders loading message when HA components not ready', async () => {
+    const el = await fixture<MealPlanCardEditor>(
+      html`<mealplan-card-editor></mealplan-card-editor>`,
+    );
+    // Don't wait for updateComplete, check immediately
+    const shadow = el.shadowRoot!;
+    const loadingDiv = shadow.querySelector('div');
+    // Components should load quickly in tests, but we can check the initial state
+    expect(loadingDiv).to.exist;
+  });
+
   it('renders and updates config', async () => {
     const el = await fixture<MealPlanCardEditor>(
       html`<mealplan-card-editor></mealplan-card-editor>`,

@@ -135,9 +135,7 @@ describe('getProfileDropdownItems', () => {
   it('creates dropdown items with model suffix for multi-model profiles', () => {
     const testProfiles = [
       {
-        profiles: [
-          { manufacturer: 'TestBrand', models: ['ModelA', 'ModelB'] },
-        ],
+        profiles: [{ manufacturer: 'TestBrand', models: ['ModelA', 'ModelB'] }],
         fields: [],
       },
     ];
