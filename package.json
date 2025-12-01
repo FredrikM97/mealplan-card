@@ -15,13 +15,13 @@
   },
   "devDependencies": {
     "@open-wc/testing": "^4.0.0",
-    "@vitest/coverage-v8": "^4.0.10",
+    "@vitest/coverage-v8": "^4.0.14",
     "husky": "^9.1.7",
-    "jsdom": "^27.1.0",
-    "prettier": "^3.6.2",
+    "jsdom": "^27.2.0",
+    "prettier": "^3.7.3",
     "terser": "^5.44.1",
     "typescript": "^5.9.3",
-    "vite": "^7.2.2",
+    "vite": "^7.2.6",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.0.8"
   },
