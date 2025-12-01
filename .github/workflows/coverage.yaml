@@ -1,13 +1,11 @@
-name: Run Tests
+name: Coverage
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
-  test:
+  coverage:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -20,8 +18,13 @@ jobs:
         run: npm install
 
       - name: Build
-        run: |
-          npm run build
+        run: npm run build
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: npm test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
