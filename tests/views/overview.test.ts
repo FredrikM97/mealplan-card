@@ -35,4 +35,44 @@ describe('MealPlanCard Overview UI', () => {
       .trim();
     expect(gramsText).to.match(/today: \d+g/);
   }, 20000);
+
+  it('multiplies metrics by config portions value', async () => {
+    // Create a feeding time: All days (127), 8:00, 10g portion, enabled
+    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
+    const configWithPortions = {
+      sensor: 'sensor.test',
+      title: 'Test Card',
+      device_manufacturer: 'Cleverio',
+      device_model: '',
+      portions: 3,
+    };
+    const hass = {
+      states: { 'sensor.test': { state: base64, attributes: {} } },
+    };
+    const el = await fixture<any>(
+      html`<mealplan-card
+        .config=${configWithPortions}
+        .hass=${hass}
+      ></mealplan-card>`,
+    );
+    await el.updateComplete;
+
+    // Today's food should be 10g * 3 portions = 30g
+    const grams = el.shadowRoot.querySelector('.overview-grams');
+    expect(grams).to.exist;
+    const gramsText = grams.textContent
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+    expect(gramsText).to.include('30g');
+
+    // Average per week should also be multiplied by portions: (10g * 7 days / 7) * 3 portions = 30g
+    const avgChip = el.shadowRoot.querySelector('.overview-average');
+    expect(avgChip).to.exist;
+    const avgText = avgChip.textContent
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+    expect(avgText).to.include('30.0g');
+  }, 20000);
 });

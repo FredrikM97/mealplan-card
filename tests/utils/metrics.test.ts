@@ -53,35 +53,27 @@ describe('Overview statistics', () => {
       { hour: 8, minute: 0, days: 0b0111110, portion: 2, enabled: 1 },
       { hour: 10, minute: 0, days: 0b1000001, portion: 1, enabled: 1 },
     ];
-    const profile = {
-      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`,
-    };
-    const totals = getTotalFoodPerDay(feedingTimes, profile);
+    const totals = getTotalFoodPerDay(feedingTimes);
     expect(totals[0]).toBe(1);
     expect(totals[1]).toBe(2);
     expect(totals[5]).toBe(2);
     expect(totals[6]).toBe(1);
   });
 
-  it('getTotalFoodPerDay ignores disabled times if profile has enabled', () => {
+  it('getTotalFoodPerDay ignores disabled times when pre-filtered', () => {
     const feedingTimes: FeedingTime[] = [
       { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 0 },
     ];
-    const profile = {
-      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`,
-    };
-    const totals = getTotalFoodPerDay(feedingTimes, profile);
+    const enabledOnly = feedingTimes.filter((t) => t.enabled === 1);
+    const totals = getTotalFoodPerDay(enabledOnly);
     expect(Object.values(totals).every((v) => v === 0)).toBe(true);
   });
 
-  it('getTotalFoodPerDay does not ignore if profile does not have enabled', () => {
+  it('getTotalFoodPerDay processes all meals when not pre-filtered', () => {
     const feedingTimes: FeedingTime[] = [
       { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 0 },
     ];
-    const profile = {
-      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}`,
-    };
-    const totals = getTotalFoodPerDay(feedingTimes, profile);
+    const totals = getTotalFoodPerDay(feedingTimes);
     expect(totals).toEqual([2, 2, 2, 2, 2, 2, 2]);
   });
 
@@ -105,10 +97,7 @@ describe('Overview statistics', () => {
     const feedingTimes: FeedingTime[] = [
       { hour: 8, minute: 0, days: 0b0000001, enabled: 1 } as any,
     ];
-    const profile = {
-      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`,
-    };
-    const totals = getTotalFoodPerDay(feedingTimes, profile);
+    const totals = getTotalFoodPerDay(feedingTimes);
     expect(totals).toEqual([0, 0, 0, 0, 0, 0, 0]);
   });
 
@@ -116,10 +105,7 @@ describe('Overview statistics', () => {
     const feedingTimes: FeedingTime[] = [
       { hour: 8, minute: 0, days: 0b0000001, enabled: 1 } as any,
     ];
-    const profile = {
-      encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`,
-    };
-    const total = getTodaysFoodGrams(feedingTimes, 0, profile);
+    const total = getTodaysFoodGrams(feedingTimes, 0);
     expect(total).toBe(0);
   });
 });

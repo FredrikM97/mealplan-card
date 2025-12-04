@@ -1,4 +1,3 @@
-import { T } from 'vitest/dist/chunks/reporters.d.BFLkQcL6';
 import { FeedingTime } from './serializer';
 import { formatHourMinute } from './days-util';
 
@@ -24,31 +23,19 @@ export function getNextSchedule(feedingTimes: FeedingTime[]): string {
   return formatHourMinute(enabled[0].hour ?? 0, enabled[0].minute ?? 0);
 }
 
-export function getTotalFoodPerDay(
-  feedingTimes: FeedingTime[],
-  profile?: { encodingTemplate?: string },
-): number[] {
+export function getTotalFoodPerDay(feedingTimes: FeedingTime[]): number[] {
   const totals = Array(7).fill(0);
-  const hasEnabled = profile?.encodingTemplate?.includes('ENABLED');
-  const relevant = hasEnabled
-    ? feedingTimes.filter((t) => t.enabled === 1)
-    : feedingTimes;
-  relevant.forEach((t, idx) => {
+  feedingTimes.forEach((t, idx) => {
     if (typeof t.days !== 'number') {
       console.error(
         `FeedingTime entry #${idx} is missing required 'days' field.`,
       );
       return;
     }
-    if (typeof t.portion !== 'number') {
-      console.error(
-        `FeedingTime entry #${idx} is missing required 'portion' field.`,
-      );
-      return;
-    }
+    const portion = t.portion ?? 0;
     for (let i = 0; i < 7; i++) {
       if (t.days & (1 << i)) {
-        totals[i] += t.portion;
+        totals[i] += portion;
       }
     }
   });
@@ -58,28 +45,17 @@ export function getTotalFoodPerDay(
 export function getTodaysFoodGrams(
   feedingTimes: FeedingTime[],
   dayIdx: number,
-  profile?: { encodingTemplate?: string },
 ): number {
   let total = 0;
-  const hasEnabled = profile?.encodingTemplate?.includes('ENABLED');
-  const relevant = hasEnabled
-    ? feedingTimes.filter((t) => t.enabled === 1)
-    : feedingTimes;
-  relevant.forEach((t, idx) => {
+  feedingTimes.forEach((t, idx) => {
     if (typeof t.days !== 'number') {
       console.error(
         `FeedingTime entry #${idx} is missing required 'days' field.`,
       );
       return;
     }
-    if (typeof t.portion !== 'number') {
-      console.error(
-        `FeedingTime entry #${idx} is missing required 'portion' field.`,
-      );
-      return;
-    }
     if (t.days & (1 << dayIdx)) {
-      total += t.portion;
+      total += t.portion ?? 0;
     }
   });
   return total;
