@@ -14,7 +14,7 @@ export function renderOverview({
   const today = new Date().getDay();
   const totalToday = getTodaysFoodGrams(enabledMeals, today) * portions;
   const totals = getTotalFoodPerDay(enabledMeals);
-  const avg = totals.reduce((a, b) => a + b, 0) / 7;
+  const avg = (totals.reduce((a, b) => a + b, 0) / 7) * portions;
   return html`
     <div class="overview-row">
       <ha-chip class="overview-schedules">
@@ -35,7 +35,7 @@ export function renderOverview({
       <ha-chip class="overview-average">
         <ha-icon icon="mdi:scale-balance"></ha-icon>
         ${localize('avg_week')}:
-        <span style="white-space:nowrap;">${(avg * 6).toFixed(1)}g</span>
+        <span style="white-space:nowrap;">${avg.toFixed(1)}g</span>
       </ha-chip>
     </div>
   `;

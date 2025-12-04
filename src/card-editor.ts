@@ -20,7 +20,7 @@ export class MealPlanCardEditor extends LitElement {
     device_model?: string;
     device_manufacturer?: string;
     portions?: number;
-  } = { sensor: '', title: '', helper: '' };
+  } = { sensor: '', title: '', helper: '', portions: 6 };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
 
