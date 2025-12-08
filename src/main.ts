@@ -1,63 +1,75 @@
-﻿import { LitElement, html, css } from 'lit';
+﻿import { LitElement, html, css, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { getEncoder, EncoderBase } from './util/serializer.js';
-import type { FeedingTime } from './util/serializer.js';
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { localize, setLanguage } from './locales/localize';
-import { validateFeedingTime } from './util/validate.js';
+import { MealStateController } from './mealStateController';
+import { profiles } from './profiles/profiles.js';
+import type { MealPlanCardConfig, DeviceProfileGroup } from './types.js';
+import './components/overview.js';
+import './components/schedule-view.js';
 
-import { renderScheduleView } from './views/scheduleView';
-import { renderOverview } from './views/overview';
-import { resolveProfile } from './profiles/resolveProfile';
+function resolveProfile(config: {
+  device_manufacturer?: string;
+  device_model?: string;
+}): (DeviceProfileGroup & { manufacturer: string; model: string }) | undefined {
+  const { device_manufacturer, device_model } = config || {};
+  if (!device_manufacturer) return undefined;
 
-/**
- * MealPlan Card
- */
+  for (const group of profiles) {
+    for (const manu of group.profiles) {
+      if (manu.manufacturer === device_manufacturer) {
+        const models = Array.isArray(manu.models) ? manu.models : [];
+        const model = device_model ?? models[0] ?? '';
+        if (!device_model || models.includes(model) || models.length === 0) {
+          return { ...group, manufacturer: manu.manufacturer, model };
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
 @customElement('mealplan-card')
 export class MealPlanCard extends LitElement {
-  declare private _hass: any;
-  declare private encoder: EncoderBase;
+  private mealState!: MealStateController;
+
+  @property({ type: Object }) hass: any;
+  @state() private _dialogOpen = false;
+  @property({ type: Boolean }) private _haComponentsReady = false;
 
   @property({ type: Object })
-  get hass() {
-    return this._hass;
-  }
-  set hass(val) {
-    this._hass = val;
-    // Only process hass updates if config is complete
-    if (this.config?.device_manufacturer && this.config?.sensor) {
-      this._updateHass();
+  set config(val: MealPlanCardConfig) {
+    const oldSensor = this._config?.sensor;
+
+    let profile = val?._profile;
+    if (val?.device_manufacturer && !profile) {
+      profile = resolveProfile(val);
     }
-    // No need to call requestUpdate - @state properties in _updateHass() will trigger re-render
-  }
-  @property({ type: Object }) declare config: any;
-  @state() declare _meals: FeedingTime[];
-  @state() declare _persistedMeals: FeedingTime[];
-  @state() declare _dialogOpen: boolean;
-  @state() declare _editDialogOpen: boolean;
-  @state() declare _editForm: any;
-  @state() declare _editError: string | null;
 
-  @property({ type: Boolean }) declare private _haComponentsReady: boolean;
-  @state() declare private _decodeError: string | null;
+    this._config = profile ? { ...val, _profile: profile } : val;
 
-  private resetEditState() {
-    this._editDialogOpen = false;
-    this._editForm = null;
-    this._editError = null;
-  }
+    if (
+      this._config?.sensor &&
+      profile &&
+      (!this.mealState || oldSensor !== this._config.sensor)
+    ) {
+      this.mealState = new MealStateController(
+        this,
+        this._config.sensor,
+        profile,
+        this._config.helper,
+      );
 
-  constructor() {
-    super();
-    this._meals = [];
-    this._persistedMeals = [];
-    this._dialogOpen = false;
-    this._editDialogOpen = false;
-    this._editForm = null;
-    this._editError = null;
-    this._haComponentsReady = false;
-    this._decodeError = null;
+      if (this.hass) {
+        this.mealState.setHass(this.hass);
+        this.mealState.updateFromHass();
+      }
+    }
   }
+  get config(): MealPlanCardConfig {
+    return this._config;
+  }
+  private _config!: MealPlanCardConfig;
 
   static styles = [
     css`
@@ -77,294 +89,124 @@ export class MealPlanCard extends LitElement {
           margin: 0 4px 8px 4px;
         }
       }
+      .error-message {
+        color: var(--error-color, red);
+        margin: 16px;
+      }
     `,
   ];
 
-  setConfig(config) {
+  setConfig(config: MealPlanCardConfig) {
     this.config = config;
   }
 
   async connectedCallback() {
-    await setLanguage(this.hass.language); // Only loads once, even if called multiple times
+    super.connectedCallback();
+    await setLanguage(this.hass?.language);
     await loadHaComponents(['ha-button', 'ha-data-table', 'ha-dialog']);
     this._haComponentsReady = true;
-    super.connectedCallback();
   }
 
-  get _sensorID() {
-    return this.config?.sensor;
-  }
-  get _helperID() {
-    return this.config?.helper;
-  }
+  willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
+    if (changedProperties.has('hass') && this.mealState && this.hass) {
+      this.mealState.setHass(this.hass);
 
-  get _name() {
-    const stateObj = this.hass?.states?.[this._sensorID];
-    return stateObj?.attributes?.friendly_name || this._sensorID;
-  }
+      if (this._config?.sensor) {
+        const oldHass = changedProperties.get('hass') as any;
+        const oldState = oldHass?.states?.[this._config.sensor]?.state;
+        const newState = this.hass.states?.[this._config.sensor]?.state;
 
-  /**
-   * Main update logic: determines source, decodes, and syncs helper if needed.
-   */
-  _updateHass() {
-    const profile = resolveProfile(this.config || {});
-
-    if (!profile || !profile.encodingTemplate) {
-      console.warn(
-        'Selected feeder profile %s on config %s is invalid or not supported.',
-        profile,
-        this.config,
-      );
-      this._decodeError =
-        'Selected feeder profile is invalid or not supported.';
-      this._setPersistedMeals([]);
-      this._setMealsIfNotEditing([]);
-      return;
-    }
-    this.encoder = getEncoder(profile);
-    // Use getters for IDs, and inline the rest for clarity
-    const stateObj = this.hass?.states?.[this._sensorID];
-    const helperObj = this.hass?.states?.[this._helperID];
-    const sensorRaw = stateObj?.state ?? '';
-    const helperRaw = helperObj?.state ?? '';
-
-    // Prefer sensor if valid
-    const isValid = (v: any) =>
-      typeof v === 'string' &&
-      v.trim() !== '' &&
-      v !== 'unknown' &&
-      v !== 'unavailable';
-
-    let decodedMeals: FeedingTime[] | undefined | null = [];
-    let decodeError: string | null = null;
-
-    if (isValid(sensorRaw)) {
-      try {
-        decodedMeals = this.encoder.decode(sensorRaw);
-      } catch (err) {
-        this._decodeError = 'Failed to decode meal plan data.';
-        console.warn('Failed to decode sensor %s', sensorRaw, err);
-        return [];
-      }
-      // If helper exists and out of sync, update helper
-      if (helperObj && sensorRaw !== helperRaw) {
-        this._updateHelperIfOutOfSync(sensorRaw, helperRaw);
-      }
-    } else if (helperObj && isValid(helperRaw)) {
-      try {
-        decodedMeals = this.encoder.decode(helperRaw);
-      } catch (err) {
-        this._decodeError = 'Failed to decode meal plan data.';
-        console.warn('Failed to decode from helper %s', helperRaw, err);
-        return [];
-      }
-    } else {
-      decodeError =
-        'No valid meal plan data found: neither helper nor a valid sensor value is present.';
-      console.warn(decodeError);
-      decodedMeals = [];
-    }
-
-    this._decodeError = decodeError;
-    this._setPersistedMeals(decodedMeals);
-    this._setMealsIfNotEditing(decodedMeals);
-  }
-
-  /** Syncs the helper if it's out of sync with the sensor. */
-  private _updateHelperIfOutOfSync(sensorRaw: string, helperRaw: string) {
-    if (
-      this.config?.helper &&
-      this._helperID &&
-      this.hass &&
-      sensorRaw !== helperRaw
-    ) {
-      console.debug(
-        'Update helper %s with value %s',
-        this._helperID,
-        sensorRaw,
-      );
-      try {
-        const domain = this._helperID?.split('.')[0];
-        this.hass.callService(domain, 'set_value', {
-          entity_id: this._helperID,
-          value: sensorRaw,
-        });
-      } catch (err) {
-        console.error('Failed to call service:', err);
+        if (!oldHass || oldState !== newState) {
+          const allowUpdate = !oldHass;
+          this.mealState.updateFromHass(allowUpdate);
+        }
       }
     }
+  }
+
+  private getConfigError(): string | null {
+    if (!this._config) return 'No configuration provided';
+    if (!this._config.sensor) return 'Please configure a sensor entity';
+    if (!this._config.device_manufacturer)
+      return 'Please select a device manufacturer in card settings';
+    return null;
+  }
+
+  private renderError(): TemplateResult | string {
+    const configError = this.getConfigError();
+    if (configError) {
+      return html`<div class="error-message">${configError}</div>`;
+    }
+
+    const decodeError = this.mealState?.getDecodeError();
+    if (decodeError) {
+      return html`<div class="error-message" style="margin: 8px;">
+        ${decodeError}
+      </div>`;
+    }
+
+    return '';
+  }
+
+  private handleScheduleClosed() {
+    this._dialogOpen = false;
   }
 
   render() {
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
-    // Only resolve profile if config is complete
-    const profile =
-      this.config?.device_manufacturer && this.config?.sensor
-        ? resolveProfile(this.config || {})
-        : undefined;
+
     return html`
       <ha-card
         header=${this.config?.title || 'MealPlan Card'}
         style="height: 100%;"
       >
-        ${this._decodeError
-          ? html`<div style="color: var(--error-color, red); margin: 8px;">
-              ${this._decodeError}
-            </div>`
+        ${this.renderError()}
+        ${this.mealState
+          ? html`
+              <meal-overview
+                .meals=${this.mealState.getMeals()}
+                .portions=${this.config?.portions || 6}
+              ></meal-overview>
+              <div
+                class="card-actions"
+                style="display: flex; justify-content: flex-end; padding: 8px 16px; gap: 8px;"
+              >
+                <ha-button @click=${() => (this._dialogOpen = true)}>
+                  <ha-icon icon="mdi:table-edit"></ha-icon>
+                  ${localize('manage_schedules')}
+                </ha-button>
+              </div>
+            `
           : ''}
-        ${renderOverview({
-          meals: this._meals,
-          portions: this.config?.portions || 6,
-          localize,
-        })}
-        <div
-          class="card-actions"
-          style="display: flex; justify-content: flex-end; padding: 8px 16px 8px 16px; gap: 8px;"
-        >
-          <ha-button
-            class="manage-btn"
-            @click=${() => {
-              this._dialogOpen = true;
-            }}
-          >
-            <ha-icon icon="mdi:table-edit"></ha-icon>
-            ${localize('manage_schedules')}
-          </ha-button>
-        </div>
         <slot></slot>
-        ${this._dialogOpen
-          ? renderScheduleView({
-              profile,
-              hass: this.hass,
-              viewMeals: this._meals,
-              editForm: this._editForm,
-              editError: this._editError,
-              editDialogOpen: this._editDialogOpen,
-              onUpdateEditForm: (update) => {
-                this._editForm = { ...this._editForm, ...update };
-              },
-              onOpenEditDialog: (idx) => {
-                this._editForm = { ...this._meals[idx], _idx: idx };
-                this._editDialogOpen = true;
-                this._editError = null;
-              },
-              onOpenAddDialog: () => {
-                this._editForm = {
-                  hour: 12,
-                  minute: 0,
-                  portion: 1,
-                  days: 127,
-                  enabled: true,
-                };
-                this._editDialogOpen = true;
-                this._editError = null;
-              },
-              onCloseEditDialog: () => {
-                this.resetEditState();
-              },
-              onDelete: (idx) => {
-                this._meals = this._meals.filter((_, i) => i !== idx);
-                this.resetEditState();
-              },
-              onCancel: () => {
-                this._dialogOpen = false;
-                this.resetEditState();
-                // When closing schedule view without saving, reset _meals to match _persistedMeals (latest backend state)
-                this._meals = Array.isArray(this._persistedMeals)
-                  ? [...this._persistedMeals]
-                  : [];
-              },
-              onSave: () => {
-                this._persistedMeals = JSON.parse(JSON.stringify(this._meals));
-                this._dialogOpen = false;
-                this.resetEditState();
-                this._saveMealsToSensor();
-              },
-              onEditSave: () => {
-                if (!this._editForm) return;
-                const validationError = validateFeedingTime(this._editForm);
-                if (validationError) {
-                  this._editError = validationError;
-                  return;
-                }
-                const idx = this._editForm._idx;
-                if (idx !== undefined && idx !== null && idx >= 0) {
-                  this._meals = this._meals.map((m, i) =>
-                    i === idx ? { ...this._editForm } : m,
-                  );
-                } else {
-                  this._meals = [...this._meals, { ...this._editForm }];
-                }
-                this._editDialogOpen = false;
-                this._editForm = null;
-                this._editError = null;
-              },
-              onToggleEnabled: (idx, e) => {
-                const target = e.target as HTMLInputElement | null;
-                const checked =
-                  target && typeof target.checked === 'boolean'
-                    ? target.checked
-                    : false;
-                this._meals = this._meals.map((m, i) =>
-                  i === idx ? { ...m, enabled: checked ? 1 : 0 } : m,
-                );
-              },
-              hasUnsavedChanges:
-                JSON.stringify(this._meals) !==
-                JSON.stringify(this._persistedMeals),
-            })
+        ${this._dialogOpen && this._config?._profile && this.mealState
+          ? html`
+              <schedule-view
+                .mealState=${this.mealState}
+                .meals=${this.mealState.getMeals()}
+                .profile=${this._config._profile}
+                .hass=${this.hass}
+                @schedule-closed=${this.handleScheduleClosed}
+              ></schedule-view>
+            `
           : ''}
       </ha-card>
     `;
   }
+
   static async getConfigElement() {
     await import('./card-editor.js');
     return document.createElement('mealplan-card-editor');
   }
 
-  /** Encodes and saves the current meals to the sensor. */
-  _saveMealsToSensor() {
-    if (!this.hass || !this._sensorID) return;
-    const value = this.encoder.encode(this._meals);
-    console.debug(
-      'Call service to sensor %s with data %s',
-      this._sensorID,
-      value,
-    );
-    try {
-      const domain = this._sensorID?.split('.')[0];
-      this.hass.callService(domain, 'set_value', {
-        entity_id: this._sensorID,
-        value,
-      });
-    } catch (err) {
-      console.error('Failed to call service:', err);
-    }
+  static getStubConfig() {
+    return {
+      sensor: '',
+      title: 'MealPlan Card',
+      helper: '',
+      portions: 6,
+    };
   }
-  _onScheduleMealsChanged(e) {
-    console.log('[MealPlanCard] _onScheduleMealsChanged called', e);
-    this._meals = e.detail.meals;
-    this._saveMealsToSensor();
-  }
-
-  private _setPersistedMeals(meals: FeedingTime[] | undefined | null) {
-    this._persistedMeals = Array.isArray(meals) ? meals : [];
-  }
-  private _setMealsIfNotEditing(meals: FeedingTime[] | undefined | null) {
-    if (!this._dialogOpen && !this._editDialogOpen) {
-      this._meals = Array.isArray(meals) ? meals : [];
-    } else {
-      // Warn if backend tried to update meals while editing
-      const msg =
-        '[MealPlanCard] Backend update to meals ignored because user is editing or viewing schedule.';
-      console.warn(msg);
-    }
-  }
-}
-
-// Exported stub for test coverage
-export function loadTranslations() {
-  throw new Error('Function not implemented.');
 }

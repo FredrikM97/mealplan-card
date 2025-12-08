@@ -3,11 +3,10 @@ import {
   parseTemplate,
   chunkLength,
   getEncoder,
-  FeedingTime,
   EncodingType,
-} from '../../src/util/serializer';
-import { f, TemplateFieldName as F } from '../../src/profiles/types';
-import { formatHourMinute } from '../../src/util/days-util';
+} from '../../src/profiles/serializer';
+import { f, TemplateFieldName as F, formatHourMinute } from '../../src/types';
+import { FeedingTime } from '../../src/types';
 
 describe('parseTemplate', () => {
   it('throws error for empty template', () => {

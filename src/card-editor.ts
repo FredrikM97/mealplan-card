@@ -1,9 +1,84 @@
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { LitElement, html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
-import { profiles } from './profiles/profiles';
-import { getProfileDropdownItems } from './profiles/resolveProfile';
+import { profiles } from './profiles/profiles.js';
 import { localize } from './locales/localize';
+import type { MealPlanCardConfig, DeviceProfileGroup } from './types.js';
+
+/**
+ * Auto-detect device profile from Home Assistant device model
+ */
+function detectProfileFromDevice(
+  deviceModel: string,
+): { manufacturer: string; model: string } | null {
+  const modelLower = deviceModel.toLowerCase().replace(/_/g, '');
+
+  for (const group of profiles) {
+    for (const profile of group.profiles) {
+      const manufacturer = profile.manufacturer.toLowerCase();
+      const models = profile.models?.map((m) => m.toLowerCase()) || [];
+
+      const hasManufacturer = modelLower.includes(manufacturer);
+      const hasModel =
+        models.length === 0 || models.some((m) => modelLower.includes(m));
+
+      if (hasManufacturer && hasModel) {
+        return {
+          manufacturer: profile.manufacturer,
+          model: profile.models?.[0] || '',
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Resolve device profile from config
+ */
+function resolveProfile(config: {
+  device_manufacturer?: string;
+  device_model?: string;
+}): (DeviceProfileGroup & { manufacturer: string; model: string }) | undefined {
+  const { device_manufacturer, device_model } = config || {};
+  if (!device_manufacturer) return undefined;
+
+  for (const group of profiles) {
+    for (const manu of group.profiles) {
+      if (manu.manufacturer === device_manufacturer) {
+        const models = Array.isArray(manu.models) ? manu.models : [];
+        const model = device_model ?? models[0] ?? '';
+        if (!device_model || models.includes(model) || models.length === 0) {
+          return { ...group, manufacturer: manu.manufacturer, model };
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Get dropdown items for manufacturer/model selection
+ */
+export function getProfileDropdownItems(profileGroups: DeviceProfileGroup[]) {
+  return profileGroups.flatMap((group) =>
+    group.profiles.flatMap((manu) => {
+      const models = Array.isArray(manu.models) ? manu.models : [];
+      return (models.length ? models : ['']).map((model) => {
+        const isSingle = models.length <= 1;
+        const label =
+          isSingle || !model
+            ? manu.manufacturer
+            : `${manu.manufacturer} - ${model}`;
+        return {
+          value: `${manu.manufacturer}:${model}`,
+          label,
+        };
+      });
+    }),
+  );
+}
 
 declare global {
   interface Window {
@@ -13,32 +88,22 @@ declare global {
 
 @customElement('mealplan-card-editor')
 export class MealPlanCardEditor extends LitElement {
-  @property({ attribute: false }) config: {
-    sensor: string;
-    title: string;
-    helper: string;
-    device_model?: string;
-    device_manufacturer?: string;
-    portions?: number;
-  } = { sensor: '', title: '', helper: '', portions: 6 };
+  @property({ attribute: false }) config: MealPlanCardConfig = {
+    sensor: '',
+    title: '',
+    helper: '',
+  };
   @property({ attribute: false }) hass: any;
   private _haComponentsReady: boolean | undefined;
 
-  setConfig(config: {
-    sensor: string;
-    title: string;
-    helper: string;
-    device_model?: string;
-    device_manufacturer?: string;
-    portions?: number;
-  }) {
+  setConfig(config: MealPlanCardConfig) {
     this.config = { ...config };
   }
 
   async connectedCallback() {
+    super.connectedCallback();
     await loadHaComponents(['ha-entity-picker', 'ha-form', 'ha-textfield']);
     this._haComponentsReady = true;
-    super.connectedCallback();
   }
 
   configChanged(newConfig) {
@@ -84,41 +149,19 @@ export class MealPlanCardEditor extends LitElement {
 
   private async _fetchDeviceInfo(entityId: string) {
     try {
-      // Get entity info from registry
-      const entityInfo = this.hass.entities[entityId];
-      if (!entityInfo?.device_id) {
-        return;
-      }
+      const entityInfo = this.hass.entities?.[entityId];
+      if (!entityInfo?.device_id) return;
 
-      // Get device info from hass.devices
-      const device = this.hass.devices[entityInfo.device_id];
-      if (!device?.model) {
-        return;
-      }
+      const device = this.hass.devices?.[entityInfo.device_id];
+      if (!device?.model) return;
 
-      // Auto-detect profile from device model
-      const modelLower = device.model.toLowerCase().replace(/_/g, '');
-
-      // Find profile where manufacturer and model (if specified) are in device model string
-      for (const group of profiles) {
-        for (const profile of group.profiles) {
-          const manufacturer = profile.manufacturer.toLowerCase();
-          const models = profile.models?.map((m) => m.toLowerCase()) || [];
-
-          const hasManufacturer = modelLower.includes(manufacturer);
-          const hasModel =
-            models.length === 0 || models.some((m) => modelLower.includes(m));
-
-          if (hasManufacturer && hasModel) {
-            this.config = {
-              ...this.config,
-              device_manufacturer: profile.manufacturer,
-              device_model: profile.models?.[0] || '',
-            };
-            // Don't call configChanged here - let caller do it
-            return;
-          }
-        }
+      const detected = detectProfileFromDevice(device.model);
+      if (detected) {
+        this.config = {
+          ...this.config,
+          device_manufacturer: detected.manufacturer,
+          device_model: detected.model,
+        };
       }
     } catch (err) {
       console.error('Failed to auto-detect device:', err);
@@ -127,6 +170,30 @@ export class MealPlanCardEditor extends LitElement {
 
   private _validateConfig() {
     return !!this.config.sensor;
+  }
+
+  private _onProfileChanged(e: CustomEvent) {
+    // Store both device_manufacturer and device_model in config
+    const [device_manufacturer, device_model] = (e.detail.value || '').split(
+      ':',
+    );
+    const newConfig = { ...this.config, device_manufacturer, device_model };
+
+    // Resolve and store profile
+    if (device_manufacturer) {
+      const profile = resolveProfile(newConfig);
+      if (profile?.encodingTemplate) {
+        newConfig._profile = profile;
+      } else {
+        console.warn('Invalid or unsupported profile:', newConfig);
+        newConfig._profile = undefined;
+      }
+    } else {
+      newConfig._profile = undefined;
+    }
+
+    this.config = newConfig;
+    this.configChanged(this.config);
   }
 
   render() {
@@ -180,17 +247,7 @@ export class MealPlanCardEditor extends LitElement {
         .value=${this.config.device_manufacturer
           ? `${this.config.device_manufacturer}:${this.config.device_model || ''}`
           : ''}
-        @value-changed=${(e: CustomEvent) => {
-          // Store both device_manufacturer and device_model in config
-          const [device_manufacturer, device_model] = (
-            e.detail.value || ''
-          ).split(':');
-          this.config = { ...this.config, device_manufacturer, device_model };
-          this.configChanged(this.config);
-
-          // Trigger re-render to update the combo box value
-          this.requestUpdate();
-        }}
+        @value-changed=${this._onProfileChanged}
       ></ha-combo-box>
       <div style="height: 20px;"></div>
       <ha-textfield

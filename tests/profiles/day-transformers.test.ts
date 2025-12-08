@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { profiles } from '../../src/profiles/profiles';
-import { getEncoder } from '../../src/util/serializer';
+import { getEncoder } from '../../src/profiles/serializer';
 
 describe('Custom day transformers', () => {
   const puppyKittyProfile = profiles.find((p) =>

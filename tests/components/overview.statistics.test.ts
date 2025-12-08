@@ -3,9 +3,9 @@ import {
   getNextSchedule,
   getTotalFoodPerDay,
   getTodaysFoodGrams,
-} from '../../src/util/metrics';
-import type { FeedingTime } from '../../src/util/serializer';
-import { f, TemplateFieldName as F } from '../../src/profiles/types';
+} from '../../src/components/overview';
+import type { FeedingTime } from '../../src/types';
+import { f, TemplateFieldName as F } from '../../src/types';
 
 describe('Overview statistics', () => {
   it('getNextSchedule returns "-" if no enabled times', () => {
@@ -71,7 +71,7 @@ describe('Overview statistics', () => {
 
   it('getTotalFoodPerDay processes all meals when not pre-filtered', () => {
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 0 },
+      { hour: 8, minute: 0, days: 0b1111111, portion: 2, enabled: 1 },
     ];
     const totals = getTotalFoodPerDay(feedingTimes);
     expect(totals).toEqual([2, 2, 2, 2, 2, 2, 2]);

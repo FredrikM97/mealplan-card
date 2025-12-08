@@ -1,14 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { getEncoder } from '../../src/util/serializer';
+import { getEncoder } from '../../src/profiles/serializer';
 import fixtureProfiles from './fixture-profiles.json';
-import { resolveProfile } from '../../src/profiles/resolveProfile';
+// resolveProfile is now internal to card-editor, testing via profiles directly
+import { profiles } from '../../src/profiles/profiles';
 const INVALID_BASE64 = '!@#$';
 
 describe.each(fixtureProfiles as any[])(
   'fixture-profiles encode/decode: %o',
   (fixture) => {
     const { manufacturer, decoded, encoded } = fixture;
-    const profileGroup = resolveProfile({ device_manufacturer: manufacturer });
+
+    // Find profile directly from profiles array
+    const profileGroup = profiles.find((group) =>
+      group.profiles.some((p) => p.manufacturer === manufacturer),
+    );
+
     if (!profileGroup) {
       it.skip(`${manufacturer}: profile not found in source profiles`, () => {});
       return;

@@ -1,5 +1,5 @@
-import type { DeviceProfileGroup } from '../profiles/types';
-import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS } from '../profiles/types';
+import type { DeviceProfileGroup, FeedingTime } from '../types.js';
+import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS } from '../types.js';
 
 export interface TemplateToken {
   name: string;
@@ -158,14 +158,6 @@ export class TemplateEncoder {
       ? this.profile.decode(value)
       : value;
   }
-}
-
-export interface FeedingTime {
-  hour?: number;
-  minute?: number;
-  portion?: number;
-  days?: number;
-  enabled?: number;
 }
 
 export abstract class EncoderBase {

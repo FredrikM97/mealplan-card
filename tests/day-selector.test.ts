@@ -1,7 +1,7 @@
 import { it, expect, afterEach } from 'vitest';
 import { render } from 'lit-html';
 import { renderDaySelector } from '../src/day-selector';
-import { Day } from '../src/util/days-util';
+import { Day } from '../src/types';
 
 afterEach(() => {
   document.querySelectorAll('div').forEach((div) => {

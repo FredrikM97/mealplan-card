@@ -4,7 +4,7 @@ import {
   daysToBitmask,
   Day,
   isValidDayBitmask,
-} from '../../src/util/days-util';
+} from '../src/types';
 
 describe('days-util bitmask/enum', () => {
   it('daysToBitmask and bitmaskToDays roundtrip', () => {

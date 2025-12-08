@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateFeedingTime } from '../../src/util/validate';
+import { validateFeedingTime } from '../../src/components/schedule-view';
 
 describe('validateFeedingTime', () => {
   it('returns error for invalid hour/minute', () => {
