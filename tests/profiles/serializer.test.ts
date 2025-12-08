@@ -157,4 +157,45 @@ describe('TemplateEncoder edge cases', () => {
     const result = encoder.encode([{ hour: 8 }]);
     expect(result).toBe('0800');
   });
+
+  it('applies custom day encoding transformer', () => {
+    const encoder = getEncoder({
+      fields: [],
+      profiles: [],
+      encodingType: EncodingType.HEX,
+      encodingTemplate: `${f(F.DAYS, 2)}`,
+      encode: (value: number) => value ^ 0xff, // XOR transformer
+    });
+    const result = encoder.encode([{ days: 127 }]);
+    expect(result).toBe('80'); // 127 ^ 255 = 128 = 0x80
+  });
+
+  it('applies custom day decoding transformer', () => {
+    const encoder = getEncoder({
+      fields: [],
+      profiles: [],
+      encodingType: EncodingType.HEX,
+      encodingTemplate: `${f(F.DAYS, 2)}`,
+      decode: (value: number) => value ^ 0xff, // XOR transformer
+    });
+    const result = encoder.decode('80');
+    expect(result[0].days).toBe(127); // 128 ^ 255 = 127
+  });
+
+  it('throws error when template is not provided', () => {
+    expect(() => {
+      new (getEncoder as any).TemplateEncoder();
+    }).toThrow();
+  });
+
+  it('decodes empty string to empty array', () => {
+    const encoder = getEncoder({
+      fields: [],
+      profiles: [],
+      encodingType: EncodingType.HEX,
+      encodingTemplate: `${f(F.HOUR, 2)}`,
+    });
+    const result = encoder.decode('');
+    expect(result).toEqual([]);
+  });
 });

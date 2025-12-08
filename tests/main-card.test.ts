@@ -46,6 +46,81 @@ describe('MealPlanCard', () => {
     await el.updateComplete;
     expect(el).to.exist;
   }, 20000);
+
+  it('shows error for missing config', async () => {
+    const el = await fixture<MealPlanCard>(
+      html`<mealplan-card></mealplan-card>`,
+    );
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+
+    const errorDiv = el.shadowRoot!.querySelector('.error-message');
+    expect(errorDiv).to.exist;
+    expect(errorDiv!.textContent).to.include('No configuration provided');
+  });
+
+  it('shows error for missing sensor', async () => {
+    const el = await fixture<MealPlanCard>(
+      html`<mealplan-card></mealplan-card>`,
+    );
+    el.setConfig({
+      sensor: '',
+      title: 'Test',
+      device_manufacturer: 'Cleverio',
+      device_model: '',
+      helper: '',
+    });
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+
+    const errorDiv = el.shadowRoot!.querySelector('.error-message');
+    expect(errorDiv).to.exist;
+    expect(errorDiv!.textContent).to.include('sensor entity');
+  });
+
+  it('shows error for missing manufacturer', async () => {
+    const el = await fixture<MealPlanCard>(
+      html`<mealplan-card></mealplan-card>`,
+    );
+    el.setConfig({
+      sensor: 'sensor.test',
+      title: 'Test',
+      helper: '',
+    });
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+
+    const errorDiv = el.shadowRoot!.querySelector('.error-message');
+    expect(errorDiv).to.exist;
+    expect(errorDiv!.textContent).to.include('device manufacturer');
+  });
+
+  it('renders with custom title', async () => {
+    const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
+    const profileGroup = profiles.find((p) =>
+      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
+    );
+    const config = {
+      sensor: 'sensor.test',
+      title: 'Custom Title',
+      device_manufacturer: 'Cleverio',
+      device_model: '',
+      _profile: { ...profileGroup, manufacturer: 'Cleverio', model: '' },
+      helper: '',
+    };
+    const hass = {
+      states: { 'sensor.test': { state: base64, attributes: {} } },
+    };
+    const el = await fixture<any>(
+      html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
+    );
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+
+    const card = el.shadowRoot!.querySelector('ha-card');
+    expect(card).to.exist;
+    expect(card!.getAttribute('header')).to.equal('Custom Title');
+  });
 });
 
 describe('getConfigElement', () => {
@@ -53,7 +128,7 @@ describe('getConfigElement', () => {
     const el = await MealPlanCard.getConfigElement();
     expect(el).to.exist;
     expect(el.tagName.toLowerCase()).to.equal('mealplan-card-editor');
-    expect(typeof el.setConfig).to.equal('function');
+    expect(typeof (el as any).setConfig).to.equal('function');
   });
 });
 
@@ -98,5 +173,80 @@ describe('MealPlanCard integration', () => {
     const el = await MealPlanCard.getConfigElement();
     expect(el).to.be.instanceOf(HTMLElement);
     expect(el.tagName.toLowerCase()).to.equal('mealplan-card-editor');
+  });
+
+  it('getStubConfig returns default config', () => {
+    const stub = MealPlanCard.getStubConfig();
+    expect(stub.sensor).to.equal('');
+    expect(stub.title).to.equal('MealPlan Card');
+    expect(stub.portions).to.equal(6);
+  });
+
+  it('opens schedule dialog when button clicked', async () => {
+    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
+    const profileGroup = profiles.find((p) =>
+      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
+    );
+    const config = {
+      sensor: 'sensor.test',
+      title: 'Test',
+      device_manufacturer: 'Cleverio',
+      device_model: '',
+      _profile: { ...profileGroup, manufacturer: 'Cleverio', model: '' },
+      helper: '',
+    };
+    const hass = {
+      states: { 'sensor.test': { state: base64, attributes: {} } },
+    };
+    const el = await fixture<MealPlanCard>(
+      html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
+    );
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+
+    const button = el.shadowRoot!.querySelector('ha-button');
+    expect(button).to.exist;
+
+    (button as HTMLElement).click();
+    await el.updateComplete;
+
+    expect((el as any)._dialogOpen).to.be.true;
+    const scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    expect(scheduleView).to.exist;
+  });
+
+  it('closes schedule dialog on schedule-closed event', async () => {
+    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
+    const profileGroup = profiles.find((p) =>
+      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
+    );
+    const config = {
+      sensor: 'sensor.test',
+      title: 'Test',
+      device_manufacturer: 'Cleverio',
+      device_model: '',
+      _profile: { ...profileGroup, manufacturer: 'Cleverio', model: '' },
+      helper: '',
+    };
+    const hass = {
+      states: { 'sensor.test': { state: base64, attributes: {} } },
+      callService: vi.fn(),
+    };
+    const el = await fixture<MealPlanCard>(
+      html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
+    );
+    (el as any)._haComponentsReady = true;
+    (el as any)._dialogOpen = true;
+    await el.updateComplete;
+
+    const scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    expect(scheduleView).to.exist;
+
+    scheduleView!.dispatchEvent(
+      new CustomEvent('schedule-closed', { bubbles: true, composed: true }),
+    );
+    await el.updateComplete;
+
+    expect((el as any)._dialogOpen).to.be.false;
   });
 });
