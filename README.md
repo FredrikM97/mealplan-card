@@ -13,6 +13,8 @@
 
 A HACS card for Home Assistant to monitor and control your pet feeder using a meal_plan base64 format. This card is designed for Tuya Mealplan data, but can work for other feeders if they use a compatible meal_plan/schedule entity. Support both hex and base64 data. This integration work best with [Tuya-local](https://github.com/make-all/tuya-local)
 
+For a complete list of supported manufacturers and models, see [SUPPORTED.md](SUPPORTED.md).
+
 If your device is missing from the list feel free to open an issue with related info and it will be added.
 
 <img width="430" src="https://github.com/user-attachments/assets/13882cf0-ca0e-4768-89e9-fcbc15d50aef" ce/>

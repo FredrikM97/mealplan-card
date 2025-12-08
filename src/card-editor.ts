@@ -57,16 +57,71 @@ export class MealPlanCardEditor extends LitElement {
     this.configChanged(this.config);
   }
 
-  private _valueChanged(e: CustomEvent) {
+  private async _valueChanged(e: CustomEvent) {
     const target = e.target as any;
     if (target.configValue) {
       const newConfig = {
         ...this.config,
         [target.configValue]: e.detail.value,
       };
-      // No more device model/profile auto-matching. Just update config with the selected value.
+
       this.config = newConfig;
+
+      // Auto-detect device info when sensor is selected, but only if manufacturer not already set
+      if (
+        target.configValue === 'sensor' &&
+        e.detail.value &&
+        !this.config.device_manufacturer
+      ) {
+        // Wait for auto-detection to complete before firing config-changed
+        await this._fetchDeviceInfo(e.detail.value);
+      }
+
+      // Fire config-changed once with all updates
       this.configChanged(this.config);
+    }
+  }
+
+  private async _fetchDeviceInfo(entityId: string) {
+    try {
+      // Get entity info from registry
+      const entityInfo = this.hass.entities[entityId];
+      if (!entityInfo?.device_id) {
+        return;
+      }
+
+      // Get device info from hass.devices
+      const device = this.hass.devices[entityInfo.device_id];
+      if (!device?.model) {
+        return;
+      }
+
+      // Auto-detect profile from device model
+      const modelLower = device.model.toLowerCase().replace(/_/g, '');
+
+      // Find profile where manufacturer and model (if specified) are in device model string
+      for (const group of profiles) {
+        for (const profile of group.profiles) {
+          const manufacturer = profile.manufacturer.toLowerCase();
+          const models = profile.models?.map((m) => m.toLowerCase()) || [];
+
+          const hasManufacturer = modelLower.includes(manufacturer);
+          const hasModel =
+            models.length === 0 || models.some((m) => modelLower.includes(m));
+
+          if (hasManufacturer && hasModel) {
+            this.config = {
+              ...this.config,
+              device_manufacturer: profile.manufacturer,
+              device_model: profile.models?.[0] || '',
+            };
+            // Don't call configChanged here - let caller do it
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to auto-detect device:', err);
     }
   }
 
@@ -132,6 +187,9 @@ export class MealPlanCardEditor extends LitElement {
           ).split(':');
           this.config = { ...this.config, device_manufacturer, device_model };
           this.configChanged(this.config);
+
+          // Trigger re-render to update the combo box value
+          this.requestUpdate();
         }}
       ></ha-combo-box>
       <div style="height: 20px;"></div>

@@ -20,7 +20,8 @@ export function resolveProfile(config: {
 }): (DeviceProfileGroup & { manufacturer: string; model: string }) | undefined {
   const { device_manufacturer, device_model } = config || {};
   if (!device_manufacturer) {
-    console.warn('No device_manufacturer specified in config');
+    // Silently return undefined if no manufacturer is specified
+    // This is expected during initial configuration in the editor
     return undefined;
   }
   for (const group of profiles) {

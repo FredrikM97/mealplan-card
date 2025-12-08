@@ -22,7 +22,7 @@ const FIELDS_MINIMAL = [pf.TIME, pf.PORTION, pf.ENABLED, pf.EDIT];
 
 export const profiles: DeviceProfileGroup[] = [
   {
-    profiles: [{ manufacturer: 'Cleverio', default: true, models: [] }],
+    profiles: [{ manufacturer: 'Cleverio', default: true, models: ['PF100'] }],
     encodingType: EncodingType.BASE64,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,

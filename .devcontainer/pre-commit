@@ -1,0 +1,3 @@
+#!/bin/sh
+npm run format
+node scripts/generate-manufacturer-list.mjs > SUPPORTED.md

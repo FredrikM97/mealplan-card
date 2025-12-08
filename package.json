@@ -10,8 +10,7 @@
     "coverage": "vitest run --coverage",
     "build": "vite build",
     "clean": "rm -rf dist",
-    "format": "prettier --write .",
-    "prepare": "husky"
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@open-wc/testing": "^4.0.0",

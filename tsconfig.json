@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2023",
     "module": "ESNext",
-    "moduleResolution": "Node",
-    "lib": ["ES2022", "DOM"],
+    "moduleResolution": "bundler",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "declaration": false,
     "sourceMap": true,
     "outDir": "./target",
@@ -21,7 +21,10 @@
     "noImplicitAny": false,
     "skipLibCheck": true,
     "types": ["vitest"],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
   },
   "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": ["node_modules", "target", "tests", "www/mealplan-card"]

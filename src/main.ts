@@ -15,29 +15,31 @@ import { resolveProfile } from './profiles/resolveProfile';
  */
 @customElement('mealplan-card')
 export class MealPlanCard extends LitElement {
-  private _hass;
+  declare private _hass: any;
+  declare private encoder: EncoderBase;
 
-  private encoder!: EncoderBase;
   @property({ type: Object })
   get hass() {
     return this._hass;
   }
   set hass(val) {
-    const old = this._hass;
     this._hass = val;
-    this._updateHass();
-    this.requestUpdate('hass', old);
+    // Only process hass updates if config is complete
+    if (this.config?.device_manufacturer && this.config?.sensor) {
+      this._updateHass();
+    }
+    // No need to call requestUpdate - @state properties in _updateHass() will trigger re-render
   }
-  @property({ type: Object }) accessor config;
-  @state() accessor _meals: FeedingTime[];
-  @state() accessor _persistedMeals: FeedingTime[];
-  @state() accessor _dialogOpen: boolean = false;
-  @state() accessor _editDialogOpen: boolean = false;
-  @state() accessor _editForm: any = null;
-  @state() accessor _editError: string | null = null;
+  @property({ type: Object }) declare config: any;
+  @state() declare _meals: FeedingTime[];
+  @state() declare _persistedMeals: FeedingTime[];
+  @state() declare _dialogOpen: boolean;
+  @state() declare _editDialogOpen: boolean;
+  @state() declare _editForm: any;
+  @state() declare _editError: string | null;
 
-  @property({ type: Boolean }) private _haComponentsReady = false;
-  @state() private _decodeError: string | null = null;
+  @property({ type: Boolean }) declare private _haComponentsReady: boolean;
+  @state() declare private _decodeError: string | null;
 
   private resetEditState() {
     this._editDialogOpen = false;
@@ -50,6 +52,11 @@ export class MealPlanCard extends LitElement {
     this._meals = [];
     this._persistedMeals = [];
     this._dialogOpen = false;
+    this._editDialogOpen = false;
+    this._editForm = null;
+    this._editError = null;
+    this._haComponentsReady = false;
+    this._decodeError = null;
   }
 
   static styles = [
@@ -192,7 +199,11 @@ export class MealPlanCard extends LitElement {
     if (!this._haComponentsReady) {
       return html`<div>Loading Home Assistant components...</div>`;
     }
-    const profile = resolveProfile(this.config || {});
+    // Only resolve profile if config is complete
+    const profile =
+      this.config?.device_manufacturer && this.config?.sensor
+        ? resolveProfile(this.config || {})
+        : undefined;
     return html`
       <ha-card
         header=${this.config?.title || 'MealPlan Card'}
@@ -233,13 +244,11 @@ export class MealPlanCard extends LitElement {
               editDialogOpen: this._editDialogOpen,
               onUpdateEditForm: (update) => {
                 this._editForm = { ...this._editForm, ...update };
-                this.requestUpdate();
               },
               onOpenEditDialog: (idx) => {
                 this._editForm = { ...this._meals[idx], _idx: idx };
                 this._editDialogOpen = true;
                 this._editError = null;
-                this.requestUpdate();
               },
               onOpenAddDialog: () => {
                 this._editForm = {
@@ -251,16 +260,13 @@ export class MealPlanCard extends LitElement {
                 };
                 this._editDialogOpen = true;
                 this._editError = null;
-                this.requestUpdate();
               },
               onCloseEditDialog: () => {
                 this.resetEditState();
-                this.requestUpdate();
               },
               onDelete: (idx) => {
                 this._meals = this._meals.filter((_, i) => i !== idx);
                 this.resetEditState();
-                this.requestUpdate();
               },
               onCancel: () => {
                 this._dialogOpen = false;
@@ -269,21 +275,18 @@ export class MealPlanCard extends LitElement {
                 this._meals = Array.isArray(this._persistedMeals)
                   ? [...this._persistedMeals]
                   : [];
-                this.requestUpdate();
               },
               onSave: () => {
                 this._persistedMeals = JSON.parse(JSON.stringify(this._meals));
                 this._dialogOpen = false;
                 this.resetEditState();
                 this._saveMealsToSensor();
-                this.requestUpdate();
               },
               onEditSave: () => {
                 if (!this._editForm) return;
                 const validationError = validateFeedingTime(this._editForm);
                 if (validationError) {
                   this._editError = validationError;
-                  this.requestUpdate();
                   return;
                 }
                 const idx = this._editForm._idx;
@@ -297,7 +300,6 @@ export class MealPlanCard extends LitElement {
                 this._editDialogOpen = false;
                 this._editForm = null;
                 this._editError = null;
-                this.requestUpdate();
               },
               onToggleEnabled: (idx, e) => {
                 const target = e.target as HTMLInputElement | null;
@@ -308,7 +310,6 @@ export class MealPlanCard extends LitElement {
                 this._meals = this._meals.map((m, i) =>
                   i === idx ? { ...m, enabled: checked ? 1 : 0 } : m,
                 );
-                this.requestUpdate();
               },
               hasUnsavedChanges:
                 JSON.stringify(this._meals) !==
