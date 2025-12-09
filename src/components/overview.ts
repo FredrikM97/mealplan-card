@@ -7,6 +7,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { FeedingTime } from '../types.js';
 import { formatHourMinute } from '../types.js';
+import type { MealStateController } from '../mealStateController.js';
 
 /**
  * Get next scheduled feeding time
@@ -69,7 +70,7 @@ export function getTodaysFoodGrams(
  */
 @customElement('meal-overview')
 export class MealOverview extends LitElement {
-  @property({ type: Array }) meals: FeedingTime[] = [];
+  @property({ type: Object }) mealState!: MealStateController;
   @property({ type: Number }) portions = 6;
 
   static styles = css`
@@ -92,7 +93,10 @@ export class MealOverview extends LitElement {
   `;
 
   render() {
-    const enabledMeals = this.meals.filter((m) => m.enabled);
+    const meals = this.mealState?.meals || [];
+    const enabledMeals = meals.filter(
+      (m) => m.enabled === undefined || m.enabled === 1,
+    );
     const today = new Date().getDay();
     const totalToday = getTodaysFoodGrams(enabledMeals, today) * this.portions;
     const totals = getTotalFoodPerDay(enabledMeals);
@@ -103,7 +107,7 @@ export class MealOverview extends LitElement {
         <ha-chip class="overview-schedules">
           <ha-icon icon="mdi:calendar-clock"></ha-icon>
           Schedules:
-          <span style="white-space:nowrap;">${this.meals.length}</span>
+          <span style="white-space:nowrap;">${meals.length}</span>
         </ha-chip>
         <ha-chip class="overview-active">
           <ha-icon icon="mdi:check-circle-outline"></ha-icon>

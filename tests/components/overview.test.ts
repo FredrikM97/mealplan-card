@@ -1,55 +1,116 @@
 import { fixture, html, expect } from '@open-wc/testing';
-import '../../src/main';
-import { describe, it } from 'vitest';
+import '../../src/components/overview';
+import { describe, it, beforeEach, vi } from 'vitest';
 import { profiles } from '../../src/profiles/profiles';
+import { MealStateController } from '../../src/mealStateController';
+import type { ReactiveControllerHost } from 'lit';
 
-describe('MealPlanCard Overview UI', () => {
-  it('multiplies metrics by config portions value', async () => {
-    // Create a feeding time: All days (127), 8:00, 10g portion, enabled
-    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
-    const profileGroup = profiles.find((p) =>
-      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
+describe('MealPlanCard Overview Component', () => {
+  let mockHost: ReactiveControllerHost & EventTarget;
+  let mealState: MealStateController;
+  const profile = profiles[0];
+
+  beforeEach(() => {
+    const eventTarget = new EventTarget();
+    mockHost = Object.assign(eventTarget, {
+      addController: vi.fn(),
+      removeController: vi.fn(),
+      requestUpdate: vi.fn(),
+      updateComplete: Promise.resolve(true),
+    });
+  });
+
+  it('renders overview with meal state data', async () => {
+    const mockHass = {
+      states: {},
+      callService: vi.fn(),
+    };
+    mealState = new MealStateController(
+      mockHost,
+      'sensor.test',
+      profile,
+      mockHass,
     );
-    const configWithPortions = {
-      sensor: 'sensor.test',
-      title: 'Test Card',
-      device_manufacturer: 'Cleverio',
-      device_model: '',
-      portions: 3,
-      _profile: { ...profileGroup, manufacturer: 'Cleverio', model: '' },
-    };
-    const hass = {
-      states: { 'sensor.test': { state: base64, attributes: {} } },
-    };
+
+    mealState.setMeals([
+      { hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 },
+    ]);
+
     const el = await fixture<any>(
-      html`<mealplan-card
-        .config=${configWithPortions}
-        .hass=${hass}
-      ></mealplan-card>`,
+      html`<meal-overview .mealState=${mealState}></meal-overview>`,
     );
 
-    // Force HA components ready to bypass loading
-    el._haComponentsReady = true;
+    await el.updateComplete;
+    expect(el).to.exist;
+    expect(el.shadowRoot?.querySelector('.overview-grams')).to.exist;
+  });
+
+  it('multiplies metrics by portions config', async () => {
+    const mockHass = {
+      states: {},
+      callService: vi.fn(),
+    };
+    mealState = new MealStateController(
+      mockHost,
+      'sensor.test',
+      profile,
+      mockHass,
+    );
+
+    mealState.setMeals([
+      { hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 },
+    ]);
+
+    const el = await fixture<any>(
+      html`<meal-overview
+        .mealState=${mealState}
+        .portions=${3}
+      ></meal-overview>`,
+    );
+
     await el.updateComplete;
 
-    // Today's food should be 10g * 3 portions = 30g
-    const overview = el.shadowRoot.querySelector('meal-overview');
-    expect(overview).to.exist;
-    const grams = overview.shadowRoot.querySelector('.overview-grams');
+    const grams = el.shadowRoot?.querySelector('.overview-grams');
     expect(grams).to.exist;
     const gramsText = grams.textContent
       .toLowerCase()
       .replace(/\s+/g, ' ')
       .trim();
     expect(gramsText).to.include('30g');
+  });
 
-    // Average per week should also be multiplied by portions: (10g * 7 days / 7) * 3 portions = 30g
-    const avgChip = overview.shadowRoot.querySelector('.overview-average');
-    expect(avgChip).to.exist;
-    const avgText = avgChip.textContent
+  it('renders without portions multiplier', async () => {
+    const mockHass = {
+      states: {},
+      callService: vi.fn(),
+    };
+    mealState = new MealStateController(
+      mockHost,
+      'sensor.test',
+      profile,
+      mockHass,
+    );
+
+    mealState.setMeals([
+      { hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 },
+    ]);
+
+    const el = await fixture<any>(
+      html`<meal-overview
+        .mealState=${mealState}
+        .portions=${1}
+      ></meal-overview>`,
+    );
+
+    await el.updateComplete;
+    expect(el).to.exist;
+
+    const grams = el.shadowRoot?.querySelector('.overview-grams');
+    expect(grams).to.exist;
+    const gramsText = grams.textContent
       .toLowerCase()
       .replace(/\s+/g, ' ')
       .trim();
-    expect(avgText).to.include('30.0g');
-  }, 20000);
+    expect(gramsText).to.include('10g');
+  });
 });

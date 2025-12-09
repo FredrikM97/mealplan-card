@@ -51,50 +51,17 @@ export function formatHourMinute(hour?: number, minute?: number): string {
 }
 
 /**
- * Validate a feeding time entry
- */
-export function validateFeedingTime(
-  entry: Partial<FeedingTime>,
-): string | null {
-  if (
-    typeof entry.hour !== 'number' ||
-    typeof entry.minute !== 'number' ||
-    isNaN(entry.hour) ||
-    isNaN(entry.minute) ||
-    entry.hour < 0 ||
-    entry.hour > 23 ||
-    entry.minute < 0 ||
-    entry.minute > 59
-  ) {
-    return 'Please enter a valid time.';
-  }
-  if (!entry.portion || entry.portion < 1) {
-    return 'Portion must be at least 1.';
-  }
-  return null;
-}
-
-/**
  * Schedule view component
  * Emits: 'schedule-closed' when dialog closes
  */
-/**
- * Edit state for meal dialog
- */
-interface EditState {
-  index?: number;
-  meal: FeedingTime;
-  error: string | null;
-}
-
 @customElement('schedule-view')
 export class ScheduleView extends LitElement {
   @property({ type: Object }) mealState!: MealStateController;
-  @property({ type: Object }) profile!: DeviceProfileGroup;
   @property({ type: Object }) hass: any;
-  @property({ type: Array }) meals!: FeedingTime[];
 
-  @state() private editState: EditState | null = null;
+  @state() private draftMeals: FeedingTime[] = [];
+  @state() private editMeal: { meal: FeedingTime; index?: number } | null =
+    null;
 
   static styles = css`
     .schedule-table-wrapper {
@@ -109,68 +76,79 @@ export class ScheduleView extends LitElement {
     }
   `;
 
+  /**
+   * Reset draft to match controller's saved meals
+   */
+  private resetDraft(): void {
+    this.draftMeals = [...this.mealState.meals];
+  }
+
+  /**
+   * Update meal at index
+   */
+  private updateMeal(index: number, meal: FeedingTime): void {
+    this.draftMeals = this.draftMeals.map((m, i) => (i === index ? meal : m));
+  }
+
+  /**
+   * Add new meal to draft
+   */
+  private addMeal(meal: FeedingTime): void {
+    this.draftMeals = [...this.draftMeals, meal];
+  }
+
+  /**
+   * Remove meal at index
+   */
+  private removeMeal(index: number): void {
+    this.draftMeals = this.draftMeals.filter((_, i) => i !== index);
+  }
+
+  /**
+   * Check if profile supports a specific field
+   */
+  private hasField(field: ProfileField): boolean {
+    return this.mealState.profile?.fields.includes(field) ?? false;
+  }
+
   private handleOpenEdit(idx: number) {
-    this.editState = {
-      index: idx,
-      meal: { ...this.meals[idx] },
-      error: null,
-    };
+    this.editMeal = { meal: this.draftMeals[idx], index: idx };
   }
 
   private handleOpenAdd() {
-    this.editState = {
-      index: undefined,
-      meal: {
-        hour: 12,
-        minute: 0,
-        portion: 1,
-        days: 127,
-        enabled: 1,
-      },
-      error: null,
+    this.editMeal = {
+      meal: { hour: 12, minute: 0, portion: 1, days: 127, enabled: 1 },
     };
   }
 
   private handleDelete(idx: number) {
-    const updatedMeals = this.meals.filter((_, i) => i !== idx);
-    this.mealState.setMeals(updatedMeals);
-    this.editState = null;
+    this.removeMeal(idx);
   }
 
   private async handleCancel() {
-    this.mealState.resetToSaved();
+    this.resetDraft();
     this.dispatchEvent(new ScheduleClosedEvent(true));
   }
 
   private async handleSave() {
-    await this.mealState.saveMeals();
+    await this.mealState.saveMeals(this.draftMeals);
     this.dispatchEvent(new ScheduleClosedEvent(false));
   }
 
-  private handleEditSave(e: CustomEvent) {
-    if (!this.editState) return;
+  private handleEditSave(
+    e: CustomEvent<{ meal: FeedingTime; index?: number }>,
+  ) {
+    const { meal, index } = e.detail;
 
-    const mealData = e.detail;
-    const validationError = validateFeedingTime(mealData);
-
-    if (validationError) {
-      this.editState = { ...this.editState, error: validationError };
-      return;
-    }
-
-    let updatedMeals: FeedingTime[];
-    if (this.editState.index !== undefined && this.editState.index >= 0) {
+    if (index !== undefined && index >= 0) {
       // Update existing meal
-      updatedMeals = this.meals.map((m, i) =>
-        i === this.editState!.index ? { ...mealData } : m,
-      );
+      this.updateMeal(index, meal);
     } else {
       // Add new meal
-      updatedMeals = [...this.meals, { ...mealData }];
+      this.addMeal(meal);
     }
 
-    this.mealState.setMeals(updatedMeals);
-    this.editState = null;
+    this.editMeal = null;
   }
 
   private handleToggleEnabled(idx: number, e: Event) {
@@ -178,17 +156,12 @@ export class ScheduleView extends LitElement {
     const checked =
       target && typeof target.checked === 'boolean' ? target.checked : false;
 
-    const updatedMeals = this.meals.map((m, i) =>
-      i === idx ? { ...m, enabled: checked ? 1 : 0 } : m,
-    );
-
-    this.mealState.setMeals(updatedMeals);
+    this.updateMeal(idx, { ...this.draftMeals[idx], enabled: checked ? 1 : 0 });
   }
 
   private buildColumns() {
-    if (!this.profile) return {};
+    if (!this.mealState.profile) return {};
 
-    const fields = this.profile.fields || [];
     const columns: any = {};
 
     columns.time = {
@@ -199,7 +172,7 @@ export class ScheduleView extends LitElement {
       template: (row: any) => formatHourMinute(row.hour, row.minute),
     };
 
-    if (fields.includes(ProfileField.PORTION)) {
+    if (this.hasField(ProfileField.PORTION)) {
       columns.portion = {
         title: localize('portion'),
         sortable: true,
@@ -207,7 +180,7 @@ export class ScheduleView extends LitElement {
       };
     }
 
-    if (fields.includes(ProfileField.DAYS)) {
+    if (this.hasField(ProfileField.DAYS)) {
       columns.days = {
         title: localize('days'),
         sortable: false,
@@ -216,12 +189,12 @@ export class ScheduleView extends LitElement {
           renderDaySelector({
             days: row.days,
             editable: false,
-            firstDay: this.profile!.firstDay,
+            firstDay: this.mealState.profile!.firstDay,
           }),
       };
     }
 
-    if (fields.includes(ProfileField.ENABLED)) {
+    if (this.hasField(ProfileField.ENABLED)) {
       columns.enabled = {
         title: localize('enabled'),
         sortable: true,
@@ -244,116 +217,148 @@ export class ScheduleView extends LitElement {
       title: localize('actions'),
       sortable: false,
       minWidth: '140px',
-      template: (row: any) => html`
-        <ha-icon-button
-          @click=${() => this.handleOpenEdit(row._idx)}
-          title="Edit"
-        >
-          <ha-icon icon="mdi:pencil"></ha-icon>
-        </ha-icon-button>
-        ${fields.includes(ProfileField.DELETE)
-          ? html`
-              <ha-icon-button
-                @click=${() => this.handleDelete(row._idx)}
-                title="Delete"
-              >
-                <ha-icon icon="mdi:delete"></ha-icon>
-              </ha-icon-button>
-            `
-          : ''}
-      `,
+      template: (row: any) => this.renderActions(row),
     };
 
     return columns;
   }
 
+  /**
+   * Render action buttons for a row
+   */
+  private renderActions(row: any) {
+    return html`
+      <ha-icon-button
+        @click=${() => this.handleOpenEdit(row._idx)}
+        title="Edit"
+      >
+        <ha-icon icon="mdi:pencil"></ha-icon>
+      </ha-icon-button>
+      ${this.hasField(ProfileField.DELETE)
+        ? html`
+            <ha-icon-button
+              @click=${() => this.handleDelete(row._idx)}
+              title="Delete"
+            >
+              <ha-icon icon="mdi:delete"></ha-icon>
+            </ha-icon-button>
+          `
+        : ''}
+    `;
+  }
+
   private buildRows() {
-    return this.meals.map((m, i) => ({
+    return this.draftMeals.map((m, i) => ({
       ...m,
       _idx: i,
       hourMinute: (m.hour ?? 0) * 60 + (m.minute ?? 0),
     }));
   }
 
-  render() {
-    if (!this.profile) {
-      return html``;
+  private hasPendingChanges(): boolean {
+    return (
+      JSON.stringify(this.draftMeals) !== JSON.stringify(this.mealState.meals)
+    );
+  }
+
+  /**
+   * Render the main dialog content (either table or edit form)
+   */
+  private renderDialogContent(isEditing: boolean) {
+    if (isEditing && this.editMeal) {
+      return html`
+        <meal-edit-dialog
+          .meal=${this.editMeal.meal}
+          .index=${this.editMeal.index}
+          .profile=${this.mealState.profile}
+          .open=${true}
+          @save=${this.handleEditSave}
+          @cancel=${() => (this.editMeal = null)}
+        ></meal-edit-dialog>
+      `;
     }
 
     const columns = this.buildColumns();
     const rows = this.buildRows();
-    const fields = this.profile.fields || [];
+
+    return html`
+      <div class="schedule-table-wrapper">
+        <ha-data-table
+          .localizeFunc=${localize}
+          .columns=${columns}
+          .hass=${this.hass}
+          .data=${rows}
+          class="schedule-table-style"
+          auto-height
+        ></ha-data-table>
+      </div>
+    `;
+  }
+
+  /**
+   * Render dialog action buttons
+   */
+  private renderDialogActions(isEditing: boolean) {
+    if (isEditing) {
+      return html`
+        <ha-button slot="secondaryAction" @click=${() => (this.editMeal = null)}
+          >${localize('back')}</ha-button
+        >
+        <ha-button
+          slot="primaryAction"
+          class="ha-primary"
+          @click=${() => {
+            const dialog = this.shadowRoot?.querySelector(
+              'meal-edit-dialog',
+            ) as any;
+            dialog?.handleSave();
+          }}
+          >${localize('save')}</ha-button
+        >
+      `;
+    }
+
+    return html`
+      ${this.hasField(ProfileField.ADD)
+        ? html`<ha-button slot="secondaryAction" @click=${this.handleOpenAdd}
+            >${localize('add_meal')}</ha-button
+          >`
+        : ''}
+      <ha-button slot="secondaryAction" @click=${this.handleCancel}
+        >${localize('cancel')}</ha-button
+      >
+      <ha-button
+        slot="primaryAction"
+        class="ha-primary"
+        @click=${this.handleSave}
+        ?disabled=${!this.hasPendingChanges()}
+        >${localize('save')}</ha-button
+      >
+    `;
+  }
+
+  render() {
+    if (!this.mealState?.profile) {
+      return html``;
+    }
+
+    // Initialize draft if empty
+    if (this.draftMeals.length === 0 && this.mealState.meals.length > 0) {
+      this.resetDraft();
+    }
+
+    const isEditing = this.editMeal !== null;
 
     return html`
       <ha-dialog
         open
         scrimClickAction
-        heading=${this.editState
+        heading=${isEditing
           ? localize('edit_feeding_time')
           : localize('manage_schedules')}
       >
-        ${this.editState
-          ? html`
-              <meal-edit-dialog
-                .meal=${this.editState.meal}
-                .profile=${this.profile}
-                .open=${true}
-                .error=${this.editState.error}
-                @save=${this.handleEditSave}
-                @cancel=${() => (this.editState = null)}
-              ></meal-edit-dialog>
-            `
-          : html`
-              <div class="schedule-table-wrapper">
-                <ha-data-table
-                  .localizeFunc=${localize}
-                  .columns=${columns}
-                  .hass=${this.hass}
-                  .data=${rows}
-                  class="schedule-table-style"
-                  auto-height
-                ></ha-data-table>
-              </div>
-            `}
-        ${this.editState
-          ? html`
-              <ha-button
-                slot="secondaryAction"
-                @click=${() => (this.editState = null)}
-                >${localize('back')}</ha-button
-              >
-              <ha-button
-                slot="primaryAction"
-                class="ha-primary"
-                @click=${() => {
-                  const dialog =
-                    this.shadowRoot?.querySelector('meal-edit-dialog');
-                  if (dialog) {
-                    (dialog as any).handleSave();
-                  }
-                }}
-                >${localize('save')}</ha-button
-              >
-            `
-          : html`
-              ${fields.includes(ProfileField.ADD)
-                ? html`<ha-button
-                    slot="secondaryAction"
-                    @click=${this.handleOpenAdd}
-                    >${localize('add_meal')}</ha-button
-                  >`
-                : ''}
-              <ha-button slot="secondaryAction" @click=${this.handleCancel}
-                >${localize('cancel')}</ha-button
-              >
-              <ha-button
-                slot="primaryAction"
-                class="ha-primary"
-                @click=${this.handleSave}
-                ?disabled=${!this.mealState.hasPendingChanges()}
-                >${localize('save')}</ha-button
-              >
-            `}
+        ${this.renderDialogContent(isEditing)}
+        ${this.renderDialogActions(isEditing)}
       </ha-dialog>
     `;
   }

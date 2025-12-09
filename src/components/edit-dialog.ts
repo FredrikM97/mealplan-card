@@ -8,6 +8,11 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { renderDaySelector } from '../day-selector.js';
 import { localize } from '../locales/localize.js';
 import type { FeedingTime } from '../types.js';
+import {
+  MealMessageEvent,
+  SaveEvent,
+  MESSAGE_TYPE_ERROR,
+} from '../constants.js';
 import { DeviceProfileGroup, ProfileField } from '../types.js';
 
 /**
@@ -38,9 +43,9 @@ const PREDEFINED_TIMES = ['06:00', '08:00', '12:00', '18:00', '21:00'];
 @customElement('meal-edit-dialog')
 export class MealEditDialog extends LitElement {
   @property({ type: Object }) meal?: FeedingTime;
+  @property({ type: Number }) index?: number;
   @property({ type: Object }) profile?: DeviceProfileGroup;
   @property({ type: Boolean }) open = false;
-  @property({ type: String }) error: string | null = null;
 
   @state() private formData: Partial<FeedingTime> = {};
 
@@ -61,10 +66,6 @@ export class MealEditDialog extends LitElement {
       display: flex;
       gap: 0.5em;
       flex-wrap: wrap;
-    }
-    .error {
-      color: var(--error-color, red);
-      font-size: 0.9em;
     }
     label {
       font-weight: 500;
@@ -101,7 +102,6 @@ export class MealEditDialog extends LitElement {
 
   private handleUpdate(update: Partial<FeedingTime>) {
     this.formData = { ...this.formData, ...update };
-    this.requestUpdate();
   }
 
   private handleTimeInput(e: Event) {
@@ -122,22 +122,37 @@ export class MealEditDialog extends LitElement {
   }
 
   handleSave() {
-    this.dispatchEvent(
-      new CustomEvent('save', {
-        detail: this.formData,
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    // Validate and dispatch error event if validation fails
+    if (!this.validate(this.formData)) {
+      return;
+    }
+
+    this.dispatchEvent(new SaveEvent(this.formData, this.index));
   }
 
-  private handleCancel() {
-    this.dispatchEvent(
-      new CustomEvent('cancel', {
-        bubbles: true,
-        composed: true,
-      }),
-    );
+  private validate(entry: Partial<FeedingTime>): boolean {
+    if (
+      typeof entry.hour !== 'number' ||
+      typeof entry.minute !== 'number' ||
+      isNaN(entry.hour) ||
+      isNaN(entry.minute) ||
+      entry.hour < 0 ||
+      entry.hour > 23 ||
+      entry.minute < 0 ||
+      entry.minute > 59
+    ) {
+      this.dispatchError('Please enter a valid time.');
+      return false;
+    }
+    if (!entry.portion || entry.portion < 1) {
+      this.dispatchError('Portion must be at least 1.');
+      return false;
+    }
+    return true;
+  }
+
+  private dispatchError(message: string): void {
+    this.dispatchEvent(new MealMessageEvent(message, MESSAGE_TYPE_ERROR));
   }
 
   private renderDaysField() {
@@ -196,7 +211,6 @@ export class MealEditDialog extends LitElement {
 
     return html`
       <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
-        ${this.error ? html`<div class="error">${this.error}</div>` : ''}
         ${this.renderDaysField()}
         <div class="edit-form-group">
           <label for="edit-time">${localize('time')}</label>
@@ -212,7 +226,6 @@ export class MealEditDialog extends LitElement {
           />
         </div>
         ${this.renderPortionField()} ${this.renderPredefinedTimes()}
-        </div>
       </form>
     `;
   }

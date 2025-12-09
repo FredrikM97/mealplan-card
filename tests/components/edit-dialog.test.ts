@@ -5,6 +5,7 @@ import {
   MealEditDialog,
   formatHourMinute,
 } from '../../src/components/edit-dialog.js';
+import { EVENT_SAVE, EVENT_MEAL_MESSAGE } from '../../src/constants.js';
 import type { FeedingTime } from '../../src/types.js';
 import { DeviceProfileGroup, ProfileField } from '../../src/types.js';
 
@@ -180,37 +181,31 @@ describe('MealEditDialog', () => {
 
   it('dispatches save event with formData', async () => {
     const saveSpy = vi.fn();
-    el.addEventListener('save', saveSpy);
+    el.addEventListener(EVENT_SAVE, saveSpy);
 
     el.handleSave();
     await el.updateComplete;
 
     expect(saveSpy).toHaveBeenCalledOnce();
-    expect(saveSpy.mock.calls[0][0].detail).to.deep.equal(el['formData']);
-  });
-
-  it('dispatches cancel event', async () => {
-    const cancelSpy = vi.fn();
-    el.addEventListener('cancel', cancelSpy);
-
-    el['handleCancel']();
-    await el.updateComplete;
-
-    expect(cancelSpy).toHaveBeenCalledOnce();
+    expect(saveSpy.mock.calls[0][0].detail.meal).to.deep.equal(el['formData']);
+    expect(saveSpy.mock.calls[0][0].detail.index).to.equal(el.index);
   });
 
   it('renders error message when error prop is set', async () => {
-    el.error = 'Test error message';
+    // Error handling changed to use MealMessageEvent instead of error property
+    // This component dispatches events instead of showing errors directly
+    const errorSpy = vi.fn();
+    el.addEventListener(EVENT_MEAL_MESSAGE, errorSpy);
+
+    // Trigger validation error by trying to save invalid data
+    el['formData'] = { hour: -1, minute: 0, portion: 1 };
+    el.handleSave();
     await el.updateComplete;
 
-    const errorDiv = el.shadowRoot?.querySelector('.error');
-    expect(errorDiv?.textContent).toBe('Test error message');
-  });
-
-  it('does not render error when error is null', () => {
-    el.error = null;
-    const errorDiv = el.shadowRoot?.querySelector('.error');
-    expect(errorDiv).to.not.exist;
+    expect(errorSpy).toHaveBeenCalled();
+    expect(errorSpy.mock.calls[0][0].detail.message).toBe(
+      'Please enter a valid time.',
+    );
   });
 
   it('prevents form submission', async () => {

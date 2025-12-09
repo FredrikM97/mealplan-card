@@ -1,56 +1,45 @@
-import { loadHaComponents } from '@kipk/load-ha-components';
 import { LitElement, html, css } from 'lit';
-import { property, customElement } from 'lit/decorators.js';
+import { property, customElement, state } from 'lit/decorators.js';
 import { profiles } from './profiles/profiles.js';
 import { localize } from './locales/localize';
-import type { MealPlanCardConfig, DeviceProfileGroup } from './types.js';
+import type {
+  MealPlanCardConfig,
+  DeviceProfileGroup,
+  DeviceProfile,
+} from './types.js';
+import { isValidProfile } from './types.js';
+import {
+  EVENT_CLEAR_MESSAGE,
+  MealMessageEvent,
+  ConfigChangedEvent,
+  MESSAGE_TYPE_INFO,
+  MESSAGE_TYPE_ERROR,
+} from './constants.js';
+import './components/message-display.js';
 
 /**
- * Auto-detect device profile from Home Assistant device model
+ * Resolve device profile from manufacturer and model
  */
-function detectProfileFromDevice(
-  deviceModel: string,
-): { manufacturer: string; model: string } | null {
-  const modelLower = deviceModel.toLowerCase().replace(/_/g, '');
-
-  for (const group of profiles) {
-    for (const profile of group.profiles) {
-      const manufacturer = profile.manufacturer.toLowerCase();
-      const models = profile.models?.map((m) => m.toLowerCase()) || [];
-
-      const hasManufacturer = modelLower.includes(manufacturer);
-      const hasModel =
-        models.length === 0 || models.some((m) => modelLower.includes(m));
-
-      if (hasManufacturer && hasModel) {
-        return {
-          manufacturer: profile.manufacturer,
-          model: profile.models?.[0] || '',
-        };
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
- * Resolve device profile from config
- */
-function resolveProfile(config: {
-  device_manufacturer?: string;
-  device_model?: string;
-}): (DeviceProfileGroup & { manufacturer: string; model: string }) | undefined {
-  const { device_manufacturer, device_model } = config || {};
-  if (!device_manufacturer) return undefined;
+function resolveProfile(
+  manufacturer: string,
+  model?: string,
+): (DeviceProfileGroup & { selectedProfile: DeviceProfile }) | undefined {
+  if (!manufacturer) return undefined;
 
   for (const group of profiles) {
     for (const manu of group.profiles) {
-      if (manu.manufacturer === device_manufacturer) {
+      if (manu.manufacturer === manufacturer) {
         const models = Array.isArray(manu.models) ? manu.models : [];
-        const model = device_model ?? models[0] ?? '';
-        if (!device_model || models.includes(model) || models.length === 0) {
-          return { ...group, manufacturer: manu.manufacturer, model };
+        const selectedModel = model ?? models[0] ?? '';
+        if (!model || models.includes(selectedModel) || models.length === 0) {
+          return {
+            ...group,
+            selectedProfile: {
+              manufacturer: manu.manufacturer,
+              models: [selectedModel],
+              default: manu.default,
+            },
+          };
         }
       }
     }
@@ -88,32 +77,49 @@ declare global {
 
 @customElement('mealplan-card-editor')
 export class MealPlanCardEditor extends LitElement {
-  @property({ attribute: false }) config: MealPlanCardConfig = {
-    sensor: '',
-    title: '',
-    helper: '',
-  };
+  @property({ attribute: false }) config!: MealPlanCardConfig;
   @property({ attribute: false }) hass: any;
-  private _haComponentsReady: boolean | undefined;
+  @state() private _lastHintMessage: string | null = null;
 
   setConfig(config: MealPlanCardConfig) {
     this.config = { ...config };
+    this._showConfigHints();
   }
 
-  async connectedCallback() {
-    super.connectedCallback();
-    await loadHaComponents(['ha-entity-picker', 'ha-form', 'ha-textfield']);
-    this._haComponentsReady = true;
+  private _showConfigHints() {
+    let currentMessage: string | null = null;
+
+    // Determine what message should be shown
+    if (!this.config?.sensor) {
+      currentMessage = 'Please configure a sensor entity to get started.';
+    } else if (!this.config?.profile) {
+      currentMessage = 'Please select a feeder profile to continue.';
+    }
+
+    // Only dispatch if message changed
+    if (currentMessage !== this._lastHintMessage) {
+      if (currentMessage) {
+        this._dispatchInfo(currentMessage);
+      } else {
+        // Clear when config becomes valid
+        this.dispatchEvent(
+          new CustomEvent(EVENT_CLEAR_MESSAGE, {
+            bubbles: true,
+            composed: true,
+          }),
+        );
+      }
+      this._lastHintMessage = currentMessage;
+    }
+  }
+
+  private _dispatchInfo(message: string): void {
+    this.dispatchEvent(new MealMessageEvent(message, MESSAGE_TYPE_INFO));
   }
 
   configChanged(newConfig) {
-    this.dispatchEvent(
-      new CustomEvent('config-changed', {
-        detail: { config: newConfig },
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    this.dispatchEvent(new ConfigChangedEvent(newConfig));
+    this._showConfigHints();
   }
 
   private _onInput(e: Event) {
@@ -125,89 +131,58 @@ export class MealPlanCardEditor extends LitElement {
   private async _valueChanged(e: CustomEvent) {
     const target = e.target as any;
     if (target.configValue) {
-      const newConfig = {
+      this.config = {
         ...this.config,
         [target.configValue]: e.detail.value,
       };
-
-      this.config = newConfig;
-
-      // Auto-detect device info when sensor is selected, but only if manufacturer not already set
-      if (
-        target.configValue === 'sensor' &&
-        e.detail.value &&
-        !this.config.device_manufacturer
-      ) {
-        // Wait for auto-detection to complete before firing config-changed
-        await this._fetchDeviceInfo(e.detail.value);
-      }
-
-      // Fire config-changed once with all updates
       this.configChanged(this.config);
     }
   }
 
-  private async _fetchDeviceInfo(entityId: string) {
-    try {
-      const entityInfo = this.hass.entities?.[entityId];
-      if (!entityInfo?.device_id) return;
-
-      const device = this.hass.devices?.[entityInfo.device_id];
-      if (!device?.model) return;
-
-      const detected = detectProfileFromDevice(device.model);
-      if (detected) {
-        this.config = {
-          ...this.config,
-          device_manufacturer: detected.manufacturer,
-          device_model: detected.model,
-        };
-      }
-    } catch (err) {
-      console.error('Failed to auto-detect device:', err);
-    }
+  private _dispatchError(message: string): void {
+    this.dispatchEvent(new MealMessageEvent(message, MESSAGE_TYPE_ERROR));
   }
 
-  private _validateConfig() {
-    return !!this.config.sensor;
-  }
-
-  private _onProfileChanged(e: CustomEvent) {
-    // Store both device_manufacturer and device_model in config
-    const [device_manufacturer, device_model] = (e.detail.value || '').split(
-      ':',
-    );
-    const newConfig = { ...this.config, device_manufacturer, device_model };
-
-    // Resolve and store profile
-    if (device_manufacturer) {
-      const profile = resolveProfile(newConfig);
-      if (profile?.encodingTemplate) {
-        newConfig._profile = profile;
-      } else {
-        console.warn('Invalid or unsupported profile:', newConfig);
-        newConfig._profile = undefined;
-      }
-    } else {
-      newConfig._profile = undefined;
+  private _onProfileChanged(e: CustomEvent<{ value: string }>) {
+    // Clear profile when user selects empty option
+    if (!e.detail.value) {
+      delete this.config.profile;
+      this.configChanged(this.config);
+      return;
     }
 
-    this.config = newConfig;
+    const [device_manufacturer, device_model] = e.detail.value.split(':');
+    const profile = resolveProfile(device_manufacturer, device_model);
+
+    if (!isValidProfile(profile)) {
+      this._dispatchError(
+        `Invalid or unsupported profile: ${device_manufacturer}`,
+      );
+      return;
+    }
+
+    this.config = {
+      ...this.config,
+      profile,
+    };
     this.configChanged(this.config);
   }
 
   render() {
-    if (!this._haComponentsReady) {
-      return html`<div>Loading Home Assistant components...</div>`;
+    if (!this.config) {
+      return html``;
     }
+
+    const profileItems = getProfileDropdownItems(profiles);
     return html`
+      <meal-message-display></meal-message-display>
       <label for="sensor-picker" style="display:block;margin-bottom:4px;"
         >Feeder entity (sensor or text)</label
       >
       <ha-entity-picker
         id="sensor-picker"
         .hass=${this.hass}
-        .value=${this.config.sensor || ''}
+        .value=${this.config.sensor}
         .configValue=${'sensor'}
         @value-changed=${this._valueChanged}
         .includeDomains=${['text', 'input_text']}
@@ -229,7 +204,7 @@ export class MealPlanCardEditor extends LitElement {
       <ha-entity-picker
         id="helper-picker"
         .hass=${this.hass}
-        .value=${this.config.helper || ''}
+        .value=${this.config.helper}
         .configValue=${'helper'}
         @value-changed=${this._valueChanged}
         .includeDomains=${['input_text']}
@@ -242,10 +217,10 @@ export class MealPlanCardEditor extends LitElement {
         id="profile-combo"
         .items=${[
           { value: '', label: localize('select_layout') },
-          ...getProfileDropdownItems(profiles),
+          ...profileItems,
         ]}
-        .value=${this.config.device_manufacturer
-          ? `${this.config.device_manufacturer}:${this.config.device_model || ''}`
+        .value=${this.config.profile?.selectedProfile
+          ? `${this.config.profile.selectedProfile.manufacturer}:${this.config.profile.selectedProfile.models?.[0] ?? ''}`
           : ''}
         @value-changed=${this._onProfileChanged}
       ></ha-combo-box>
@@ -253,7 +228,7 @@ export class MealPlanCardEditor extends LitElement {
       <ha-textfield
         id="title"
         name="title"
-        .value=${this.config.title || ''}
+        .value=${this.config.title}
         @input=${this._onInput}
         .label=${this.hass?.localize?.('ui.card.config.title_label') || 'Title'}
         placeholder="Title"
@@ -263,18 +238,13 @@ export class MealPlanCardEditor extends LitElement {
         name="portions"
         type="number"
         min="1"
-        .value=${this.config.portions ?? ''}
+        .value=${this.config.portions}
         @input=${this._onInput}
         .label=${this.hass?.localize?.('ui.card.config.portions_label') ||
         'Portions'}
         placeholder="Number of portions"
       />
       <div style="height: 20px;"></div>
-      ${!this._validateConfig()
-        ? html`<div style="color: var(--error-color, red); margin-top: 8px;">
-            Please select a feeder entity (sensor or text).
-          </div>`
-        : ''}
       <!-- mwc-tooltip handles its own styling -->
     `;
   }

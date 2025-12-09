@@ -28,11 +28,8 @@ export interface MealPlanCardConfig {
   sensor: string;
   title: string;
   helper: string;
-  device_model?: string;
-  device_manufacturer?: string;
   portions?: number;
-  // Resolved profile (computed from device_manufacturer/model)
-  _profile?: DeviceProfileGroup & { manufacturer: string; model: string };
+  profile?: DeviceProfileGroup & { selectedProfile: DeviceProfile };
 }
 
 export enum ProfileField {

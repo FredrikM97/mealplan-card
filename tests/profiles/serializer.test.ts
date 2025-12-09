@@ -118,21 +118,6 @@ describe('encoder error handling', () => {
   });
 });
 
-describe('formatHourMinute', () => {
-  it('formats valid hour/minute', () => {
-    expect(formatHourMinute(8, 5)).toBe('08:05');
-    expect(formatHourMinute(23, 59)).toBe('23:59');
-  });
-
-  it('returns --:-- for invalid input', () => {
-    expect(formatHourMinute(undefined, 0)).toBe('--:--');
-    expect(formatHourMinute(8, undefined)).toBe('--:--');
-    expect(formatHourMinute(NaN, 0)).toBe('--:--');
-    expect(formatHourMinute(-1, 0)).toBe('--:--');
-    expect(formatHourMinute(8, 60)).toBe('--:--');
-  });
-});
-
 describe('TemplateEncoder edge cases', () => {
   it('handles null/undefined values by padding with zeros', () => {
     const encoder = getEncoder({

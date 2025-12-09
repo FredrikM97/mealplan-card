@@ -1,3 +1,5 @@
+import { describe, it, expect, vi } from 'vitest';
+import { profiles } from '../../src/profiles/profiles';
 describe('profiles structure validation', () => {
   it('each profile has a models array and only one default per manufacturer per group', () => {
     for (const group of profiles) {
@@ -15,8 +17,7 @@ describe('profiles structure validation', () => {
     }
   });
 });
-import { describe, it, expect, vi } from 'vitest';
-import { profiles } from '../../src/profiles/profiles';
+
 
 describe('profiles default enforcement', () => {
   it('logs an error if multiple defaults exist for a manufacturer', () => {

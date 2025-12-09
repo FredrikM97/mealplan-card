@@ -1,88 +1,52 @@
 /**
  * Reactive controller for managing meal plan state
- * Implements Lit's ReactiveController pattern for automatic host updates
+ * Implements Lit's ReactiveController pattern - calls host.requestUpdate() when state changes
  */
 
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { FeedingTime, DeviceProfileGroup } from './types.js';
 import { getEncoder, EncoderBase } from './profiles/serializer.js';
+import {
+  MealMessageEvent,
+  MESSAGE_TYPE_ERROR,
+  MESSAGE_TYPE_INFO,
+} from './constants.js';
 
 export class MealStateController implements ReactiveController {
-  private meals: FeedingTime[] = [];
-  private persistedMeals: FeedingTime[] = [];
-  private encoder: EncoderBase | null = null;
-  private decodeError: string | null = null;
-  private hass: any = null;
+  meals: FeedingTime[] = [];
+  hass: any;
+  profile: DeviceProfileGroup;
+  private encoder: EncoderBase;
 
   constructor(
-    private host: ReactiveControllerHost,
+    private host: ReactiveControllerHost & EventTarget,
     private sensorID: string,
     profile: DeviceProfileGroup,
+    hass: any,
     private helperID?: string,
   ) {
     this.host.addController(this);
-    this.encoder = getEncoder(profile);
-  }
-
-  // ReactiveController lifecycle hooks
-  hostConnected(): void {
-    // Called when host connects to DOM
-  }
-
-  hostDisconnected(): void {
-    // Called when host disconnects from DOM
-  }
-
-  /**
-   * Update hass reference (no UI update needed)
-   */
-  setHass(hass: any): void {
+    this.profile = profile;
     this.hass = hass;
+    this.encoder = getEncoder(profile);
+    
+    // Load initial data after construction
+    if (this.hass) {
+      this.updateFromHass();
+    } else {
+      console.warn('[MealStateController] Initialized without hass object. Data loading will be skipped.');
+    }
+  }
+
+  hostConnected(): void {
+    // Controller is ready, data loading is triggered from constructor or when hass updates
   }
 
   /**
-   * Get current meals
-   */
-  getMeals(): FeedingTime[] {
-    return this.meals;
-  }
-
-  /**
-   * Get persisted meals (last saved state)
-   */
-  getPersistedMeals(): FeedingTime[] {
-    return this.persistedMeals;
-  }
-
-  /**
-   * Get decode error if any
-   */
-  getDecodeError(): string | null {
-    return this.decodeError;
-  }
-
-  /**
-   * Check if there are unsaved changes
-   */
-  hasPendingChanges(): boolean {
-    return JSON.stringify(this.meals) !== JSON.stringify(this.persistedMeals);
-  }
-
-  /**
-   * Set meals (for UI updates)
+   * Set meals (updates local state - does not persist) - used by tests
    */
   setMeals(meals: FeedingTime[]): void {
     this.meals = Array.isArray(meals) ? [...meals] : [];
-    this.host.requestUpdate();
-  }
-
-  /**
-   * Reset meals to last saved state
-   */
-  resetToSaved(): void {
-    this.meals = Array.isArray(this.persistedMeals)
-      ? [...this.persistedMeals]
-      : [];
     this.host.requestUpdate();
   }
 
@@ -108,17 +72,20 @@ export class MealStateController implements ReactiveController {
   }
 
   /**
-   * Decode meals from encoded string
+   * Decode and sync sensor value
    */
-  private decodeMeals(encodedValue: string): FeedingTime[] | null {
-    if (!this.encoder) return null;
+  private async decodeFromSensor(
+    sensorValue: string,
+    helperValue: string | null,
+  ): Promise<FeedingTime[] | null> {
+    const decoded = this.encoder.decode(sensorValue);
 
-    try {
-      return this.encoder.decode(encodedValue);
-    } catch (err) {
-      console.warn('Failed to decode meal plan:', encodedValue, err);
-      return null;
+    // Sync helper if out of sync
+    if (decoded && helperValue && helperValue !== sensorValue) {
+      await this.syncHelper(sensorValue);
     }
+
+    return decoded;
   }
 
   /**
@@ -139,68 +106,70 @@ export class MealStateController implements ReactiveController {
    */
   async updateFromHass(allowUpdate: boolean = true): Promise<void> {
     if (!this.hass) {
-      console.warn('Cannot update from hass: hass not initialized');
+      this.host.dispatchEvent(
+        new MealMessageEvent(
+          'Home Assistant connection not available. Please refresh the page.',
+          MESSAGE_TYPE_ERROR,
+        ),
+      );
       return;
     }
-
-    this.decodeError = null;
 
     const sensorValue = this.getEntityValue(this.sensorID);
     const helperValue = this.helperID
       ? this.getEntityValue(this.helperID)
       : null;
 
+    // Early validation
+    if (!sensorValue && !helperValue) {
+      const infoMsg = this.helperID
+        ? 'No valid meal plan data found. Both sensor and helper are empty or unavailable.'
+        : 'No valid meal plan data found. Sensor is empty or unavailable. Consider configuring a helper (input_text) to store your meal plan.';
+      this.host.dispatchEvent(new MealMessageEvent(infoMsg, MESSAGE_TYPE_INFO));
+      if (allowUpdate) {
+        this.meals = [];
+        this.host.requestUpdate();
+      }
+      return;
+    }
+
     let decodedMeals: FeedingTime[] | null = null;
 
-    // Prefer sensor if valid
-    if (sensorValue) {
-      decodedMeals = this.decodeMeals(sensorValue);
-
-      if (decodedMeals) {
-        // Sync helper if out of sync
-        if (helperValue && helperValue !== sensorValue) {
-          await this.syncHelper(sensorValue);
-        }
-      } else {
-        this.decodeError = 'Failed to decode meal plan data.';
+    try {
+      // Prefer sensor if valid
+      if (sensorValue) {
+        decodedMeals = await this.decodeFromSensor(sensorValue, helperValue);
       }
-    }
-    // Fall back to helper if sensor invalid
-    else if (helperValue) {
-      decodedMeals = this.decodeMeals(helperValue);
-
-      if (!decodedMeals) {
-        this.decodeError = 'Failed to decode meal plan data.';
+      // Fall back to helper
+      else if (helperValue) {
+        decodedMeals = this.encoder.decode(helperValue);
       }
-    }
-    // Both invalid
-    else {
-      this.decodeError =
-        'No valid meal plan data found: neither helper nor a valid sensor value is present.';
-      console.warn(this.decodeError);
+    } catch (err) {
+      decodedMeals = null;
     }
 
-    this.persistedMeals = decodedMeals || [];
+    // Show message if decode failed
+    if (!decodedMeals && (sensorValue || helperValue)) {
+      this.host.dispatchEvent(
+        new MealMessageEvent('Failed to decode meal plan data.', MESSAGE_TYPE_INFO),
+      );
+    }
+
     if (allowUpdate) {
       this.meals = decodedMeals ? [...decodedMeals] : [];
+      this.host.requestUpdate();
     }
-    this.host.requestUpdate();
   }
 
   /**
-   * Save current meals to sensor
+   * Save meals to sensor and update local state
    */
-  async saveMeals(): Promise<void> {
-    if (!this.encoder) {
-      throw new Error('Cannot save: encoder not initialized');
-    }
-
+  async saveMeals(meals: FeedingTime[]): Promise<void> {
     if (!this.hass) {
       throw new Error('Cannot save: hass not initialized');
     }
 
-    const value = this.encoder.encode(this.meals);
-    console.debug('Saving meals to sensor', this.sensorID, value);
+    const value = this.encoder.encode(meals);
 
     const domain = this.sensorID.split('.')[0];
     await this.hass.callService(domain, 'set_value', {
@@ -208,7 +177,8 @@ export class MealStateController implements ReactiveController {
       value,
     });
 
-    // Update persisted state (UI will update via hass state change)
-    this.persistedMeals = [...this.meals];
+    // Update local state after successful save
+    this.meals = [...meals];
+    this.host.requestUpdate();
   }
 }
