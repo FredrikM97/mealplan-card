@@ -33,24 +33,6 @@ declare global {
 }
 
 /**
- * Format hour and minute as HH:MM string
- */
-export function formatHourMinute(hour?: number, minute?: number): string {
-  if (
-    typeof hour !== 'number' ||
-    isNaN(hour) ||
-    typeof minute !== 'number' ||
-    isNaN(minute) ||
-    hour < 0 ||
-    hour > 23 ||
-    minute < 0 ||
-    minute > 59
-  )
-    return '--:--';
-  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-}
-
-/**
  * Schedule view component
  * Emits: 'schedule-closed' when dialog closes
  */
@@ -111,6 +93,13 @@ export class ScheduleView extends LitElement {
     return this.mealState.profile?.fields.includes(field) ?? false;
   }
 
+  /**
+   * Format hour and minute as HH:MM string
+   */
+  private formatTime(hour: number, minute: number): string {
+    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  }
+
   private handleOpenEdit(idx: number) {
     this.editMeal = { meal: this.draftMeals[idx], index: idx };
   }
@@ -169,7 +158,7 @@ export class ScheduleView extends LitElement {
       sortable: true,
       minWidth: '80px',
       valueColumn: 'hourMinute',
-      template: (row: any) => formatHourMinute(row.hour, row.minute),
+      template: (row: any) => this.formatTime(row.hour, row.minute),
     };
 
     if (this.hasField(ProfileField.PORTION)) {

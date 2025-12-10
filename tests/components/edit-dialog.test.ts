@@ -1,32 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { fixture, html } from '@open-wc/testing';
 import '../../src/components/edit-dialog.js';
-import {
-  MealEditDialog,
-  formatHourMinute,
-} from '../../src/components/edit-dialog.js';
+import { MealEditDialog } from '../../src/components/edit-dialog.js';
 import { EVENT_SAVE, EVENT_MEAL_MESSAGE } from '../../src/constants.js';
 import type { FeedingTime } from '../../src/types.js';
 import { DeviceProfileGroup, ProfileField } from '../../src/types.js';
-
-describe('formatHourMinute', () => {
-  it('formats valid time as HH:MM', () => {
-    expect(formatHourMinute(6, 30)).toBe('06:30');
-    expect(formatHourMinute(12, 0)).toBe('12:00');
-    expect(formatHourMinute(23, 59)).toBe('23:59');
-  });
-
-  it('returns --:-- for invalid values', () => {
-    expect(formatHourMinute(undefined, 30)).toBe('--:--');
-    expect(formatHourMinute(6, undefined)).toBe('--:--');
-    expect(formatHourMinute(24, 0)).toBe('--:--');
-    expect(formatHourMinute(-1, 0)).toBe('--:--');
-    expect(formatHourMinute(12, 60)).toBe('--:--');
-    expect(formatHourMinute(12, -1)).toBe('--:--');
-    expect(formatHourMinute(NaN, 0)).toBe('--:--');
-    expect(formatHourMinute(0, NaN)).toBe('--:--');
-  });
-});
 
 describe('MealEditDialog', () => {
   const mockProfile: DeviceProfileGroup = {

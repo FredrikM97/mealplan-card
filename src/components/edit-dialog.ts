@@ -16,21 +16,27 @@ import {
 import { DeviceProfileGroup, ProfileField } from '../types.js';
 
 /**
+ * Validate that hour and minute are valid time values
+ */
+function isValidTime(hour?: number, minute?: number): boolean {
+  return (
+    typeof hour === 'number' &&
+    !isNaN(hour) &&
+    typeof minute === 'number' &&
+    !isNaN(minute) &&
+    hour >= 0 &&
+    hour <= 23 &&
+    minute >= 0 &&
+    minute <= 59
+  );
+}
+
+/**
  * Format hour and minute as HH:MM string
  */
-export function formatHourMinute(hour?: number, minute?: number): string {
-  if (
-    typeof hour !== 'number' ||
-    isNaN(hour) ||
-    typeof minute !== 'number' ||
-    isNaN(minute) ||
-    hour < 0 ||
-    hour > 23 ||
-    minute < 0 ||
-    minute > 59
-  )
-    return '--:--';
-  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+function formatHourMinute(hour?: number, minute?: number): string {
+  if (!isValidTime(hour, minute)) return '--:--';
+  return `${hour!.toString().padStart(2, '0')}:${minute!.toString().padStart(2, '0')}`;
 }
 
 // Static list of predefined feeding times
@@ -131,16 +137,7 @@ export class MealEditDialog extends LitElement {
   }
 
   private validate(entry: Partial<FeedingTime>): boolean {
-    if (
-      typeof entry.hour !== 'number' ||
-      typeof entry.minute !== 'number' ||
-      isNaN(entry.hour) ||
-      isNaN(entry.minute) ||
-      entry.hour < 0 ||
-      entry.hour > 23 ||
-      entry.minute < 0 ||
-      entry.minute > 59
-    ) {
+    if (!isValidTime(entry.hour, entry.minute)) {
       this.dispatchError('Please enter a valid time.');
       return false;
     }
@@ -218,10 +215,7 @@ export class MealEditDialog extends LitElement {
             id="edit-time"
             class="edit-time"
             type="time"
-            .value=${formatHourMinute(
-              this.formData?.hour ?? 0,
-              this.formData?.minute ?? 0,
-            )}
+            .value=${formatHourMinute(this.formData.hour, this.formData.minute)}
             @input=${this.handleTimeInput}
           />
         </div>

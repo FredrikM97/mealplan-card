@@ -5,7 +5,7 @@ import {
   getEncoder,
   EncodingType,
 } from '../../src/profiles/serializer';
-import { f, TemplateFieldName as F, formatHourMinute } from '../../src/types';
+import { f, TemplateFieldName as F } from '../../src/types';
 import { FeedingTime } from '../../src/types';
 
 describe('parseTemplate', () => {

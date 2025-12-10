@@ -6,7 +6,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { FeedingTime } from '../types.js';
-import { formatHourMinute } from '../types.js';
 import type { MealStateController } from '../mealStateController.js';
 
 /**
@@ -29,7 +28,9 @@ export function getNextSchedule(feedingTimes: FeedingTime[]): string {
     return aMinutes - bMinutes;
   });
 
-  return formatHourMinute(sorted[0].hour, sorted[0].minute);
+  const hour = sorted[0].hour!.toString().padStart(2, '0');
+  const minute = sorted[0].minute!.toString().padStart(2, '0');
+  return `${hour}:${minute}`;
 }
 
 /**
