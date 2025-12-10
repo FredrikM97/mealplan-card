@@ -1,13 +1,12 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
-import { profiles } from './profiles/profiles.js';
+import { profiles } from './profiles/profiles';
 import { localize } from './locales/localize';
-import type {
-  MealPlanCardConfig,
-  DeviceProfileGroup,
-  DeviceProfile,
-} from './types.js';
-import { isValidProfile } from './types.js';
+import {
+  isValidProfile,
+  type MealPlanCardConfig,
+  type DeviceProfile,
+} from './types';
 import {
   EVENT_CLEAR_MESSAGE,
   MealMessageEvent,
@@ -18,55 +17,23 @@ import {
 import './components/message-display.js';
 
 /**
- * Resolve device profile from manufacturer and model
- */
-function resolveProfile(
-  manufacturer: string,
-  model?: string,
-): (DeviceProfileGroup & { selectedProfile: DeviceProfile }) | undefined {
-  if (!manufacturer) return undefined;
-
-  for (const group of profiles) {
-    for (const manu of group.profiles) {
-      if (manu.manufacturer === manufacturer) {
-        const models = Array.isArray(manu.models) ? manu.models : [];
-        const selectedModel = model ?? models[0] ?? '';
-        if (!model || models.includes(selectedModel) || models.length === 0) {
-          return {
-            ...group,
-            selectedProfile: {
-              manufacturer: manu.manufacturer,
-              models: [selectedModel],
-              default: manu.default,
-            },
-          };
-        }
-      }
-    }
-  }
-  return undefined;
-}
-
-/**
  * Get dropdown items for manufacturer/model selection
  */
-export function getProfileDropdownItems(profileGroups: DeviceProfileGroup[]) {
-  return profileGroups.flatMap((group) =>
-    group.profiles.flatMap((manu) => {
-      const models = Array.isArray(manu.models) ? manu.models : [];
-      return (models.length ? models : ['']).map((model) => {
-        const isSingle = models.length <= 1;
-        const label =
-          isSingle || !model
-            ? manu.manufacturer
-            : `${manu.manufacturer} - ${model}`;
-        return {
-          value: `${manu.manufacturer}:${model}`,
-          label,
-        };
-      });
-    }),
-  );
+export function getProfileDropdownItems(profiles: DeviceProfile[]) {
+  return profiles.flatMap((profile) => {
+    const models = profile.models;
+    return (models.length ? models : ['']).map((model) => {
+      const isSingle = models.length <= 1;
+      const label =
+        isSingle || !model
+          ? profile.manufacturer
+          : `${profile.manufacturer} - ${model}`;
+      return {
+        value: `${profile.manufacturer}:${model}`,
+        label,
+      };
+    });
+  });
 }
 
 declare global {
@@ -102,22 +69,26 @@ export class MealPlanCardEditor extends LitElement {
         this._dispatchInfo(currentMessage);
       } else {
         // Clear when config becomes valid
-        this.dispatchEvent(
-          new CustomEvent(EVENT_CLEAR_MESSAGE, {
-            bubbles: true,
-            composed: true,
-          }),
-        );
+        this._clearMessage();
       }
       this._lastHintMessage = currentMessage;
     }
+  }
+
+  private _clearMessage(): void {
+    this.dispatchEvent(
+      new CustomEvent(EVENT_CLEAR_MESSAGE, {
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _dispatchInfo(message: string): void {
     this.dispatchEvent(new MealMessageEvent(message, MESSAGE_TYPE_INFO));
   }
 
-  configChanged(newConfig) {
+  configChanged(newConfig: MealPlanCardConfig) {
     this.dispatchEvent(new ConfigChangedEvent(newConfig));
     this._showConfigHints();
   }
@@ -143,27 +114,44 @@ export class MealPlanCardEditor extends LitElement {
     this.dispatchEvent(new MealMessageEvent(message, MESSAGE_TYPE_ERROR));
   }
 
+  /**
+   * Get the current profile value for the dropdown
+   * Format: "manufacturer:model" or empty string if no profile
+   */
+  private _getProfileValue(): string {
+    if (!this.config.profile) {
+      return '';
+    }
+
+    const manufacturer = this.config.profile.manufacturer;
+    const model = this.config.selectedModel;
+
+    // Model can be undefined for profiles without models
+    return `${manufacturer}:${model !== undefined ? model : ''}`;
+  }
+
   private _onProfileChanged(e: CustomEvent<{ value: string }>) {
     // Clear profile when user selects empty option
     if (!e.detail.value) {
       delete this.config.profile;
+      delete this.config.selectedModel;
       this.configChanged(this.config);
       return;
     }
 
-    const [device_manufacturer, device_model] = e.detail.value.split(':');
-    const profile = resolveProfile(device_manufacturer, device_model);
+    const [manufacturer, model] = e.detail.value.split(':');
+    // Find the profile directly from profiles array (dropdown already has full profiles)
+    const profile = profiles.find((p) => p.manufacturer === manufacturer);
 
     if (!isValidProfile(profile)) {
-      this._dispatchError(
-        `Invalid or unsupported profile: ${device_manufacturer}`,
-      );
+      this._dispatchError(`Invalid or unsupported profile: ${manufacturer}`);
       return;
     }
 
     this.config = {
       ...this.config,
       profile,
+      selectedModel: model || undefined,
     };
     this.configChanged(this.config);
   }
@@ -219,9 +207,7 @@ export class MealPlanCardEditor extends LitElement {
           { value: '', label: localize('select_layout') },
           ...profileItems,
         ]}
-        .value=${this.config.profile?.selectedProfile
-          ? `${this.config.profile.selectedProfile.manufacturer}:${this.config.profile.selectedProfile.models?.[0] ?? ''}`
-          : ''}
+        .value=${this._getProfileValue()}
         @value-changed=${this._onProfileChanged}
       ></ha-combo-box>
       <div style="height: 20px;"></div>
@@ -230,7 +216,7 @@ export class MealPlanCardEditor extends LitElement {
         name="title"
         .value=${this.config.title}
         @input=${this._onInput}
-        .label=${this.hass?.localize?.('ui.card.config.title_label') || 'Title'}
+        .label=${this.hass.localize('ui.card.config.title_label')}
         placeholder="Title"
       ></ha-textfield>
       <ha-textfield
@@ -240,8 +226,7 @@ export class MealPlanCardEditor extends LitElement {
         min="1"
         .value=${this.config.portions}
         @input=${this._onInput}
-        .label=${this.hass?.localize?.('ui.card.config.portions_label') ||
-        'Portions'}
+        .label=${this.hass.localize('ui.card.config.portions_label')}
         placeholder="Number of portions"
       />
       <div style="height: 20px;"></div>

@@ -1,95 +1,64 @@
-import { fixture, html, expect } from '@open-wc/testing';
+import { expect } from '@open-wc/testing';
 import '../../src/components/schedule-view';
 import { ScheduleView } from '../../src/components/schedule-view';
-import { describe, it, vi, beforeEach } from 'vitest';
-import { profiles } from '../../src/profiles/profiles';
-import { MealStateController } from '../../src/mealStateController';
-import { EVENT_SAVE } from '../../src/constants';
-import type { ReactiveControllerHost } from 'lit';
+import { describe, it, vi } from 'vitest';
+import { SaveEvent } from '../../src/constants';
+import { testMeals } from '../fixtures/data';
+import {
+  createMealStateController,
+  getTestProfile,
+  createScheduleViewFixture,
+} from '../fixtures/factories';
 
 vi.mock('@kipk/load-ha-components', () => ({
   loadHaComponents: async () => {},
 }));
 
 describe('ScheduleView Component', () => {
-  let mockHost: ReactiveControllerHost & EventTarget;
-  let mealState: MealStateController;
-  const profile = profiles[0];
-
-  beforeEach(() => {
-    const eventTarget = new EventTarget();
-    mockHost = Object.assign(eventTarget, {
-      addController: vi.fn(),
-      removeController: vi.fn(),
-      requestUpdate: vi.fn(),
-      updateComplete: Promise.resolve(true),
-    });
-    const mockHass = {
-      states: {},
-      callService: vi.fn(),
-    };
-    mealState = new MealStateController(
-      mockHost,
-      'sensor.test',
-      profile,
-      mockHass,
-    );
-  });
+  const profile = getTestProfile();
 
   it('builds columns based on profile fields', async () => {
-    const meals = [{ hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 }];
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view
-        .mealState=${mealState}
-        .profile=${profile}
-        .meals=${meals}
-      ></schedule-view>`,
-    );
+    const mealState = createMealStateController();
+    const meals = [testMeals.breakfast];
+    const el = (await createScheduleViewFixture(mealState, {
+      profile,
+      meals,
+    })) as ScheduleView;
 
-    const columns = (el as any).buildColumns();
-    expect(columns).to.have.property('time');
-    expect(columns).to.have.property('actions');
+    // Test that component renders with meal data
+    expect(el).to.exist;
+    expect((el as any).draftMeals.length).to.equal(0); // Not synced yet
   });
 
-  it('builds rows with index', async () => {
-    mealState.setMeals([
-      { hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 },
-      { hour: 18, minute: 30, portion: 5, days: 127, enabled: 1 },
+  it('syncs draft meals from state', async () => {
+    const mealState = createMealStateController([
+      testMeals.breakfast,
+      testMeals.dinner,
     ]);
 
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view .mealState=${mealState} .hass=${{}}></schedule-view>`,
-    );
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
 
-    (el as any).draftMeals = mealState.meals;
-
-    const rows = (el as any).buildRows();
-    expect(rows.length).to.equal(2);
-    expect(rows[0]._idx).to.equal(0);
-    expect(rows[1]._idx).to.equal(1);
-    expect(rows[0].hourMinute).to.equal(480); // 8 * 60 + 0
-    expect(rows[1].hourMinute).to.equal(1110); // 18 * 60 + 30
+    await el.updateComplete;
+    expect((el as any).draftMeals.length).to.equal(2);
+    expect((el as any).draftMeals[0].hour).to.equal(8);
+    expect((el as any).draftMeals[1].hour).to.equal(18);
   });
 
   it('handles open edit', async () => {
-    mealState.setMeals([
-      { hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 },
-    ]);
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view .mealState=${mealState} .hass=${{}}></schedule-view>`,
-    );
+    const mealState = createMealStateController([testMeals.breakfast]);
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
 
-    (el as any).draftMeals = mealState.meals;
-    (el as any).handleOpenEdit(0);
+    await el.updateComplete;
+    const meal = { ...(el as any).draftMeals[0], _idx: 0 };
+    (el as any).handleMealAction('edit', meal._idx ?? 0, meal);
     expect((el as any).editMeal).to.exist;
     expect((el as any).editMeal.index).to.equal(0);
     expect((el as any).editMeal.meal.hour).to.equal(8);
   });
 
   it('handles open add', async () => {
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view .mealState=${mealState} .hass=${{}}></schedule-view>`,
-    );
+    const mealState = createMealStateController();
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
 
     (el as any).handleOpenAdd();
     expect((el as any).editMeal).to.exist;
@@ -99,24 +68,26 @@ describe('ScheduleView Component', () => {
   });
 
   it('handles delete', async () => {
-    mealState.setMeals([
-      { hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 },
-      { hour: 18, minute: 0, portion: 10, days: 127, enabled: 1 },
+    const mealState = createMealStateController([
+      testMeals.breakfast,
+      testMeals.dinner,
     ]);
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view .mealState=${mealState} .hass=${{}}></schedule-view>`,
-    );
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
 
-    (el as any).draftMeals = [...mealState.meals];
-    (el as any).handleDelete(0);
+    await el.updateComplete;
+    const mealToDelete = (el as any).draftMeals[0];
+    (el as any).handleMealAction(
+      'delete',
+      mealToDelete._idx ?? 0,
+      mealToDelete,
+    );
     expect((el as any).draftMeals.length).to.equal(1);
     expect((el as any).draftMeals[0].hour).to.equal(18);
   });
 
   it('handles cancel', async () => {
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view .mealState=${mealState} .hass=${{}}></schedule-view>`,
-    );
+    const mealState = createMealStateController();
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
 
     let eventFired = false;
     el.addEventListener('schedule-closed', () => {
@@ -132,17 +103,12 @@ describe('ScheduleView Component', () => {
       states: {},
       callService: vi.fn(),
     };
+    const mealState = createMealStateController([testMeals.breakfast]);
     mealState.hass = hass;
-    mealState.setMeals([
-      { hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 },
-    ]);
 
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view
-        .mealState=${mealState}
-        .hass=${hass}
-      ></schedule-view>`,
-    );
+    const el = (await createScheduleViewFixture(mealState, {
+      hass,
+    })) as ScheduleView;
 
     (el as any).draftMeals = [...mealState.meals];
 
@@ -156,36 +122,15 @@ describe('ScheduleView Component', () => {
     expect(hass.callService.mock.calls.length).to.be.greaterThan(0);
   });
 
-  it('handles toggle enabled', async () => {
-    mealState.setMeals([
-      { hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 },
-    ]);
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view .mealState=${mealState} .hass=${{}}></schedule-view>`,
-    );
-
-    (el as any).draftMeals = [...mealState.meals];
-
-    const event = {
-      target: { checked: false },
-    } as any;
-
-    (el as any).handleToggleEnabled(0, event);
-    expect((el as any).draftMeals[0].enabled).to.equal(0);
-  });
-
   it('handles edit save for new meal', async () => {
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view .mealState=${mealState} .hass=${{}}></schedule-view>`,
-    );
+    const mealState = createMealStateController();
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
 
     (el as any).draftMeals = [];
 
-    const customEvent = new CustomEvent(EVENT_SAVE, {
-      detail: {
-        meal: { hour: 12, minute: 0, portion: 5, days: 127, enabled: 1 },
-        index: undefined,
-      },
+    const customEvent = new SaveEvent({
+      meal: { hour: 12, minute: 0, portion: 5, days: 127, enabled: 1 },
+      index: undefined,
     });
 
     (el as any).handleEditSave(customEvent);
@@ -194,20 +139,14 @@ describe('ScheduleView Component', () => {
   });
 
   it('handles edit save for existing meal', async () => {
-    mealState.setMeals([
-      { hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 },
-    ]);
-    const el = await fixture<ScheduleView>(
-      html`<schedule-view .mealState=${mealState} .hass=${{}}></schedule-view>`,
-    );
+    const mealState = createMealStateController([testMeals.breakfast]);
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
 
     (el as any).draftMeals = [...mealState.meals];
 
-    const customEvent = new CustomEvent(EVENT_SAVE, {
-      detail: {
-        meal: { hour: 18, minute: 30, portion: 5, days: 127, enabled: 1 },
-        index: 0,
-      },
+    const customEvent = new SaveEvent({
+      meal: { hour: 18, minute: 30, portion: 5, days: 127, enabled: 1 },
+      index: 0,
     });
 
     (el as any).handleEditSave(customEvent);

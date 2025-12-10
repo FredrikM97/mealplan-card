@@ -1,13 +1,17 @@
 /**
  * Event names used throughout the application
  */
-import type { MealPlanCardConfig, FeedingTime } from './types.js';
+import type { MealPlanCardConfig, EditMealState } from './types';
 
 export const EVENT_CONFIG_CHANGED = 'config-changed';
+export const EVENT_VALUE_CHANGED = 'value-changed';
 export const EVENT_MEAL_MESSAGE = 'meal-message';
 export const EVENT_CLEAR_MESSAGE = 'clear-message';
 export const EVENT_SCHEDULE_CLOSED = 'schedule-closed';
 export const EVENT_SAVE = 'save';
+export const EVENT_EDIT_MEAL = 'edit-meal';
+export const EVENT_DELETE_MEAL = 'delete-meal';
+export const EVENT_MEAL_CHANGED = 'meal-changed';
 
 /**
  * Message types
@@ -45,13 +49,10 @@ export class ConfigChangedEvent extends CustomEvent<{
   }
 }
 
-export class SaveEvent extends CustomEvent<{
-  meal: FeedingTime;
-  index?: number;
-}> {
-  constructor(meal: FeedingTime, index?: number) {
+export class SaveEvent extends CustomEvent<EditMealState> {
+  constructor(detail: EditMealState) {
     super(EVENT_SAVE, {
-      detail: { meal, index },
+      detail,
       bubbles: true,
       composed: true,
     });
@@ -61,6 +62,7 @@ export class SaveEvent extends CustomEvent<{
 export class ScheduleClosedEvent extends CustomEvent<void> {
   constructor() {
     super(EVENT_SCHEDULE_CLOSED, {
+      detail: undefined,
       bubbles: true,
       composed: true,
     });

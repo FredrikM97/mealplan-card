@@ -1,4 +1,4 @@
-import { html, fixture, expect } from '@open-wc/testing';
+import { expect } from '@open-wc/testing';
 import '../src/card-editor';
 import {
   MealPlanCardEditor,
@@ -6,8 +6,16 @@ import {
 } from '../src/card-editor';
 import { describe, it, vi, beforeEach } from 'vitest';
 import { profiles } from '../src/profiles/profiles';
-import { EVENT_CONFIG_CHANGED } from '../src/constants';
-import type { MealPlanCardConfig } from '../src/types';
+import { EVENT_CONFIG_CHANGED, EVENT_VALUE_CHANGED } from '../src/constants';
+import type { MealPlanCardConfig, DeviceProfile } from '../src/types';
+import { testProfiles } from './fixtures/data';
+import {
+  createEditorMockHass,
+  getCleverioProfile,
+  createMealPlanCardConfig,
+  createMinimalEditorConfig,
+  createCardEditorFixture,
+} from './fixtures/factories';
 
 // Mock loadHaComponents to avoid timeouts in tests
 vi.mock('@kipk/load-ha-components', () => ({
@@ -18,30 +26,12 @@ describe('MealPlanCardEditor', () => {
   let mockHass: any;
 
   beforeEach(() => {
-    mockHass = {
-      entities: {
-        'sensor.test': {
-          device_id: 'device1',
-        },
-      },
-      devices: {
-        device1: {
-          model: 'Cleverio PF-100',
-        },
-      },
-      localize: (key: string) => key,
-    };
+    mockHass = createEditorMockHass();
   });
 
   it('renders form after components are ready', async () => {
-    const el = await fixture<MealPlanCardEditor>(
-      html`<mealplan-card-editor></mealplan-card-editor>`,
-    );
-    el.setConfig({
-      sensor: '',
-      title: '',
-      helper: '',
-    });
+    const el = await createCardEditorFixture();
+    el.setConfig(createMinimalEditorConfig());
     el.hass = mockHass;
     await el.updateComplete;
 
@@ -52,42 +42,27 @@ describe('MealPlanCardEditor', () => {
   });
 
   it('renders and updates config', async () => {
-    const el = await fixture<MealPlanCardEditor>(
-      html`<mealplan-card-editor></mealplan-card-editor>`,
-    );
+    const el = await createCardEditorFixture();
+    el.hass = mockHass;
     await el.updateComplete;
-    const profileGroup = profiles.find((p) =>
-      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
-    );
-    el.setConfig({
-      sensor: 'sensor.test',
-      title: 'Test',
-      profile: profileGroup,
-      helper: '',
-    });
+    const config = createMealPlanCardConfig();
+    el.setConfig(config);
     await el.updateComplete;
     expect(el.config.sensor).to.equal('sensor.test');
     expect(el.config.title).to.equal('Test');
   });
 
   it('initializes with default config', async () => {
-    const el = await fixture<MealPlanCardEditor>(
-      html`<mealplan-card-editor></mealplan-card-editor>`,
-    );
-    el.setConfig({
-      sensor: '',
-      title: '',
-      helper: '',
-    });
+    const el = await createCardEditorFixture();
+    el.hass = mockHass;
+    el.setConfig(createMinimalEditorConfig());
     await el.updateComplete;
     expect(el.config.sensor).to.equal('');
     expect(el.config.title).to.equal('');
   });
 
   it('handles input changes for text fields', async () => {
-    const el = await fixture<MealPlanCardEditor>(
-      html`<mealplan-card-editor></mealplan-card-editor>`,
-    );
+    const el = await createCardEditorFixture();
     el.hass = mockHass;
     await el.updateComplete;
 
@@ -107,9 +82,7 @@ describe('MealPlanCardEditor', () => {
   });
 
   it('handles portions input changes', async () => {
-    const el = await fixture<MealPlanCardEditor>(
-      html`<mealplan-card-editor></mealplan-card-editor>`,
-    );
+    const el = await createCardEditorFixture();
     el.hass = mockHass;
     await el.updateComplete;
 
@@ -125,21 +98,15 @@ describe('MealPlanCardEditor', () => {
   });
 
   it('handles helper entity picker value change', async () => {
-    const el = await fixture<MealPlanCardEditor>(
-      html`<mealplan-card-editor></mealplan-card-editor>`,
-    );
-    el.setConfig({
-      sensor: 'sensor.test',
-      title: '',
-      helper: '',
-    });
+    const el = await createCardEditorFixture();
+    el.setConfig(createMinimalEditorConfig({ sensor: 'sensor.test' }));
     el.hass = mockHass;
     await el.updateComplete;
 
     const helperPicker = el.shadowRoot?.querySelector('#helper-picker') as any;
     helperPicker.configValue = 'helper';
     helperPicker.dispatchEvent(
-      new CustomEvent('value-changed', {
+      new CustomEvent(EVENT_VALUE_CHANGED, {
         detail: { value: 'input_text.meal_plan' },
         bubbles: true,
         composed: true,
@@ -160,23 +127,16 @@ describe('MealPlanCardEditor', () => {
   });
 
   it('handles profile change with empty value clears profile', async () => {
-    const el = await fixture<MealPlanCardEditor>(
-      html`<mealplan-card-editor></mealplan-card-editor>`,
-    );
-    const profileGroup = profiles.find((p) =>
-      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
-    );
-    el.setConfig({
-      sensor: 'sensor.test',
-      title: '',
-      helper: '',
-      profile: profileGroup as any,
-    });
+    const el = await createCardEditorFixture();
+    const config = createMealPlanCardConfig();
+    el.setConfig(config);
     el.hass = mockHass;
     await el.updateComplete;
 
-    const event = new CustomEvent('value-changed', {
+    const event = new CustomEvent(EVENT_VALUE_CHANGED, {
       detail: { value: '' },
+      bubbles: true,
+      composed: true,
     });
 
     el['_onProfileChanged'](event);
@@ -186,89 +146,49 @@ describe('MealPlanCardEditor', () => {
   });
 
   it('handles profile change with valid value', async () => {
-    const el = await fixture<MealPlanCardEditor>(
-      html`<mealplan-card-editor></mealplan-card-editor>`,
-    );
-    el.setConfig({ sensor: 'sensor.test', title: '', helper: '' });
+    const el = await createCardEditorFixture();
+    el.setConfig(createMinimalEditorConfig({ sensor: 'sensor.test' }));
     el.hass = mockHass;
     await el.updateComplete;
 
-    const event = new CustomEvent('value-changed', {
+    const event = new CustomEvent(EVENT_VALUE_CHANGED, {
       detail: { value: 'Cleverio:PF100' },
+      bubbles: true,
+      composed: true,
     });
 
     el['_onProfileChanged'](event);
     await el.updateComplete;
 
     expect(el.config.profile).to.not.be.undefined;
-    expect(el.config.profile?.selectedProfile.manufacturer).to.equal(
-      'Cleverio',
-    );
+    expect(el.config.profile?.manufacturer).to.equal('Cleverio');
   });
 });
 
 describe('getProfileDropdownItems', () => {
-  it('returns correct dropdown items for profiles', () => {
+  it('returns dropdown items and handles different profile structures', () => {
+    // Basic structure validation
     const items = getProfileDropdownItems(profiles);
     expect(items.length).to.be.greaterThan(0);
     expect(items[0]).to.have.property('value');
     expect(items[0]).to.have.property('label');
-  });
 
-  it('handles profiles with multiple models', () => {
-    const testProfiles = [
-      {
-        profiles: [
-          {
-            manufacturer: 'TestMfg',
-            models: ['Model1', 'Model2'],
-          },
-        ],
-        fields: [],
-        firstDay: 0,
-      },
-    ];
-    const items = getProfileDropdownItems(testProfiles);
-    expect(items.length).to.equal(2);
-    expect(items[0].label).to.include('TestMfg');
-    expect(items[0].label).to.include('Model1');
-    expect(items[1].label).to.include('Model2');
-  });
+    // Multiple models
+    const multiItems = getProfileDropdownItems(testProfiles.multipleModels());
+    expect(multiItems.length).to.equal(2);
+    expect(multiItems[0]!.label).to.include('TestMfg');
+    expect(multiItems[0]!.label).to.include('Model1');
+    expect(multiItems[1]!.label).to.include('Model2');
 
-  it('handles profiles with no models', () => {
-    const testProfiles = [
-      {
-        profiles: [
-          {
-            manufacturer: 'TestMfg',
-            models: [],
-          },
-        ],
-        fields: [],
-        firstDay: 0,
-      },
-    ];
-    const items = getProfileDropdownItems(testProfiles);
-    expect(items.length).to.equal(1);
-    expect(items[0].label).to.equal('TestMfg');
-    expect(items[0].value).to.equal('TestMfg:');
-  });
+    // No models
+    const noModelItems = getProfileDropdownItems(testProfiles.noModels());
+    expect(noModelItems.length).to.equal(1);
+    expect(noModelItems[0]!.label).to.equal('TestMfg');
+    expect(noModelItems[0]!.value).to.equal('TestMfg:');
 
-  it('handles single model profiles', () => {
-    const testProfiles = [
-      {
-        profiles: [
-          {
-            manufacturer: 'TestMfg',
-            models: ['OnlyModel'],
-          },
-        ],
-        fields: [],
-        firstDay: 0,
-      },
-    ];
-    const items = getProfileDropdownItems(testProfiles);
-    expect(items.length).to.equal(1);
-    expect(items[0].label).to.equal('TestMfg');
+    // Single model
+    const singleItems = getProfileDropdownItems(testProfiles.singleModel());
+    expect(singleItems.length).to.equal(1);
+    expect(singleItems[0]!.label).to.equal('TestMfg');
   });
 });

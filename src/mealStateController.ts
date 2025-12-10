@@ -4,24 +4,24 @@
  */
 
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
-import { FeedingTime, DeviceProfileGroup } from './types.js';
-import { getEncoder, EncoderBase } from './profiles/serializer.js';
+import { FeedingTime, DeviceProfile } from './types';
+import { getEncoder, EncoderBase } from './profiles/serializer';
 import {
   MealMessageEvent,
   MESSAGE_TYPE_ERROR,
   MESSAGE_TYPE_INFO,
-} from './constants.js';
+} from './constants';
 
 export class MealStateController implements ReactiveController {
   meals: FeedingTime[] = [];
   hass: any;
-  profile: DeviceProfileGroup;
+  profile: DeviceProfile;
   private encoder: EncoderBase;
 
   constructor(
     private host: ReactiveControllerHost & EventTarget,
     private sensorID: string,
-    profile: DeviceProfileGroup,
+    profile: DeviceProfile,
     hass: any,
     private helperID?: string,
   ) {
@@ -40,9 +40,7 @@ export class MealStateController implements ReactiveController {
     }
   }
 
-  hostConnected(): void {
-    // Controller is ready, data loading is triggered from constructor or when hass updates
-  }
+  hostConnected(): void {}
 
   /**
    * Set meals (updates local state - does not persist) - used by tests

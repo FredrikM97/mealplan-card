@@ -1,4 +1,4 @@
-import { EncodingType } from './profiles/serializer.js';
+import { EncodingType } from './profiles/serializer';
 
 /**
  * Represents a single feeding time entry
@@ -9,6 +9,14 @@ export interface FeedingTime {
   portion?: number;
   days?: number;
   enabled?: number;
+}
+
+/**
+ * Edit meal state containing a meal and optional index
+ */
+export interface EditMealState {
+  meal: FeedingTime;
+  index?: number;
 }
 
 /**
@@ -29,7 +37,8 @@ export interface MealPlanCardConfig {
   title: string;
   helper: string;
   portions?: number;
-  profile?: DeviceProfileGroup & { selectedProfile: DeviceProfile };
+  profile?: DeviceProfile;
+  selectedModel?: string;
 }
 
 export enum ProfileField {
@@ -42,17 +51,15 @@ export enum ProfileField {
   ADD = 'add',
 }
 
+/**
+ * Device profile with manufacturer, models, and encoding configuration
+ */
 export interface DeviceProfile {
   manufacturer: string;
-  default?: boolean;
-  models?: string[];
-}
-
-export interface DeviceProfileGroup {
-  profiles: DeviceProfile[];
+  models: string[];
   encodingType?: EncodingType;
   fields: ProfileField[];
-  encodingTemplate?: string;
+  encodingTemplate: string;
   featureFields?: ProfileField[];
   firstDay?: Day;
   // Custom transformers for encoding/decoding days field
@@ -64,9 +71,9 @@ export interface DeviceProfileGroup {
  * Check if a profile is valid and ready to use
  */
 export function isValidProfile(
-  profile: DeviceProfileGroup | undefined | null,
-): profile is DeviceProfileGroup {
-  return !!profile && !!profile.encodingTemplate;
+  profile: DeviceProfile | undefined | null,
+): profile is DeviceProfile {
+  return profile !== undefined && profile !== null;
 }
 
 export const TOKEN_REGEX = /\{([A-Z_]+)\:(\d+)\}/g;

@@ -5,15 +5,11 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { renderDaySelector } from '../day-selector.js';
-import { localize } from '../locales/localize.js';
-import type { FeedingTime } from '../types.js';
-import {
-  MealMessageEvent,
-  SaveEvent,
-  MESSAGE_TYPE_ERROR,
-} from '../constants.js';
-import { DeviceProfileGroup, ProfileField } from '../types.js';
+import { renderDaySelector } from '../day-selector';
+import { localize } from '../locales/localize';
+import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
+import { MealMessageEvent, SaveEvent, MESSAGE_TYPE_ERROR } from '../constants';
+import { formatTime, hasProfileField } from '../utils';
 
 /**
  * Validate that hour and minute are valid time values
@@ -36,7 +32,7 @@ function isValidTime(hour?: number, minute?: number): boolean {
  */
 function formatHourMinute(hour?: number, minute?: number): string {
   if (!isValidTime(hour, minute)) return '--:--';
-  return `${hour!.toString().padStart(2, '0')}:${minute!.toString().padStart(2, '0')}`;
+  return formatTime(hour, minute);
 }
 
 // Static list of predefined feeding times
@@ -50,7 +46,7 @@ const PREDEFINED_TIMES = ['06:00', '08:00', '12:00', '18:00', '21:00'];
 export class MealEditDialog extends LitElement {
   @property({ type: Object }) meal?: FeedingTime;
   @property({ type: Number }) index?: number;
-  @property({ type: Object }) profile?: DeviceProfileGroup;
+  @property({ type: Object }) profile?: DeviceProfile;
   @property({ type: Boolean }) open = false;
 
   @state() private formData: Partial<FeedingTime> = {};
@@ -59,22 +55,27 @@ export class MealEditDialog extends LitElement {
     .edit-form {
       display: flex;
       flex-direction: column;
-      gap: 1em;
+      gap: 0.75em;
       width: 100%;
       box-sizing: border-box;
     }
     .edit-form-group {
       display: flex;
       flex-direction: column;
-      gap: 0.5em;
+      gap: 0.4em;
     }
     .edit-predefined-times {
       display: flex;
-      gap: 0.5em;
+      gap: 0.4em;
       flex-wrap: wrap;
+    }
+    .edit-predefined-times ha-button {
+      flex: 1;
+      min-width: 60px;
     }
     label {
       font-weight: 500;
+      font-size: 0.95em;
     }
     input[type='time'],
     input[type='number'] {
@@ -82,18 +83,20 @@ export class MealEditDialog extends LitElement {
       border: 1px solid var(--divider-color, #e0e0e0);
       border-radius: 4px;
       font-size: 1em;
+      width: 100%;
+      box-sizing: border-box;
     }
     .edit-mode .days-row {
       justify-content: center;
       margin: 0 auto;
-      gap: 8px;
+      gap: 6px;
     }
     .edit-mode .day-cell {
-      width: 2.6em;
-      height: 2.6em;
-      line-height: 2.6em;
-      font-size: 1.25em;
-      margin: 0 4px;
+      width: 2.4em;
+      height: 2.4em;
+      line-height: 2.4em;
+      font-size: 1.15em;
+      margin: 0 2px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -133,7 +136,9 @@ export class MealEditDialog extends LitElement {
       return;
     }
 
-    this.dispatchEvent(new SaveEvent(this.formData, this.index));
+    this.dispatchEvent(
+      new SaveEvent({ meal: this.formData as FeedingTime, index: this.index }),
+    );
   }
 
   private validate(entry: Partial<FeedingTime>): boolean {
@@ -153,22 +158,18 @@ export class MealEditDialog extends LitElement {
   }
 
   private renderDaysField() {
-    if (!this.profile?.fields.includes(ProfileField.DAYS)) {
-      return '';
-    }
+    if (!hasProfileField(this.profile, ProfileField.DAYS)) return '';
 
     return renderDaySelector({
       days: this.formData?.days ?? 0,
       editable: true,
       onDaysChanged: (newDays: number) => this.handleUpdate({ days: newDays }),
-      firstDay: this.profile.firstDay,
+      firstDay: this.profile!.firstDay,
     });
   }
 
-  private renderPortionField() {
-    if (!this.profile?.fields.includes(ProfileField.PORTION)) {
-      return '';
-    }
+  private renderPortionRow() {
+    if (!hasProfileField(this.profile, ProfileField.PORTION)) return '';
 
     return html`
       <div class="edit-form-group">
@@ -219,7 +220,7 @@ export class MealEditDialog extends LitElement {
             @input=${this.handleTimeInput}
           />
         </div>
-        ${this.renderPortionField()} ${this.renderPredefinedTimes()}
+        ${this.renderPortionRow()} ${this.renderPredefinedTimes()}
       </form>
     `;
   }

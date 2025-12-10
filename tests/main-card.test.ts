@@ -4,7 +4,15 @@ import '../src/main';
 import { describe, it } from 'vitest';
 import { MealPlanCard } from '../src/main';
 import { vi } from 'vitest';
-import { profiles } from '../src/profiles/profiles';
+import { encodeMealData } from './fixtures/data';
+import {
+  createMockHassWithSensor,
+  createMockHass,
+  createMealPlanCardConfig,
+  getCleverioProfile,
+  createMealPlanCardFixture,
+} from './fixtures/factories';
+import { ScheduleClosedEvent } from '../src/constants';
 
 vi.mock('@kipk/load-ha-components', () => ({
   loadHaComponents: async () => {},
@@ -20,105 +28,59 @@ vi.stubGlobal(
 
 describe('MealPlanCard', () => {
   it('decodes real base64 meal plan data and passes it to children', async () => {
-    const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
-    const profileGroup = profiles.find((p) =>
-      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
-    );
-    const config = {
-      sensor: 'sensor.test',
-      title: 'Test Card',
-      device_manufacturer: 'Cleverio',
-      device_model: '',
-      _profile: { ...profileGroup, manufacturer: 'Cleverio', model: '' },
-    };
-    const hass = {
-      states: {
-        'sensor.test': {
-          state: base64,
-          attributes: { friendly_name: 'Test Sensor' },
-        },
-      },
-    };
-    const el = await fixture<any>(
-      html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
-    );
+    const base64 = encodeMealData(127, 2, 8, 0, 1);
+    const config = createMealPlanCardConfig({ title: 'Test Card' });
+    const hass = createMockHassWithSensor('sensor.test', base64, {
+      friendly_name: 'Test Sensor',
+    });
+    const el = await createMealPlanCardFixture(config, hass);
     await el.updateComplete;
     expect(el).to.exist;
   }, 20000);
 
-  it('shows error for missing config', async () => {
-    const el = await fixture<MealPlanCard>(
-      html`<mealplan-card></mealplan-card>`,
-    );
+  it('shows no overview when config is incomplete (missing sensor, manufacturer, or config)', async () => {
+    // Missing config
+    let config = createMealPlanCardConfig({ minimal: true });
+    let el = await createMealPlanCardFixture(config, createMockHass());
     (el as any)._haComponentsReady = true;
     await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
 
-    // With new implementation, mealState won't be created without config
-    // so overview and buttons won't render
-    const overview = el.shadowRoot!.querySelector('meal-overview');
-    expect(overview).to.not.exist;
-  });
-
-  it('shows error for missing sensor', async () => {
-    const el = await fixture<MealPlanCard>(
-      html`<mealplan-card></mealplan-card>`,
-    );
-    el.setConfig({
+    // Missing sensor
+    config = createMealPlanCardConfig({
+      minimal: true,
       sensor: '',
       title: 'Test',
-      helper: '',
     });
+    el = await createMealPlanCardFixture(config, createMockHass());
     (el as any)._haComponentsReady = true;
     await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
 
-    // Without sensor, mealState won't be created
-    const overview = el.shadowRoot!.querySelector('meal-overview');
-    expect(overview).to.not.exist;
-  });
-
-  it('shows error for missing manufacturer', async () => {
-    const el = await fixture<MealPlanCard>(
-      html`<mealplan-card></mealplan-card>`,
-    );
-    el.setConfig({
+    // Missing manufacturer (no profile)
+    config = createMealPlanCardConfig({
+      minimal: true,
       sensor: 'sensor.test',
       title: 'Test',
-      helper: '',
     });
+    el = await createMealPlanCardFixture(config, createMockHass());
     (el as any)._haComponentsReady = true;
     await el.updateComplete;
-
-    // Without profile (which requires manufacturer), mealState won't be created
-    const overview = el.shadowRoot!.querySelector('meal-overview');
-    expect(overview).to.not.exist;
+    expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
   });
 
   it('renders with custom title', async () => {
-    const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
-    const profileGroup = profiles.find((p) =>
-      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
-    );
-    const config = {
-      sensor: 'sensor.test',
-      title: 'Custom Title',
-      profile: profileGroup!,
-      helper: '',
-    };
-    const hass = {
-      states: { 'sensor.test': { state: base64, attributes: {} } },
-    };
-    const el = await fixture<any>(
-      html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
-    );
+    const base64 = encodeMealData(127, 2, 8, 0, 1);
+    const config = createMealPlanCardConfig({ title: 'Custom Title' });
+    const hass = createMockHassWithSensor('sensor.test', base64);
+    const el = await createMealPlanCardFixture(config, hass);
     (el as any)._haComponentsReady = true;
     await el.updateComplete;
 
     const card = el.shadowRoot!.querySelector('ha-card');
     expect(card).to.exist;
-    // Header includes version, so check it starts with the title
     const header = card!.getAttribute('header');
-    expect(header).to.include('Custom Title');
-    expect(header).to.match(/Custom Title v\d{4}-\d{2}-\d{2}/);
+    expect(header).to.equal('Custom Title');
   });
 });
 
@@ -140,24 +102,10 @@ describe('MealPlanCard integration', () => {
   });
 
   it('opens schedule dialog when button clicked', async () => {
-    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
-    const profileGroup = profiles.find((p) =>
-      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
-    );
-    const config = {
-      sensor: 'sensor.test',
-      title: 'Test',
-      device_manufacturer: 'Cleverio',
-      device_model: '',
-      profile: { ...profileGroup, manufacturer: 'Cleverio', model: '' },
-      helper: '',
-    };
-    const hass = {
-      states: { 'sensor.test': { state: base64, attributes: {} } },
-    };
-    const el = await fixture<MealPlanCard>(
-      html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
-    );
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
+    const config = createMealPlanCardConfig();
+    const hass = createMockHassWithSensor('sensor.test', base64);
+    const el = await createMealPlanCardFixture(config, hass);
     (el as any)._haComponentsReady = true;
     await el.updateComplete;
 
@@ -173,25 +121,13 @@ describe('MealPlanCard integration', () => {
   });
 
   it('closes schedule dialog on schedule-closed event', async () => {
-    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
-    const profileGroup = profiles.find((p) =>
-      p.profiles.some((prof) => prof.manufacturer === 'Cleverio'),
-    );
-    const config = {
-      sensor: 'sensor.test',
-      title: 'Test',
-      device_manufacturer: 'Cleverio',
-      device_model: '',
-      profile: { ...profileGroup, manufacturer: 'Cleverio', model: '' },
-      helper: '',
-    };
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
+    const config = createMealPlanCardConfig();
     const hass = {
-      states: { 'sensor.test': { state: base64, attributes: {} } },
+      ...createMockHassWithSensor('sensor.test', base64),
       callService: vi.fn(),
     };
-    const el = await fixture<MealPlanCard>(
-      html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
-    );
+    const el = await createMealPlanCardFixture(config, hass);
     (el as any)._haComponentsReady = true;
     (el as any)._dialogOpen = true;
     await el.updateComplete;
@@ -199,9 +135,7 @@ describe('MealPlanCard integration', () => {
     const scheduleView = el.shadowRoot!.querySelector('schedule-view');
     expect(scheduleView).to.exist;
 
-    scheduleView!.dispatchEvent(
-      new CustomEvent('schedule-closed', { bubbles: true, composed: true }),
-    );
+    scheduleView!.dispatchEvent(new ScheduleClosedEvent());
     await el.updateComplete;
 
     expect((el as any)._dialogOpen).to.be.false;

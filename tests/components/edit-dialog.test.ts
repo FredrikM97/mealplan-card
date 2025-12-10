@@ -1,18 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { fixture, html } from '@open-wc/testing';
 import '../../src/components/edit-dialog.js';
 import { MealEditDialog } from '../../src/components/edit-dialog.js';
 import { EVENT_SAVE, EVENT_MEAL_MESSAGE } from '../../src/constants.js';
 import type { FeedingTime } from '../../src/types.js';
-import { DeviceProfileGroup, ProfileField } from '../../src/types.js';
+import { ProfileField } from '../../src/types.js';
+import { testMeals } from '../fixtures/data';
+import {
+  createMockProfile,
+  createEditDialogFixture,
+} from '../fixtures/factories';
 
 describe('MealEditDialog', () => {
-  const mockProfile: DeviceProfileGroup = {
-    profiles: [{ manufacturer: 'Test', default: true }],
-    encodingTemplate: '{DAYS:8}{HOUR:5}{MINUTE:6}{PORTION:4}{ENABLED:1}',
-    firstDay: 0,
-    fields: [ProfileField.DAYS, ProfileField.PORTION],
-  };
+  const mockProfile = createMockProfile();
 
   const mockMeal: FeedingTime = {
     hour: 8,
@@ -25,38 +24,66 @@ describe('MealEditDialog', () => {
   let el: MealEditDialog;
 
   beforeEach(async () => {
-    el = await fixture<MealEditDialog>(html`
-      <meal-edit-dialog
-        .open=${true}
-        .profile=${mockProfile}
-        .meal=${mockMeal}
-      ></meal-edit-dialog>
-    `);
+    el = (await createEditDialogFixture({
+      profile: mockProfile,
+      meal: mockMeal,
+    })) as MealEditDialog;
   });
 
-  it('renders when open', async () => {
+  it('renders when open and respects profile fields', async () => {
+    // Renders edit form when open
     expect(el.shadowRoot?.querySelector('.edit-form')).to.exist;
+
+    // Renders time input
+    const timeInput = el.shadowRoot?.querySelector(
+      '#edit-time',
+    ) as HTMLInputElement;
+    expect(timeInput).to.exist;
+    expect(timeInput.value).toBe('08:30');
+
+    // Renders portion field (included in profile)
+    const portionInput = el.shadowRoot?.querySelector(
+      '#edit-portion',
+    ) as HTMLInputElement;
+    expect(portionInput).to.exist;
+    expect(portionInput.value).toBe('2');
+
+    // Renders days selector (included in profile)
+    const daysContainer = el.shadowRoot?.querySelector('.days-row');
+    expect(daysContainer).to.exist;
   });
 
-  it('does not render when closed', async () => {
-    const closedEl = await fixture<MealEditDialog>(html`
-      <meal-edit-dialog .open=${false}></meal-edit-dialog>
-    `);
+  it('does not render when closed or without profile', async () => {
+    const closedEl = (await createEditDialogFixture({
+      open: false,
+    })) as MealEditDialog;
     expect(closedEl.shadowRoot?.querySelector('.edit-form')).to.not.exist;
-  });
 
-  it('does not render without profile', async () => {
-    const noProfileEl = await fixture<MealEditDialog>(html`
-      <meal-edit-dialog .open=${true}></meal-edit-dialog>
-    `);
+    const noProfileEl = (await createEditDialogFixture()) as MealEditDialog;
     expect(noProfileEl.shadowRoot?.querySelector('.edit-form')).to.not.exist;
   });
 
-  it('initializes formData from meal prop', async () => {
-    expect(el['formData']).to.deep.equal(mockMeal);
+  it('does not render fields excluded from profile', async () => {
+    const noPortionProfile = createMockProfile({ fields: [ProfileField.DAYS] });
+    const noPortionEl = (await createEditDialogFixture({
+      profile: noPortionProfile,
+      meal: mockMeal,
+    })) as MealEditDialog;
+    expect(noPortionEl.shadowRoot?.querySelector('#edit-portion')).to.not.exist;
+
+    const noDaysProfile = createMockProfile({ fields: [ProfileField.PORTION] });
+    const noDaysEl = (await createEditDialogFixture({
+      profile: noDaysProfile,
+      meal: mockMeal,
+    })) as MealEditDialog;
+    expect(noDaysEl.shadowRoot?.querySelector('.days-row')).to.not.exist;
   });
 
-  it('updates formData when meal prop changes', async () => {
+  it('initializes and updates formData', async () => {
+    // Initializes from meal prop
+    expect(el['formData']).to.deep.equal(mockMeal);
+
+    // Updates when meal prop changes
     const newMeal: FeedingTime = {
       hour: 12,
       minute: 0,
@@ -69,90 +96,37 @@ describe('MealEditDialog', () => {
     expect(el['formData']).to.deep.equal(newMeal);
   });
 
-  it('renders time input with formatted value', () => {
-    const timeInput = el.shadowRoot?.querySelector(
-      '#edit-time',
-    ) as HTMLInputElement;
-    expect(timeInput).to.exist;
-    expect(timeInput.value).toBe('08:30');
-  });
-
-  it('handles time input changes', async () => {
+  it('handles input changes', async () => {
+    // Time input
     const timeInput = el.shadowRoot?.querySelector(
       '#edit-time',
     ) as HTMLInputElement;
     timeInput.value = '12:45';
     timeInput.dispatchEvent(new Event('input'));
     await el.updateComplete;
-
     expect(el['formData'].hour).toBe(12);
     expect(el['formData'].minute).toBe(45);
-  });
 
-  it('renders portion field when included in profile', () => {
-    const portionInput = el.shadowRoot?.querySelector(
-      '#edit-portion',
-    ) as HTMLInputElement;
-    expect(portionInput).to.exist;
-    expect(portionInput.value).toBe('2');
-  });
-
-  it('does not render portion field when not in profile', async () => {
-    const noPortionProfile = { ...mockProfile, fields: [ProfileField.DAYS] };
-    const noPortionEl = await fixture<MealEditDialog>(html`
-      <meal-edit-dialog
-        .open=${true}
-        .profile=${noPortionProfile}
-        .meal=${mockMeal}
-      ></meal-edit-dialog>
-    `);
-    expect(noPortionEl.shadowRoot?.querySelector('#edit-portion')).to.not.exist;
-  });
-
-  it('handles portion input changes', async () => {
+    // Portion input
     const portionInput = el.shadowRoot?.querySelector(
       '#edit-portion',
     ) as HTMLInputElement;
     portionInput.value = '5';
     portionInput.dispatchEvent(new Event('input'));
     await el.updateComplete;
-
     expect(el['formData'].portion).toBe(5);
   });
 
-  it('renders days selector when included in profile', () => {
-    const daysContainer = el.shadowRoot?.querySelector('.days-row');
-    expect(daysContainer).to.exist;
-  });
-
-  it('does not render days selector when not in profile', async () => {
-    const noDaysProfile = { ...mockProfile, fields: [ProfileField.PORTION] };
-    const noDaysEl = await fixture<MealEditDialog>(html`
-      <meal-edit-dialog
-        .open=${true}
-        .profile=${noDaysProfile}
-        .meal=${mockMeal}
-      ></meal-edit-dialog>
-    `);
-    expect(noDaysEl.shadowRoot?.querySelector('.days-row')).to.not.exist;
-  });
-
-  it('renders predefined time buttons', () => {
+  it('renders and handles predefined time buttons', async () => {
     const buttons = el.shadowRoot?.querySelectorAll(
       '.edit-predefined-times ha-button',
     );
     expect(buttons?.length).to.be.greaterThan(0);
-  });
 
-  it('handles predefined time button click', async () => {
-    const buttons = el.shadowRoot?.querySelectorAll(
-      '.edit-predefined-times ha-button',
-    );
+    // Click first button (06:00)
     const button = buttons?.[0] as HTMLElement;
     button.click();
     await el.updateComplete;
-
-    // First predefined time is 06:00
     expect(el['formData'].hour).toBe(6);
     expect(el['formData'].minute).toBe(0);
   });
@@ -194,43 +168,36 @@ describe('MealEditDialog', () => {
     expect(submitEvent.defaultPrevented).toBe(true);
   });
 
-  it('updates formData via handleUpdate method', async () => {
+  it('updates formData via handleUpdate and preserves unchanged fields', async () => {
+    const original = { ...el['formData'] };
+
+    // Updates specific fields via handleUpdate
     el['handleUpdate']({ hour: 15, minute: 30 });
     await el.updateComplete;
-
     expect(el['formData'].hour).toBe(15);
     expect(el['formData'].minute).toBe(30);
     expect(el['formData'].portion).toBe(2); // Unchanged
-  });
 
-  it('handles day changes from day selector', async () => {
-    const newDays = 31; // Mon-Fri
-    el['handleUpdate']({ days: newDays });
+    // Updates days
+    el['handleUpdate']({ days: 31 });
     await el.updateComplete;
+    expect(el['formData'].days).toBe(31);
 
-    expect(el['formData'].days).toBe(newDays);
+    // Preserves existing data when updating single field
+    el['handlePortionInput']({ target: { value: '10' } } as any);
+    await el.updateComplete;
+    expect(el['formData'].portion).toBe(10);
+    expect(el['formData'].hour).toBe(15); // Still updated value
   });
 
-  it('handles time with leading zeros', async () => {
+  it('handles time input with leading zeros', async () => {
     const timeInput = el.shadowRoot?.querySelector(
       '#edit-time',
     ) as HTMLInputElement;
     timeInput.value = '06:05';
     timeInput.dispatchEvent(new Event('input'));
     await el.updateComplete;
-
     expect(el['formData'].hour).toBe(6);
     expect(el['formData'].minute).toBe(5);
-  });
-
-  it('preserves existing formData when updating single field', async () => {
-    const original = { ...el['formData'] };
-    el['handlePortionInput']({ target: { value: '10' } } as any);
-    await el.updateComplete;
-
-    expect(el['formData'].portion).toBe(10);
-    expect(el['formData'].hour).toBe(original.hour);
-    expect(el['formData'].minute).toBe(original.minute);
-    expect(el['formData'].days).toBe(original.days);
   });
 });

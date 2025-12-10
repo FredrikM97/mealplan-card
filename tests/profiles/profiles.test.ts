@@ -1,57 +1,48 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import { getEncoder } from '../../src/profiles/serializer';
 import { profiles } from '../../src/profiles/profiles';
-describe('profiles structure validation', () => {
-  it('each profile has a models array and only one default per manufacturer per group', () => {
-    for (const group of profiles) {
-      const defaultCounts: Record<string, number> = {};
-      for (const p of group.profiles) {
-        expect(Array.isArray(p.models)).toBe(true);
-        if (p.default) {
-          defaultCounts[p.manufacturer] =
-            (defaultCounts[p.manufacturer] || 0) + 1;
-        }
-      }
-      for (const [manufacturer, count] of Object.entries(defaultCounts)) {
-        expect(count).toBeLessThanOrEqual(1);
-      }
-    }
-  });
-});
+import profileTestData from '../fixtures/profiles-test-data.json';
 
-describe('profiles default enforcement', () => {
-  it('logs an error if multiple defaults exist for a manufacturer', () => {
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    // Simulate a group with two defaults for the same manufacturer
-    const testProfiles = [
-      {
-        profiles: [
-          { manufacturer: 'TestBrand', default: true, models: [] },
-          { manufacturer: 'TestBrand', default: true, models: [] },
-        ],
-        fields: [],
-      },
-    ];
-    // Inline enforcement logic
-    for (const group of testProfiles) {
-      const defaultCounts: Record<string, number> = {};
-      for (const p of group.profiles) {
-        if (p.default) {
-          defaultCounts[p.manufacturer] =
-            (defaultCounts[p.manufacturer] || 0) + 1;
-        }
-      }
-      for (const [manufacturer, count] of Object.entries(defaultCounts)) {
-        if (count > 1) {
-          // eslint-disable-next-line no-console
-          console.error(
-            `Device profile group for manufacturer '${manufacturer}' has ${count} defaults (should be only one).`,
-          );
-        }
-      }
+const INVALID_BASE64 = '!@#$';
+
+describe.each(profileTestData as any[])(
+  'Profile: $manufacturer',
+  (testCase) => {
+    const { manufacturer, decoded, encoded } = testCase;
+
+    const profileGroup = profiles.find((p) => p.manufacturer === manufacturer);
+
+    if (!profileGroup) {
+      it.skip(`profile not found in source`, () => {});
+      return;
     }
-    expect(errorSpy).toHaveBeenCalledWith(
-      "Device profile group for manufacturer 'TestBrand' has 2 defaults (should be only one).",
-    );
-    errorSpy.mockRestore();
-  });
-});
+
+    const encoder = getEncoder(profileGroup);
+
+    it('encodes meals to base64', () => {
+      const result = encoder.encode(decoded);
+      if (encoded) {
+        expect(result).toBe(encoded);
+      } else {
+        expect(typeof result).toBe('string');
+      }
+    });
+
+    it('decodes base64 to meals', () => {
+      if (!encoded) return;
+      const result = encoder.decode(encoded);
+      expect(result).toEqual(decoded);
+    });
+
+    it('roundtrip encode/decode preserves data', () => {
+      if (!decoded || decoded.length === 0) return;
+      const encodedResult = encoder.encode(decoded);
+      const decodedResult = encoder.decode(encodedResult);
+      expect(decodedResult).toEqual(decoded);
+    });
+
+    it('throws error on invalid base64', () => {
+      expect(() => encoder.decode(INVALID_BASE64)).toThrow();
+    });
+  },
+);

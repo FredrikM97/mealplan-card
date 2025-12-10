@@ -11,7 +11,7 @@ import {
   MESSAGE_TYPE_INFO,
   MESSAGE_TYPE_ERROR,
   type MessageType,
-} from '../constants.js';
+} from '../constants';
 
 @customElement('meal-message-display')
 export class MealMessageDisplay extends LitElement {

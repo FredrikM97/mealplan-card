@@ -3,12 +3,12 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { localize, setLanguage } from './locales/localize';
 import { MealStateController } from './mealStateController';
-import type { MealPlanCardConfig } from './types.js';
-import './components/overview.js';
-import './components/schedule-view.js';
-import './components/message-display.js';
+import type { MealPlanCardConfig } from './types';
+import './components/overview';
+import './components/schedule-view';
+import './components/message-display';
 
-const VERSION = new Date().toISOString();
+const BUILD_TIME = new Date().toISOString();
 
 @customElement('mealplan-card')
 export class MealPlanCard extends LitElement {
@@ -24,6 +24,7 @@ export class MealPlanCard extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
+    console.log(`[MealPlan Card] Build time: ${BUILD_TIME}`);
     await setLanguage(this.hass?.language);
     await loadHaComponents([
       'ha-button',
@@ -57,14 +58,14 @@ export class MealPlanCard extends LitElement {
 
     return html`
       <ha-card
-        header="${this.config?.title || 'MealPlan Card'} v${VERSION}"
+        header="${this.config?.title || 'MealPlan Card'}"
         style="height: 100%;"
       >
         <meal-message-display></meal-message-display>
         ${this.mealState
           ? html`
               <meal-overview
-                .mealState=${this.mealState}
+                .meals=${this.mealState.meals}
                 .portions=${this.config?.portions}
               ></meal-overview>
               <div
@@ -83,7 +84,9 @@ export class MealPlanCard extends LitElement {
               <schedule-view
                 .mealState=${this.mealState}
                 .hass=${this.hass}
-                @schedule-closed=${() => (this._dialogOpen = false)}
+                @schedule-closed=${() => {
+                  this._dialogOpen = false;
+                }}
               ></schedule-view>
             `
           : ''}

@@ -6,6 +6,7 @@ import {
   EVENT_CLEAR_MESSAGE,
   MESSAGE_TYPE_ERROR,
   MESSAGE_TYPE_INFO,
+  MealMessageEvent,
 } from '../../src/constants';
 
 // Mock HA components
@@ -32,11 +33,7 @@ describe('MealMessageDisplay', () => {
   });
 
   it('displays info message when EVENT_MEAL_MESSAGE is dispatched', async () => {
-    const event = new CustomEvent(EVENT_MEAL_MESSAGE, {
-      detail: { message: 'Test info message', type: MESSAGE_TYPE_INFO },
-      bubbles: true,
-      composed: true,
-    });
+    const event = new MealMessageEvent('Test info message', MESSAGE_TYPE_INFO);
     window.dispatchEvent(event);
     await el.updateComplete;
 
@@ -47,11 +44,10 @@ describe('MealMessageDisplay', () => {
   });
 
   it('displays error message when EVENT_MEAL_MESSAGE is dispatched with error type', async () => {
-    const event = new CustomEvent(EVENT_MEAL_MESSAGE, {
-      detail: { message: 'Test error message', type: MESSAGE_TYPE_ERROR },
-      bubbles: true,
-      composed: true,
-    });
+    const event = new MealMessageEvent(
+      'Test error message',
+      MESSAGE_TYPE_ERROR,
+    );
     window.dispatchEvent(event);
     await el.updateComplete;
 
@@ -62,11 +58,7 @@ describe('MealMessageDisplay', () => {
   });
 
   it('clears message when EVENT_CLEAR_MESSAGE is dispatched', async () => {
-    const showEvent = new CustomEvent(EVENT_MEAL_MESSAGE, {
-      detail: { message: 'Test message', type: MESSAGE_TYPE_INFO },
-      bubbles: true,
-      composed: true,
-    });
+    const showEvent = new MealMessageEvent('Test message', MESSAGE_TYPE_INFO);
     window.dispatchEvent(showEvent);
     await el.updateComplete;
     expect(el.shadowRoot?.querySelector('.message')).to.exist;
@@ -82,11 +74,10 @@ describe('MealMessageDisplay', () => {
   });
 
   it('clears message when dismiss icon is clicked', async () => {
-    const event = new CustomEvent(EVENT_MEAL_MESSAGE, {
-      detail: { message: 'Dismissable message', type: MESSAGE_TYPE_INFO },
-      bubbles: true,
-      composed: true,
-    });
+    const event = new MealMessageEvent(
+      'Dismissable message',
+      MESSAGE_TYPE_INFO,
+    );
     window.dispatchEvent(event);
     await el.updateComplete;
 
@@ -102,11 +93,7 @@ describe('MealMessageDisplay', () => {
   it('auto-dismisses message after timeout', async () => {
     vi.useFakeTimers();
 
-    const event = new CustomEvent(EVENT_MEAL_MESSAGE, {
-      detail: { message: 'Auto dismiss', type: MESSAGE_TYPE_INFO },
-      bubbles: true,
-      composed: true,
-    });
+    const event = new MealMessageEvent('Auto dismiss', MESSAGE_TYPE_INFO);
     window.dispatchEvent(event);
     await el.updateComplete;
     expect(el.shadowRoot?.querySelector('.message')).to.exist;
@@ -122,20 +109,12 @@ describe('MealMessageDisplay', () => {
   it('clears previous timeout when new message arrives', async () => {
     vi.useFakeTimers();
 
-    const event1 = new CustomEvent(EVENT_MEAL_MESSAGE, {
-      detail: { message: 'First message', type: MESSAGE_TYPE_INFO },
-      bubbles: true,
-      composed: true,
-    });
+    const event1 = new MealMessageEvent('First message', MESSAGE_TYPE_INFO);
     window.dispatchEvent(event1);
     await el.updateComplete;
 
     vi.advanceTimersByTime(5000);
-    const event2 = new CustomEvent(EVENT_MEAL_MESSAGE, {
-      detail: { message: 'Second message', type: MESSAGE_TYPE_INFO },
-      bubbles: true,
-      composed: true,
-    });
+    const event2 = new MealMessageEvent('Second message', MESSAGE_TYPE_INFO);
     window.dispatchEvent(event2);
     await el.updateComplete;
 

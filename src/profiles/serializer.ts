@@ -1,5 +1,5 @@
-import type { DeviceProfileGroup, FeedingTime } from '../types.js';
-import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS } from '../types.js';
+import type { DeviceProfile, FeedingTime } from '../types';
+import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS } from '../types';
 
 export interface TemplateToken {
   name: string;
@@ -41,7 +41,11 @@ export function parseTemplate(template: string): TemplateToken[] {
     validateTokenPosition(match.index, lastIndex);
 
     const name = match[1];
-    const length = parseTokenLength(match[2]);
+    const lengthStr = match[2];
+    if (!name || !lengthStr) {
+      throw new Error('Invalid token format in template');
+    }
+    const length = parseTokenLength(lengthStr);
 
     tokens.push({ name, length });
     lastIndex = TOKEN_REGEX.lastIndex;
@@ -60,10 +64,10 @@ export function chunkLength(tokens: TemplateToken[]): number {
 
 export class TemplateEncoder {
   private tokens: TemplateToken[];
-  private profile?: DeviceProfileGroup;
+  private profile?: DeviceProfile;
   private chunkLen: number;
 
-  constructor(template: string, profile?: DeviceProfileGroup) {
+  constructor(template: string, profile?: DeviceProfile) {
     if (!template) throw new Error('Template is required');
     this.tokens = parseTemplate(template);
     this.profile = profile;
@@ -161,8 +165,8 @@ export class TemplateEncoder {
 }
 
 export abstract class EncoderBase {
-  protected profile: DeviceProfileGroup;
-  constructor(profile: DeviceProfileGroup) {
+  protected profile: DeviceProfile;
+  constructor(profile: DeviceProfile) {
     if (!profile || typeof (profile as any).encodingTemplate !== 'string') {
       throw new Error('Invalid device profile for encoding/decoding');
     }
@@ -249,7 +253,7 @@ const ENCODERS = {
   [EncodingType.HEX]: TemplateBasedEncoder,
 };
 
-export function getEncoder(profile: DeviceProfileGroup) {
+export function getEncoder(profile: DeviceProfile) {
   if (!profile) {
     throw new Error('Device profile is required for encoder initialization');
   }

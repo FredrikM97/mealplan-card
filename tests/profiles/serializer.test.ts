@@ -7,6 +7,7 @@ import {
 } from '../../src/profiles/serializer';
 import { f, TemplateFieldName as F } from '../../src/types';
 import { FeedingTime } from '../../src/types';
+import { daySpecificMeals } from '../fixtures/data';
 
 describe('parseTemplate', () => {
   it('throws error for empty template', () => {
@@ -77,8 +78,8 @@ describe('encoder decode/encode', () => {
       encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.DAYS, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}`,
     });
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, days: 0b0111110, portion: 2, enabled: 1 },
-      { hour: 10, minute: 0, days: 0b1000001, portion: 1, enabled: 0 },
+      daySpecificMeals.weekdaysOnly,
+      { ...daySpecificMeals.weekendsOnly, enabled: 0 }, // Disabled version
     ];
     const encoded = encoder2.encode(feedingTimes);
     const decoded = encoder2.decode(encoded);

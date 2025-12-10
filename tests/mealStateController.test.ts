@@ -1,73 +1,58 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MealStateController } from '../src/mealStateController';
-import { profiles } from '../src/profiles/profiles';
 import { EVENT_MEAL_MESSAGE, MESSAGE_TYPE_INFO } from '../src/constants';
 import type { ReactiveControllerHost } from 'lit';
+import { testMeals, encodeMealData } from './fixtures/data';
+import {
+  createMockHass,
+  createMockHost,
+  getTestProfile,
+  createMockHassWithSensor,
+} from './fixtures/factories';
 
 describe('MealStateController', () => {
   let mockHost: ReactiveControllerHost & EventTarget;
   let controller: MealStateController;
   let errorListener: ReturnType<typeof vi.fn>;
-  const profile = profiles[0];
+  const profile = getTestProfile();
 
   beforeEach(() => {
-    const eventTarget = new EventTarget();
+    mockHost = createMockHost();
+    const eventTarget = mockHost as EventTarget;
     errorListener = vi.fn();
     eventTarget.addEventListener(
       EVENT_MEAL_MESSAGE,
       errorListener as EventListener,
     );
-
-    mockHost = Object.assign(eventTarget, {
-      addController: vi.fn(),
-      removeController: vi.fn(),
-      requestUpdate: vi.fn(),
-      updateComplete: Promise.resolve(true),
-    });
   });
 
   it('initializes with empty meals', () => {
-    const mockHass = {
-      states: {},
-      callService: vi.fn(),
-    };
     controller = new MealStateController(
       mockHost,
       'sensor.test',
       profile,
-      mockHass,
+      createMockHass(),
       'input_text.helper',
     );
     expect(controller.meals).toEqual([]);
   });
 
   it('sets and gets meals', () => {
-    const mockHass = {
-      states: {},
-      callService: vi.fn(),
-    };
     controller = new MealStateController(
       mockHost,
       'sensor.test',
       profile,
-      mockHass,
+      createMockHass(),
     );
-    const meals = [
-      { hour: 8, minute: 0, portion: 1, days: 127, enabled: 1 },
-      { hour: 18, minute: 30, portion: 2, days: 127, enabled: 1 },
-    ];
+    const meals = [testMeals.breakfast, testMeals.dinner];
     controller.setMeals(meals);
     expect(controller.meals).toEqual(meals);
   });
 
   it('resets to saved state', async () => {
-    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
     const hass = {
-      states: {
-        'sensor.test': {
-          state: base64,
-        },
-      },
+      ...createMockHassWithSensor('sensor.test', base64),
       callService: vi.fn(),
     };
     controller = new MealStateController(
@@ -95,11 +80,9 @@ describe('MealStateController', () => {
       profile,
       undefined,
     );
-    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
     const hass = {
-      states: {
-        'sensor.test': { state: base64 },
-      },
+      ...createMockHassWithSensor('sensor.test', base64),
       callService: vi.fn(),
     };
 
@@ -116,9 +99,7 @@ describe('MealStateController', () => {
 
   it('handles invalid sensor state', async () => {
     const hass = {
-      states: {
-        'sensor.test': { state: 'invalid_base64' },
-      },
+      ...createMockHassWithSensor('sensor.test', 'invalid_base64'),
       callService: vi.fn(),
     };
     controller = new MealStateController(
@@ -143,9 +124,7 @@ describe('MealStateController', () => {
 
   it('handles unavailable sensor state', async () => {
     const hass = {
-      states: {
-        'sensor.test': { state: 'unavailable' },
-      },
+      ...createMockHassWithSensor('sensor.test', 'unavailable'),
       callService: vi.fn(),
     };
     controller = new MealStateController(
@@ -176,7 +155,7 @@ describe('MealStateController', () => {
       undefined,
       'input_text.helper',
     );
-    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
     const hass = {
       states: {
         'sensor.test': { state: base64 },
@@ -201,7 +180,7 @@ describe('MealStateController', () => {
       profile,
       undefined,
     );
-    const meals = [{ hour: 8, minute: 0, portion: 10, days: 127, enabled: 1 }];
+    const meals = [testMeals.breakfast];
     const hass = {
       states: {},
       callService: vi.fn(),
@@ -228,16 +207,14 @@ describe('MealStateController', () => {
       profile,
       undefined,
     );
-    controller.setMeals([
-      { hour: 8, minute: 0, portion: 1, days: 127, enabled: 1 },
-    ]);
+    controller.setMeals([testMeals.breakfast]);
 
     await expect(controller.saveMeals(controller.meals)).rejects.toThrow(
       'Cannot save: hass not initialized',
     );
   });
 
-  it('falls back to helper when sensor is invalid', async () => {
+  it('fallback to helper when sensor is unknown', async () => {
     controller = new MealStateController(
       mockHost,
       'sensor.test',
@@ -245,7 +222,7 @@ describe('MealStateController', () => {
       undefined,
       'input_text.helper',
     );
-    const base64 = btoa(String.fromCharCode(127, 8, 0, 10, 1));
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
     const hass = {
       states: {
         'sensor.test': { state: 'unknown' },

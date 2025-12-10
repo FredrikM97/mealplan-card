@@ -5,48 +5,23 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { FeedingTime } from '../types.js';
-import type { MealStateController } from '../mealStateController.js';
+import type { FeedingTime } from '../types';
+import { isMealEnabled } from '../utils';
 
 /**
- * Get next scheduled feeding time
+ * Calculate average food per day across all feeding times
  */
-export function getNextSchedule(feedingTimes: FeedingTime[]): string {
-  if (!feedingTimes || feedingTimes.length === 0) return '-';
-
-  const enabledTimes = feedingTimes.filter((t) => {
-    // If enabled field exists, check it; otherwise include all times
-    return t.enabled === undefined || t.enabled === 1;
-  });
-
-  if (enabledTimes.length === 0) return '-';
-
-  // Find earliest time
-  const sorted = [...enabledTimes].sort((a, b) => {
-    const aMinutes = (a.hour ?? 0) * 60 + (a.minute ?? 0);
-    const bMinutes = (b.hour ?? 0) * 60 + (b.minute ?? 0);
-    return aMinutes - bMinutes;
-  });
-
-  const hour = sorted[0].hour!.toString().padStart(2, '0');
-  const minute = sorted[0].minute!.toString().padStart(2, '0');
-  return `${hour}:${minute}`;
-}
-
-/**
- * Calculate total food per day across all feeding times
- */
-export function getTotalFoodPerDay(feedingTimes: FeedingTime[]): number[] {
-  const totals = Array(7).fill(0);
+export function getWeeklyAveragePortion(feedingTimes: FeedingTime[]): number {
+  let weeklyTotal = 0;
   feedingTimes.forEach((t) => {
     if (typeof t.days !== 'number' || typeof t.portion !== 'number') return;
     for (let i = 0; i < 7; i++) {
       if (t.days & (1 << i)) {
-        totals[i] += t.portion;
+        weeklyTotal += t.portion;
       }
     }
   });
-  return totals;
+  return weeklyTotal / 7;
 }
 
 /**
@@ -71,7 +46,7 @@ export function getTodaysFoodGrams(
  */
 @customElement('meal-overview')
 export class MealOverview extends LitElement {
-  @property({ type: Object }) mealState!: MealStateController;
+  @property({ type: Array }) meals: FeedingTime[] = [];
   @property({ type: Number }) portions = 6;
 
   static styles = css`
@@ -94,21 +69,17 @@ export class MealOverview extends LitElement {
   `;
 
   render() {
-    const meals = this.mealState?.meals || [];
-    const enabledMeals = meals.filter(
-      (m) => m.enabled === undefined || m.enabled === 1,
-    );
+    const enabledMeals = this.meals.filter(isMealEnabled);
     const today = new Date().getDay();
     const totalToday = getTodaysFoodGrams(enabledMeals, today) * this.portions;
-    const totals = getTotalFoodPerDay(enabledMeals);
-    const avg = totals.reduce((a, b) => a + b, 0) / 7;
+    const avg = getWeeklyAveragePortion(enabledMeals) * this.portions;
 
     return html`
       <div class="overview-row">
         <ha-chip class="overview-schedules">
           <ha-icon icon="mdi:calendar-clock"></ha-icon>
           Schedules:
-          <span style="white-space:nowrap;">${meals.length}</span>
+          <span style="white-space:nowrap;">${this.meals.length}</span>
         </ha-chip>
         <ha-chip class="overview-active">
           <ha-icon icon="mdi:check-circle-outline"></ha-icon>
@@ -122,9 +93,7 @@ export class MealOverview extends LitElement {
         <ha-chip class="overview-average">
           <ha-icon icon="mdi:scale-balance"></ha-icon>
           Avg/Week:
-          <span style="white-space:nowrap;"
-            >${(avg * this.portions).toFixed(1)}g</span
-          >
+          <span style="white-space:nowrap;">${avg.toFixed(1)}g</span>
         </ha-chip>
       </div>
     `;
