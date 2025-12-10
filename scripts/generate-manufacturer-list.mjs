@@ -5,8 +5,7 @@ const file = join(process.cwd(), 'src/profiles/profiles.ts');
 const content = readFileSync(file, 'utf8');
 
 // Match manufacturer and models from profiles array
-const profileRegex =
-  /profiles:\s*\[\s*\{\s*manufacturer:\s*'([^']+)',[^}]*models:\s*(\[[^\]]*\])/g;
+const profileRegex = /manufacturer:\s*'([^']+)',[^}]*models:\s*(\[[^\]]*\])/g;
 
 const manufacturers = [];
 
