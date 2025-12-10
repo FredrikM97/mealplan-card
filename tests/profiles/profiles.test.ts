@@ -18,7 +18,6 @@ describe('profiles structure validation', () => {
   });
 });
 
-
 describe('profiles default enforcement', () => {
   it('logs an error if multiple defaults exist for a manufacturer', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});

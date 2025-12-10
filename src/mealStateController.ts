@@ -29,12 +29,14 @@ export class MealStateController implements ReactiveController {
     this.profile = profile;
     this.hass = hass;
     this.encoder = getEncoder(profile);
-    
+
     // Load initial data after construction
     if (this.hass) {
       this.updateFromHass();
     } else {
-      console.warn('[MealStateController] Initialized without hass object. Data loading will be skipped.');
+      console.warn(
+        '[MealStateController] Initialized without hass object. Data loading will be skipped.',
+      );
     }
   }
 
@@ -151,7 +153,10 @@ export class MealStateController implements ReactiveController {
     // Show message if decode failed
     if (!decodedMeals && (sensorValue || helperValue)) {
       this.host.dispatchEvent(
-        new MealMessageEvent('Failed to decode meal plan data.', MESSAGE_TYPE_INFO),
+        new MealMessageEvent(
+          'Failed to decode meal plan data.',
+          MESSAGE_TYPE_INFO,
+        ),
       );
     }
 
