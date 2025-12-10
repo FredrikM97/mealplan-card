@@ -4,6 +4,15 @@ import '../src/main';
 import { describe, it } from 'vitest';
 import { MealPlanCard } from '../src/main';
 import { vi } from 'vitest';
+import { encodeMealData } from './fixtures/data';
+import {
+  createMockHassWithSensor,
+  createMockHass,
+  createMealPlanCardConfig,
+  getCleverioProfile,
+  createMealPlanCardFixture,
+} from './fixtures/factories';
+import { ScheduleClosedEvent } from '../src/constants';
 
 vi.mock('@kipk/load-ha-components', () => ({
   loadHaComponents: async () => {},
@@ -19,28 +28,60 @@ vi.stubGlobal(
 
 describe('MealPlanCard', () => {
   it('decodes real base64 meal plan data and passes it to children', async () => {
-    // Encodes: days=127, portion=2, hour=8, minute=0, enabled=1
-    const base64 = btoa(String.fromCharCode(127, 2, 8, 0, 1));
-    const config = {
-      sensor: 'sensor.test',
-      title: 'Test Card',
-      device_manufacturer: 'Cleverio',
-      device_model: '',
-    };
-    const hass = {
-      states: {
-        'sensor.test': {
-          state: base64,
-          attributes: { friendly_name: 'Test Sensor' },
-        },
-      },
-    };
-    const el = await fixture<any>(
-      html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
-    );
+    const base64 = encodeMealData(127, 2, 8, 0, 1);
+    const config = createMealPlanCardConfig({ title: 'Test Card' });
+    const hass = createMockHassWithSensor('sensor.test', base64, {
+      friendly_name: 'Test Sensor',
+    });
+    const el = await createMealPlanCardFixture(config, hass);
     await el.updateComplete;
     expect(el).to.exist;
   }, 20000);
+
+  it('shows no overview when config is incomplete (missing sensor, manufacturer, or config)', async () => {
+    // Missing config
+    let config = createMealPlanCardConfig({ minimal: true });
+    let el = await createMealPlanCardFixture(config, createMockHass());
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
+
+    // Missing sensor
+    config = createMealPlanCardConfig({
+      minimal: true,
+      sensor: '',
+      title: 'Test',
+    });
+    el = await createMealPlanCardFixture(config, createMockHass());
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
+
+    // Missing manufacturer (no profile)
+    config = createMealPlanCardConfig({
+      minimal: true,
+      sensor: 'sensor.test',
+      title: 'Test',
+    });
+    el = await createMealPlanCardFixture(config, createMockHass());
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
+  });
+
+  it('renders with custom title', async () => {
+    const base64 = encodeMealData(127, 2, 8, 0, 1);
+    const config = createMealPlanCardConfig({ title: 'Custom Title' });
+    const hass = createMockHassWithSensor('sensor.test', base64);
+    const el = await createMealPlanCardFixture(config, hass);
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+
+    const card = el.shadowRoot!.querySelector('ha-card');
+    expect(card).to.exist;
+    const header = card!.getAttribute('header');
+    expect(header).to.equal('Custom Title');
+  });
 });
 
 describe('getConfigElement', () => {
@@ -48,145 +89,55 @@ describe('getConfigElement', () => {
     const el = await MealPlanCard.getConfigElement();
     expect(el).to.exist;
     expect(el.tagName.toLowerCase()).to.equal('mealplan-card-editor');
-    expect(typeof el.setConfig).to.equal('function');
+    expect(typeof (el as any).setConfig).to.equal('function');
   });
 });
-
-// (Overview UI test moved to views/overview.test.ts)
 
 describe('MealPlanCard integration', () => {
-  it('calls hass.callService when schedule Save is pressed', async () => {
-    const base64 = 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==';
-    const config = {
-      sensor: 'text.test',
-      title: 'Test Card',
-      device_manufacturer: 'Cleverio',
-      device_model: '',
-    };
-    const callService = vi.fn();
+  it('getStubConfig returns default config', () => {
+    const stub = MealPlanCard.getStubConfig();
+    expect(stub.sensor).to.equal('');
+    expect(stub.title).to.equal('MealPlan Card');
+    expect(stub.portions).to.equal(6);
+  });
+
+  it('opens schedule dialog when button clicked', async () => {
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
+    const config = createMealPlanCardConfig();
+    const hass = createMockHassWithSensor('sensor.test', base64);
+    const el = await createMealPlanCardFixture(config, hass);
+    (el as any)._haComponentsReady = true;
+    await el.updateComplete;
+
+    const button = el.shadowRoot!.querySelector('ha-button');
+    expect(button).to.exist;
+
+    (button as HTMLElement).click();
+    await el.updateComplete;
+
+    expect((el as any)._dialogOpen).to.be.true;
+    const scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    expect(scheduleView).to.exist;
+  });
+
+  it('closes schedule dialog on schedule-closed event', async () => {
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
+    const config = createMealPlanCardConfig();
     const hass = {
-      states: { 'text.test': { state: base64, attributes: {} } },
-      callService,
+      ...createMockHassWithSensor('sensor.test', base64),
+      callService: vi.fn(),
     };
-    const el = await fixture<any>(
-      html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
-    );
+    const el = await createMealPlanCardFixture(config, hass);
+    (el as any)._haComponentsReady = true;
+    (el as any)._dialogOpen = true;
     await el.updateComplete;
-    // Open dialog
-    const btn = el.shadowRoot.querySelector('.manage-btn');
-    expect(btn).to.exist;
-    btn.click();
+
+    const scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    expect(scheduleView).to.exist;
+
+    scheduleView!.dispatchEvent(new ScheduleClosedEvent());
     await el.updateComplete;
-    // Simulate schedule save event as UI would
-    // Find the ha-dialog and click the save button
-    const dialog = el.shadowRoot.querySelector('ha-dialog');
-    expect(dialog).to.exist;
-    const saveBtn = dialog.querySelector(
-      'ha-button.ha-primary[slot="primaryAction"]',
-    );
-    expect(saveBtn).to.exist;
-    (saveBtn as HTMLElement).click();
-    await el.updateComplete;
-    expect(callService.mock.calls.length).to.be.greaterThan(0);
-    const call = callService.mock.calls.find(
-      (c) => c[0] === 'text' && c[1] === 'set_value',
-    );
-    expect(call, 'callService should be called with text.set_value').to.exist;
-    if (call) expect(call[2].entity_id).to.equal('text.test');
-  });
-});
 
-// Uncovered lines/coverage tests merged from main-card.coverage.test.ts
-import * as mainModule from '../src/main';
-
-describe('MealPlanCard uncovered lines', () => {
-  it('onEditSave logic adds a new meal if no _idx', () => {
-    const card = new MealPlanCard();
-    card._meals = [];
-    card._editForm = { hour: 8, minute: 0, portion: 1, enabled: 1 };
-    card._editDialogOpen = true;
-    card._editError = 'err';
-    card.requestUpdate = vi.fn();
-    // Simulate onEditSave logic
-    if (!card._editForm) return;
-    const idx = card._editForm._idx;
-    if (idx !== undefined && idx !== null && idx >= 0) {
-      card._meals = card._meals.map((m, i) =>
-        i === idx ? { ...card._editForm } : m,
-      );
-    } else {
-      card._meals = [...card._meals, { ...card._editForm }];
-    }
-    card._editDialogOpen = false;
-    card._editForm = null;
-    card._editError = null;
-    card.requestUpdate();
-    expect(card._meals.length).to.equal(1);
-    expect(card._editDialogOpen).to.be.false;
-    expect(card._editForm).to.be.null;
-    expect(card._editError).to.be.null;
-    expect((card.requestUpdate as any).mock.calls.length).toBeGreaterThan(0);
-  });
-
-  it('onEditSave logic edits an existing meal if _idx is present', () => {
-    const card = new MealPlanCard();
-    card._meals = [{ hour: 8, minute: 0, portion: 1, enabled: 1 }];
-    card._editForm = { hour: 9, minute: 0, portion: 2, enabled: 1, _idx: 0 };
-    card._editDialogOpen = true;
-    card._editError = 'err';
-    card.requestUpdate = vi.fn();
-    // Simulate onEditSave logic
-    if (!card._editForm) return;
-    const idx = card._editForm._idx;
-    if (idx !== undefined && idx !== null && idx >= 0) {
-      card._meals = card._meals.map((m, i) =>
-        i === idx ? { ...card._editForm } : m,
-      );
-    } else {
-      card._meals = [...card._meals, { ...card._editForm }];
-    }
-    card._editDialogOpen = false;
-    card._editForm = null;
-    card._editError = null;
-    card.requestUpdate();
-    expect(card._meals[0].hour).to.equal(9);
-    expect(card._editDialogOpen).to.be.false;
-    expect(card._editForm).to.be.null;
-    expect(card._editError).to.be.null;
-    expect((card.requestUpdate as any).mock.calls.length).toBeGreaterThan(0);
-  });
-
-  it('_saveMealsToSensor returns early if no hass or _sensorID', () => {
-    const card = new MealPlanCard();
-    card._meals = [];
-    Object.defineProperty(card, '_sensorID', { get: () => undefined });
-    card.hass = undefined;
-    expect(() => card._saveMealsToSensor()).to.not.throw();
-  });
-
-  it('_onScheduleMealsChanged updates meals and calls _saveMealsToSensor', () => {
-    const card = new MealPlanCard();
-    card._meals = [];
-    card._saveMealsToSensor = vi.fn();
-    const e = {
-      detail: { meals: [{ hour: 8, minute: 0, portion: 1, enabled: 1 }] },
-    };
-    card._onScheduleMealsChanged(e);
-    expect(card._meals.length).to.equal(1);
-    expect((card._saveMealsToSensor as any).mock.calls.length).toBeGreaterThan(
-      0,
-    );
-  });
-
-  it('getConfigElement resolves and returns a card editor', async () => {
-    const el = await MealPlanCard.getConfigElement();
-    expect(el).to.be.instanceOf(HTMLElement);
-    expect(el.tagName.toLowerCase()).to.equal('mealplan-card-editor');
-  });
-
-  it('loadTranslations throws not implemented', () => {
-    expect(() => {
-      mainModule.loadTranslations();
-    }).to.throw('Function not implemented.');
+    expect((el as any)._dialogOpen).to.be.false;
   });
 });

@@ -10,17 +10,21 @@
     "coverage": "vitest run --coverage",
     "build": "vite build",
     "clean": "rm -rf dist",
-    "format": "prettier --write .",
-    "prepare": "husky"
+    "lint": "tsc --noEmit && eslint . && prettier --check .",
+    "lint:fix": "eslint --fix . && prettier --write ."
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@open-wc/testing": "^4.0.0",
+    "@types/eslint__js": "^8.42.3",
     "@vitest/coverage-v8": "^4.0.14",
+    "eslint": "^9.39.1",
     "husky": "^9.1.7",
     "jsdom": "^27.2.0",
     "prettier": "^3.7.3",
     "terser": "^5.44.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.49.0",
     "vite": "^7.2.6",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.0.8"

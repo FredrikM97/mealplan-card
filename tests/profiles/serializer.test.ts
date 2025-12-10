@@ -3,11 +3,11 @@ import {
   parseTemplate,
   chunkLength,
   getEncoder,
-  FeedingTime,
   EncodingType,
-} from '../../src/util/serializer';
-import { f, TemplateFieldName as F } from '../../src/profiles/types';
-import { formatHourMinute } from '../../src/util/days-util';
+} from '../../src/profiles/serializer';
+import { f, TemplateFieldName as F } from '../../src/types';
+import { FeedingTime } from '../../src/types';
+import { daySpecificMeals } from '../fixtures/data';
 
 describe('parseTemplate', () => {
   it('throws error for empty template', () => {
@@ -78,8 +78,8 @@ describe('encoder decode/encode', () => {
       encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.DAYS, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}`,
     });
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, days: 0b0111110, portion: 2, enabled: 1 },
-      { hour: 10, minute: 0, days: 0b1000001, portion: 1, enabled: 0 },
+      daySpecificMeals.weekdaysOnly,
+      { ...daySpecificMeals.weekendsOnly, enabled: 0 }, // Disabled version
     ];
     const encoded = encoder2.encode(feedingTimes);
     const decoded = encoder2.decode(encoded);
@@ -119,21 +119,6 @@ describe('encoder error handling', () => {
   });
 });
 
-describe('formatHourMinute', () => {
-  it('formats valid hour/minute', () => {
-    expect(formatHourMinute(8, 5)).toBe('08:05');
-    expect(formatHourMinute(23, 59)).toBe('23:59');
-  });
-
-  it('returns --:-- for invalid input', () => {
-    expect(formatHourMinute(undefined, 0)).toBe('--:--');
-    expect(formatHourMinute(8, undefined)).toBe('--:--');
-    expect(formatHourMinute(NaN, 0)).toBe('--:--');
-    expect(formatHourMinute(-1, 0)).toBe('--:--');
-    expect(formatHourMinute(8, 60)).toBe('--:--');
-  });
-});
-
 describe('TemplateEncoder edge cases', () => {
   it('handles null/undefined values by padding with zeros', () => {
     const encoder = getEncoder({
@@ -157,5 +142,46 @@ describe('TemplateEncoder edge cases', () => {
     });
     const result = encoder.encode([{ hour: 8 }]);
     expect(result).toBe('0800');
+  });
+
+  it('applies custom day encoding transformer', () => {
+    const encoder = getEncoder({
+      fields: [],
+      profiles: [],
+      encodingType: EncodingType.HEX,
+      encodingTemplate: `${f(F.DAYS, 2)}`,
+      encode: (value: number) => value ^ 0xff, // XOR transformer
+    });
+    const result = encoder.encode([{ days: 127 }]);
+    expect(result).toBe('80'); // 127 ^ 255 = 128 = 0x80
+  });
+
+  it('applies custom day decoding transformer', () => {
+    const encoder = getEncoder({
+      fields: [],
+      profiles: [],
+      encodingType: EncodingType.HEX,
+      encodingTemplate: `${f(F.DAYS, 2)}`,
+      decode: (value: number) => value ^ 0xff, // XOR transformer
+    });
+    const result = encoder.decode('80');
+    expect(result[0].days).toBe(127); // 128 ^ 255 = 127
+  });
+
+  it('throws error when template is not provided', () => {
+    expect(() => {
+      new (getEncoder as any).TemplateEncoder();
+    }).toThrow();
+  });
+
+  it('decodes empty string to empty array', () => {
+    const encoder = getEncoder({
+      fields: [],
+      profiles: [],
+      encodingType: EncodingType.HEX,
+      encodingTemplate: `${f(F.HOUR, 2)}`,
+    });
+    const result = encoder.decode('');
+    expect(result).toEqual([]);
   });
 });

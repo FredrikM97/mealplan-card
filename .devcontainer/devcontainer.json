@@ -14,5 +14,5 @@
   "mounts": [
     "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh"
   ],
-  "postCreateCommand": "npm install && npx husky init && echo 'npx prettier --write .' > .husky/pre-commit && chmod +x .husky/pre-commit"
+  "postCreateCommand": "npm install && cp .devcontainer/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
 }
