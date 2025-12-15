@@ -118,6 +118,7 @@ export class MealPlanCard extends LitElement {
   static getConfigForm() {
     return generateConfigFormSchema();
   }
+
   static getStubConfig() {
     return {
       sensor: '',
@@ -129,11 +130,11 @@ export class MealPlanCard extends LitElement {
     };
   }
 
-  getGridOptions() {
+  static getGridOptions() {
     return {
-      columns: 5,
+      columns: 6,
       rows: 4,
-      min_columns: 5,
+      min_columns: 6,
       min_rows: 4,
     };
   }
