@@ -1,5 +1,5 @@
 import type { DeviceProfile, FeedingTime } from '../types';
-import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS, Day } from '../types';
+import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS } from '../types';
 
 export interface TemplateToken {
   name: string;
@@ -194,7 +194,7 @@ export class TemplateEncoder {
     // Apply custom day decoding if transformer is configured
     const shouldTransform =
       name === TemplateFieldName.DAYS && this.profile.decode;
-    return shouldTransform ? this.profile.decode(value) : value;
+    return shouldTransform ? this.profile.decode!(value) : value;
   }
 }
 

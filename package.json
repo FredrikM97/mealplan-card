@@ -11,7 +11,7 @@
     "build": "vite build",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint . && prettier --check .",
-    "lint:fix": "eslint --fix . && prettier --write ."
+    "lint:fix": "npx tsc --noEmit && eslint --fix . && prettier --write ."
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
