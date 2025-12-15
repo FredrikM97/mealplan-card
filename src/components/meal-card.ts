@@ -73,6 +73,32 @@ export class MealCard extends LitElement {
     }
     .meal-card-header-actions .days-row {
       margin-right: 20px;
+      max-width: 200px;
+    }
+    @media (max-width: 768px) {
+      .meal-card-header {
+        flex-wrap: wrap;
+        padding: 8px 4px;
+      }
+      .meal-card-header-actions {
+        order: 3;
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 4px;
+        padding: 4px 0 0 0;
+      }
+      .meal-card-header-actions .days-row {
+        max-width: none;
+        margin-right: 8px;
+      }
+      .meal-card-header-actions .day-cell {
+        width: 1.5em;
+        height: 1.5em;
+        font-size: 0.8em;
+      }
+      .meal-card-expand-icon {
+        order: 2;
+      }
     }
     .meal-card-expand-icon {
       transition: transform 0.2s;
@@ -90,6 +116,7 @@ export class MealCard extends LitElement {
     .meal-card-details {
       padding: 0 10px 8px 10px;
       border-top: 1px solid var(--divider-color, #e0e0e0);
+      background: var(--secondary-background-color, #f5f5f5);
     }
     .meal-card-row {
       display: flex;
@@ -108,7 +135,6 @@ export class MealCard extends LitElement {
     .meal-card-actions-section {
       margin-top: 8px;
       padding-top: 8px;
-      border-top: 1px solid var(--divider-color, #e0e0e0);
       display: flex;
       gap: 8px;
     }
@@ -118,12 +144,6 @@ export class MealCard extends LitElement {
     }
     .meal-card-actions-section .delete-button {
       --mdc-theme-primary: var(--error-color, #db4437);
-    }
-    .meal-card-info-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
     }
   `;
 
