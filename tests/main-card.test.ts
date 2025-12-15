@@ -163,11 +163,10 @@ describe('MealPlanCard integration', () => {
   });
 
   it('returns grid options', () => {
-    const el = document.createElement('mealplan-card') as any;
-    const gridOptions = el.getGridOptions();
-    expect(gridOptions.columns).to.equal(5);
+    const gridOptions = MealPlanCard.getGridOptions();
+    expect(gridOptions.columns).to.equal(6);
     expect(gridOptions.rows).to.equal(4);
-    expect(gridOptions.min_columns).to.equal(5);
+    expect(gridOptions.min_columns).to.equal(6);
     expect(gridOptions.min_rows).to.equal(4);
   });
 

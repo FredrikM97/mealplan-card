@@ -30,9 +30,9 @@ export const createDayTransformer = (map: [number, number][]) => ({
   },
   decode: (encoded: number) => {
     let standardDays = 0;
-    encoded = encoded & 0x7f;
+    const maskedEncoded = encoded & 0x7f;
     map.forEach(([std, custom]) => {
-      if (encoded & (1 << custom)) {
+      if (maskedEncoded & (1 << custom)) {
         standardDays |= 1 << std;
       }
     });
