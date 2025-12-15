@@ -70,8 +70,18 @@ export class MealEditDialog extends LitElement {
       flex-wrap: wrap;
     }
     .edit-predefined-times ha-button {
-      flex: 1;
+      flex: 1 1 auto;
       min-width: 60px;
+      max-width: calc(25% - 0.3em);
+    }
+    @media (max-width: 768px) {
+      .edit-predefined-times ha-button {
+        flex: 1 1 auto;
+        min-width: 50px;
+        max-width: calc(33.333% - 0.3em);
+        font-size: 0.85em;
+        --ha-button-height: 28px;
+      }
     }
     label {
       font-weight: 500;
