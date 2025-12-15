@@ -5,11 +5,10 @@ import profileTestData from '../fixtures/profiles-test-data.json';
 
 const INVALID_BASE64 = '!@#$';
 
-describe.each(profileTestData as any[])(
-  'Profile: $manufacturer',
-  (testCase) => {
-    const { manufacturer, decoded, encoded } = testCase;
+(profileTestData as any[]).forEach((testCase) => {
+  const { manufacturer, decoded, encoded } = testCase;
 
+  describe(manufacturer, () => {
     const profileGroup = profiles.find((p) => p.manufacturer === manufacturer);
 
     if (!profileGroup) {
@@ -44,5 +43,5 @@ describe.each(profileTestData as any[])(
     it('throws error on invalid base64', () => {
       expect(() => encoder.decode(INVALID_BASE64)).toThrow();
     });
-  },
-);
+  });
+});

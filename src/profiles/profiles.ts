@@ -1,43 +1,10 @@
 import { Day, ProfileField as pf, TemplateFieldName as F, f } from '../types';
 import type { DeviceProfile } from '../types';
-import { EncodingType } from './serializer';
-
-/**
- * Day transformer for Puppy Kitty devices.
- * Puppy Kitty uses non-standard day bit order:
- * Standard: bit 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
- * Puppy Kitty: bit 0=Sat, 1=Fri, 2=Thu, 3=Wed, 4=Mon, 5=Tue, 6=Sun
- */
-const createDayTransformer = (map: [number, number][]) => ({
-  encode: (standardDays: number) => {
-    let encoded = 0;
-    map.forEach(([std, custom]) => {
-      if (standardDays & (1 << std)) {
-        encoded |= 1 << custom;
-      }
-    });
-    return encoded;
-  },
-  decode: (encoded: number) => {
-    let standardDays = 0;
-    map.forEach(([std, custom]) => {
-      if (encoded & (1 << custom)) {
-        standardDays |= 1 << std;
-      }
-    });
-    return standardDays;
-  },
-});
-
-const puppyKittyDayTransformer = createDayTransformer([
-  [5, 0], // Sat
-  [4, 1], // Fri
-  [3, 2], // Thu
-  [2, 3], // Wed
-  [0, 4], // Mon
-  [1, 5], // Tue
-  [6, 6], // Sun
-]);
+import {
+  EncodingType,
+  createDayTransformer,
+  createFirstDayTransformer,
+} from './serializer';
 
 // Common encoding templates
 const TEMPLATE_FULL = `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`;
@@ -55,7 +22,7 @@ const FIELDS_FULL = [
 ];
 const FIELDS_MINIMAL = [pf.TIME, pf.PORTION, pf.ENABLED, pf.EDIT];
 
-export const profiles: DeviceProfile[] = [
+const baseProfiles: DeviceProfile[] = [
   {
     manufacturer: 'Cleverio',
     models: ['PF100'],
@@ -65,40 +32,40 @@ export const profiles: DeviceProfile[] = [
   },
   {
     manufacturer: 'HoneyGuardian',
-    models: [],
+    models: ['S56'],
     encodingTemplate: TEMPLATE_NO_DAYS,
     fields: FIELDS_MINIMAL,
   },
   {
     manufacturer: 'Fukumaru-W',
-    models: [],
+    models: ['f1y6wo'],
     encodingType: EncodingType.BASE64,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
   {
     manufacturer: 'Yuposl',
-    models: [],
+    models: ['enyxp8'],
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
   {
     manufacturer: 'Arlec',
-    models: [],
+    models: ['PF002HA'],
     encodingType: EncodingType.BASE64,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
   {
     manufacturer: 'PetLibro',
-    models: [],
+    models: ['000004ajdj'],
     encodingType: EncodingType.BASE64,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
   {
     manufacturer: 'MolyPet',
-    models: [],
+    models: ['F02W'],
     encodingType: EncodingType.BASE64,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
@@ -114,7 +81,6 @@ export const profiles: DeviceProfile[] = [
     manufacturer: 'Petrust',
     models: [],
     encodingType: EncodingType.BASE64,
-    firstDay: Day.Saturday,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
@@ -122,7 +88,6 @@ export const profiles: DeviceProfile[] = [
     manufacturer: 'Meowmatic',
     models: [],
     encodingType: EncodingType.BASE64,
-    firstDay: Day.Saturday,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
@@ -130,9 +95,31 @@ export const profiles: DeviceProfile[] = [
     manufacturer: 'Puppy Kitty',
     models: [],
     encodingType: EncodingType.HEX,
-    firstDay: Day.Saturday,
     encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 1)}${f(F.ENABLED, 1)}`,
     fields: FIELDS_FULL,
-    ...puppyKittyDayTransformer,
+    ...createDayTransformer([
+      // Custom formatting on this device
+      [5, 0], // Sat
+      [4, 1], // Fri
+      [3, 2], // Thu
+      [2, 3], // Wed
+      [0, 4], // Mon
+      [1, 5], // Tue
+      [6, 6], // Sun
+    ]),
   },
 ];
+
+// Apply default transformer to profiles that don't have custom transformers
+export const profiles: DeviceProfile[] = baseProfiles.map((profile) => {
+  // Skip if profile already has encode/decode (custom transformer)
+  if (profile.encode || profile.decode) {
+    return profile;
+  }
+  // Skip if profile doesn't have DAYS field
+  if (!profile.fields.includes(pf.DAYS)) {
+    return profile;
+  }
+  // Apply default Monday-first transformer (identity transformation)
+  return { ...profile, ...createFirstDayTransformer(Day.Sunday) };
+});

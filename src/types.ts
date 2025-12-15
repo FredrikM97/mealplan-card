@@ -61,7 +61,6 @@ export interface DeviceProfile {
   fields: ProfileField[];
   encodingTemplate: string;
   featureFields?: ProfileField[];
-  firstDay?: Day;
   // Custom transformers for encoding/decoding days field
   encode?: (days: number) => number;
   decode?: (encoded: number) => number;
@@ -96,30 +95,3 @@ export const HEX_FIELDS = new Set([TemplateFieldName.DAYS]);
 // Helper function to create template field with length
 export const f = (field: TemplateFieldName, len: number): string =>
   `{${field}:${len}}`;
-
-/**
- * Convert bitmask to array of Day values
- */
-export function bitmaskToDays(mask: number): Day[] {
-  const days: Day[] = [];
-  for (let i = 0; i < 7; i++) {
-    if (mask & (1 << i)) {
-      days.push(i as Day);
-    }
-  }
-  return days;
-}
-
-/**
- * Convert array of Day values to bitmask
- */
-export function daysToBitmask(days: Day[]): number {
-  return days.reduce((mask, day) => mask | (1 << day), 0);
-}
-
-/**
- * Check if a bitmask is valid (only uses bits 0-6)
- */
-export function isValidDayBitmask(mask: number): boolean {
-  return (mask & ~0x7f) === 0;
-}

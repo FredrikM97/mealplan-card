@@ -164,7 +164,6 @@ export class MealEditDialog extends LitElement {
       days: this.formData?.days ?? 0,
       editable: true,
       onDaysChanged: (newDays: number) => this.handleUpdate({ days: newDays }),
-      firstDay: this.profile!.firstDay,
     });
   }
 

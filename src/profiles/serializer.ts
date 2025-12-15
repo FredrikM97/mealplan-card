@@ -1,10 +1,72 @@
 import type { DeviceProfile, FeedingTime } from '../types';
-import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS } from '../types';
+import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS, Day } from '../types';
 
 export interface TemplateToken {
   name: string;
   length: number;
 }
+
+/**
+ * Creates day transformer with custom bit mapping.
+ *
+ * @param map - Array of [internalBit, deviceBit] tuples.
+ *   Internal format: bit 0 (rightmost) = Monday, bit 1 = Tuesday ... bit 6 (leftmost) = Sunday
+ *
+ * Bit positions use standard binary notation:
+ *   - bit 0 is the rightmost/LSB (least significant bit)
+ *   - bit 6 is the leftmost/MSB (most significant bit)
+ *   - Example: 0b0000011 has bits 0 and 1 set (Mon+Tue)
+ */
+export const createDayTransformer = (map: [number, number][]) => ({
+  encode: (standardDays: number) => {
+    let encoded = 0;
+    map.forEach(([std, custom]) => {
+      if (standardDays & (1 << std)) {
+        encoded |= 1 << custom;
+      }
+    });
+    return encoded;
+  },
+  decode: (encoded: number) => {
+    let standardDays = 0;
+    map.forEach(([std, custom]) => {
+      if (encoded & (1 << custom)) {
+        standardDays |= 1 << std;
+      }
+    });
+    return standardDays;
+  },
+});
+
+/**
+ * Creates day transformer based on device's first day of week.
+ *
+ * Internal format: bit 0=Mon, bit 1=Tue ... bit 6=Sun
+ *
+ * @param firstDay - Which day is at bit 0 in the DEVICE's format
+ *   - Day.Monday (=0): Device Monday-first → identity (no transform)
+ *   - Day.Sunday (=6): Device Sunday-first (Tuya) → transforms bits
+ *
+ * Tuya/Sunday-first bit mapping:
+ * ┌───────────┬──────────────┬──────────────┐
+ * │ Day       │ Internal Bit │ Device Bit   │
+ * ├───────────┼──────────────┼──────────────┤
+ * │ Monday    │ 0 (rightmost)│ 1            │
+ * │ Tuesday   │ 1            │ 2            │
+ * │ Wednesday │ 2            │ 3            │
+ * │ Thursday  │ 3            │ 4            │
+ * │ Friday    │ 4            │ 5            │
+ * │ Saturday  │ 5            │ 6 (leftmost) │
+ * │ Sunday    │ 6 (leftmost) │ 0 (rightmost)│
+ * └───────────┴──────────────┴──────────────┘
+ */
+export const createFirstDayTransformer = (firstDay: Day = Day.Monday) =>
+  createDayTransformer(
+    Array.from({ length: 7 }, (_, deviceBit) => [
+      (deviceBit + firstDay) % 7,
+      deviceBit,
+    ]),
+  );
 
 function validateTemplateInput(template: string): void {
   if (!template || typeof template !== 'string') {

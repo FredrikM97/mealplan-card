@@ -190,7 +190,6 @@ export class MealCard extends LitElement {
           ${renderDaySelector({
             days: this.meal.days,
             editable: false,
-            firstDay: this.profile.firstDay,
           })}
         </span>
       </div>
