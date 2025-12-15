@@ -242,7 +242,7 @@ describe('MealCard Component', () => {
       expect((toggle as any).checked).to.be.true;
     });
 
-    it('shows day selector in expanded view when profile includes DAYS field', async () => {
+    it('shows day selector in header when profile includes DAYS field', async () => {
       const card = (await createMealCardFixture(
         {
           hour: 21,
@@ -252,16 +252,17 @@ describe('MealCard Component', () => {
           enabled: 1,
           _idx: 0,
         },
-        { expanded: true },
+        { expanded: false },
       )) as MealCard;
 
       await card.updateComplete;
 
-      const detailsSection =
-        card.shadowRoot?.querySelector('.meal-card-details');
-      const daySelector = detailsSection?.querySelector('.days-row');
+      const headerActions = card.shadowRoot?.querySelector(
+        '.meal-card-header-actions',
+      );
+      const daySelector = headerActions?.querySelector('.days-row');
 
-      expect(detailsSection).to.exist;
+      expect(headerActions).to.exist;
       expect(daySelector).to.exist;
     });
   });

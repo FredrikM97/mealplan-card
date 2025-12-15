@@ -10,7 +10,7 @@ import type { FeedingTime, EditMealState } from '../types';
 import { ProfileField } from '../types';
 import { MealStateController } from '../mealStateController';
 import { hasProfileField } from '../utils';
-import { ScheduleClosedEvent, MESSAGE_TYPE_ERROR } from '../constants';
+import { ScheduleClosedEvent } from '../constants';
 import './edit-dialog';
 import './meal-card';
 
@@ -30,7 +30,8 @@ export class ScheduleView extends LitElement {
   static styles = css`
     .schedule-cards {
       display: block;
-      min-height: 450px;
+      max-height: 330px;
+      overflow-y: auto;
       padding: 8px 0;
     }
     .empty-state {
@@ -76,13 +77,6 @@ export class ScheduleView extends LitElement {
   protected willUpdate(): void {
     if (this.draftMeals.length === 0 && this.mealState?.meals.length > 0) {
       this.resetDraft();
-    }
-
-    // Dispatch error message if no profile
-    if (!this.mealState?.profile) {
-      this.dispatchEvent(
-        new MealMessageEvent(localize('error_no_profile'), MESSAGE_TYPE_ERROR),
-      );
     }
   }
 
