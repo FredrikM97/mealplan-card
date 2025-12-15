@@ -10,11 +10,7 @@ import type { FeedingTime, EditMealState } from '../types';
 import { ProfileField } from '../types';
 import { MealStateController } from '../mealStateController';
 import { hasProfileField } from '../utils';
-import {
-  ScheduleClosedEvent,
-  MealMessageEvent,
-  MESSAGE_TYPE_ERROR,
-} from '../constants';
+import { ScheduleClosedEvent, MESSAGE_TYPE_ERROR } from '../constants';
 import './edit-dialog';
 import './meal-card';
 
