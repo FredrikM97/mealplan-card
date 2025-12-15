@@ -8,7 +8,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { renderDaySelector } from '../day-selector';
 import { localize } from '../locales/localize';
 import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
-import { MealMessageEvent, SaveEvent, MESSAGE_TYPE_ERROR } from '../constants';
+import { SaveEvent } from '../constants';
 import { formatTime, hasProfileField } from '../utils';
 
 /**
@@ -143,18 +143,14 @@ export class MealEditDialog extends LitElement {
 
   private validate(entry: Partial<FeedingTime>): boolean {
     if (!isValidTime(entry.hour, entry.minute)) {
-      this.dispatchError('Please enter a valid time.');
+      console.warn('Invalid time:', entry.hour, entry.minute);
       return false;
     }
     if (!entry.portion || entry.portion < 1) {
-      this.dispatchError('Portion must be at least 1.');
+      console.warn('Invalid portion:', entry.portion);
       return false;
     }
     return true;
-  }
-
-  private dispatchError(message: string): void {
-    this.dispatchEvent(new MealMessageEvent(message, MESSAGE_TYPE_ERROR));
   }
 
   private renderDaysField() {
@@ -164,7 +160,6 @@ export class MealEditDialog extends LitElement {
       days: this.formData?.days ?? 0,
       editable: true,
       onDaysChanged: (newDays: number) => this.handleUpdate({ days: newDays }),
-      firstDay: this.profile!.firstDay,
     });
   }
 

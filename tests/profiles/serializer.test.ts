@@ -4,8 +4,9 @@ import {
   chunkLength,
   getEncoder,
   EncodingType,
+  createDayTransformer,
 } from '../../src/profiles/serializer';
-import { f, TemplateFieldName as F } from '../../src/types';
+import { f, TemplateFieldName as F, Day } from '../../src/types';
 import { FeedingTime } from '../../src/types';
 import { daySpecificMeals } from '../fixtures/data';
 
@@ -56,8 +57,9 @@ describe('chunkLength', () => {
 
 describe('encoder decode/encode', () => {
   const encoder = getEncoder({
+    manufacturer: 'Test',
+    models: [],
     fields: [],
-    profiles: [],
     encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}`,
   });
 
@@ -73,8 +75,9 @@ describe('encoder decode/encode', () => {
 
   it('encode and decode are inverses for generic data', () => {
     const encoder2 = getEncoder({
+      manufacturer: 'Test',
+      models: [],
       fields: [],
-      profiles: [],
       encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.DAYS, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}`,
     });
     const feedingTimes: FeedingTime[] = [
@@ -90,8 +93,9 @@ describe('encoder decode/encode', () => {
 describe('encoder error handling', () => {
   it('throws on invalid base64', () => {
     const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
       fields: [],
-      profiles: [],
       encodingTemplate: f(F.HOUR, 2),
     });
     expect(() => encoder.decode('!@#$')).toThrow('Invalid base64');
@@ -100,8 +104,9 @@ describe('encoder error handling', () => {
   it('throws on invalid profile', () => {
     expect(() =>
       getEncoder({
+        manufacturer: 'Test',
+        models: [],
         fields: [],
-        profiles: [],
         encodingTemplate: undefined as any,
       }),
     ).toThrow('Invalid device profile for encoding/decoding');
@@ -109,8 +114,9 @@ describe('encoder error handling', () => {
 
   it('throws on invalid meal plan length', () => {
     const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
       fields: [],
-      profiles: [],
       encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}`,
     });
     expect(() => encoder.decode('AAA=')).toThrow(
@@ -122,8 +128,9 @@ describe('encoder error handling', () => {
 describe('TemplateEncoder edge cases', () => {
   it('handles null/undefined values by padding with zeros', () => {
     const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
       fields: [],
-      profiles: [],
       encodingType: EncodingType.HEX,
       encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}`,
     });
@@ -135,8 +142,9 @@ describe('TemplateEncoder edge cases', () => {
 
   it('handles FILL token correctly', () => {
     const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
       fields: [],
-      profiles: [],
       encodingType: EncodingType.HEX,
       encodingTemplate: `${f(F.HOUR, 2)}${f(F.FILL, 2)}`,
     });
@@ -146,8 +154,9 @@ describe('TemplateEncoder edge cases', () => {
 
   it('applies custom day encoding transformer', () => {
     const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
       fields: [],
-      profiles: [],
       encodingType: EncodingType.HEX,
       encodingTemplate: `${f(F.DAYS, 2)}`,
       encode: (value: number) => value ^ 0xff, // XOR transformer
@@ -158,8 +167,9 @@ describe('TemplateEncoder edge cases', () => {
 
   it('applies custom day decoding transformer', () => {
     const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
       fields: [],
-      profiles: [],
       encodingType: EncodingType.HEX,
       encodingTemplate: `${f(F.DAYS, 2)}`,
       decode: (value: number) => value ^ 0xff, // XOR transformer
@@ -176,12 +186,58 @@ describe('TemplateEncoder edge cases', () => {
 
   it('decodes empty string to empty array', () => {
     const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
       fields: [],
-      profiles: [],
       encodingType: EncodingType.HEX,
       encodingTemplate: `${f(F.HOUR, 2)}`,
     });
     const result = encoder.decode('');
     expect(result).toEqual([]);
+  });
+});
+
+describe('createDayTransformer', () => {
+  it('handles custom mappings (Puppy Kitty style)', () => {
+    const transformer = createDayTransformer([
+      [5, 0], // Sat → device bit 0
+      [4, 1], // Fri → device bit 1
+      [6, 6], // Sun → device bit 6
+    ]);
+
+    // Saturday (internal bit 5)
+    expect(transformer.encode(32)).toBe(1);
+    expect(transformer.decode(1)).toBe(32);
+
+    // Friday (internal bit 4)
+    expect(transformer.encode(16)).toBe(2);
+    expect(transformer.decode(2)).toBe(16);
+  });
+
+  it('roundtrip preserves values with custom mapping', () => {
+    const transformer = createDayTransformer([
+      [0, 1],
+      [1, 2],
+      [2, 0],
+    ]);
+
+    const encoded = transformer.encode(7); // bits 0,1,2
+    const decoded = transformer.decode(encoded);
+    expect(decoded).toBe(7);
+  });
+  it('maps device bit 0 (0b00000001) to internal Sunday with Cleverio/Meowmatic mapping', () => {
+    const transformer = createDayTransformer([
+      [0, 6], // Mon
+      [1, 5], // Tue
+      [2, 4], // Wed
+      [3, 3], // Thu
+      [4, 2], // Fri
+      [5, 1], // Sat
+      [6, 0], // Sun
+    ]);
+    // Device bit 0 set (0b00000001) should map to internal bit 6 (Sunday)
+    expect(transformer.decode(0b00000001)).toBe(1 << 6); // 0b1000000
+    // And the reverse: encoding internal Sunday should set device bit 0
+    expect(transformer.encode(1 << 6)).toBe(0b00000001);
   });
 });

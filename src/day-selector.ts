@@ -56,13 +56,11 @@ export function renderDaySelector({
   editable = false,
   dayLabels,
   onDaysChanged,
-  firstDay = 0,
 }: {
   days: number;
   editable: boolean;
   dayLabels?: string[];
   onDaysChanged?: (newDays: number) => void;
-  firstDay?: number;
 }): import('lit').TemplateResult {
   const defaultLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const labels =
@@ -70,15 +68,9 @@ export function renderDaySelector({
 
   const handleClick = (i: number) => {
     if (!editable || !onDaysChanged) return;
-    const bit = (i - firstDay + 7) % 7;
-    const newDays = days ^ (1 << bit);
+    const newDays = days ^ (1 << i);
     onDaysChanged(newDays);
   };
-
-  const shiftMask = (mask: number, shift: number) =>
-    ((mask << shift) | (mask >> (7 - shift))) & 0x7f;
-
-  const shiftedDays = shiftMask(days, firstDay);
 
   return html`
     <style>
@@ -88,9 +80,9 @@ export function renderDaySelector({
       ${labels.map(
         (d, i) => html`
           <span
-            class="day-cell${shiftedDays & (1 << i)
-              ? ' selected'
-              : ''}${editable ? '' : ' readonly'}"
+            class="day-cell${days & (1 << i) ? ' selected' : ''}${editable
+              ? ''
+              : ' readonly'}"
             @click=${() => handleClick(i)}
             >${d}</span
           >

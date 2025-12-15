@@ -65,9 +65,24 @@ export class MealCard extends LitElement {
       align-items: center;
       gap: 4px;
     }
+    .meal-card-header-actions .day-cell {
+      width: 1.6em;
+      height: 1.6em;
+      font-size: 0.85em;
+      margin-right: 1px;
+    }
+    .meal-card-header-actions .days-row {
+      margin-right: 20px;
+    }
     .meal-card-expand-icon {
       transition: transform 0.2s;
       margin-left: 4px;
+      --mdc-icon-size: 24px;
+      color: var(--primary-color);
+      cursor: pointer;
+    }
+    .meal-card-expand-icon:hover {
+      color: var(--primary-color-dark, var(--primary-color));
     }
     .meal-card-expand-icon.expanded {
       transform: rotate(180deg);
@@ -103,6 +118,12 @@ export class MealCard extends LitElement {
     }
     .meal-card-actions-section .delete-button {
       --mdc-theme-primary: var(--error-color, #db4437);
+    }
+    .meal-card-info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
   `;
 
@@ -155,7 +176,7 @@ export class MealCard extends LitElement {
             <div class="meal-card-info">${this.getSummary()}</div>
           </div>
           <div class="meal-card-header-actions">
-            ${this.renderEnabledToggle()}
+            ${this.renderDaysInline()} ${this.renderEnabledToggle()}
           </div>
           <ha-icon
             class="meal-card-expand-icon ${this.expanded ? 'expanded' : ''}"
@@ -170,31 +191,21 @@ export class MealCard extends LitElement {
 
   private renderDetails() {
     return html`
-      <div class="meal-card-details">
-        ${this.renderDays()} ${this.renderActionButtons()}
-      </div>
+      <div class="meal-card-details">${this.renderActionButtons()}</div>
     `;
   }
 
-  private renderDays() {
+  private renderDaysInline() {
     if (
       !hasProfileField(this.profile, ProfileField.DAYS) ||
       this.meal.days === undefined
     )
       return '';
 
-    return html`
-      <div class="meal-card-row">
-        <span class="meal-card-label">${localize('days')}</span>
-        <span class="meal-card-value">
-          ${renderDaySelector({
-            days: this.meal.days,
-            editable: false,
-            firstDay: this.profile.firstDay,
-          })}
-        </span>
-      </div>
-    `;
+    return renderDaySelector({
+      days: this.meal.days,
+      editable: false,
+    });
   }
 
   private renderEnabledToggle() {

@@ -1,16 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { getEncoder } from '../../src/profiles/serializer';
-import { profiles } from '../../src/profiles/profiles';
+import { getProfileWithTransformer } from '../../src/profiles/profiles';
 import profileTestData from '../fixtures/profiles-test-data.json';
 
 const INVALID_BASE64 = '!@#$';
 
-describe.each(profileTestData as any[])(
-  'Profile: $manufacturer',
-  (testCase) => {
-    const { manufacturer, decoded, encoded } = testCase;
+(profileTestData as any[]).forEach((testCase) => {
+  const { manufacturer, decoded, encoded } = testCase;
 
-    const profileGroup = profiles.find((p) => p.manufacturer === manufacturer);
+  describe(manufacturer, () => {
+    const profileGroup = getProfileWithTransformer(manufacturer);
 
     if (!profileGroup) {
       it.skip(`profile not found in source`, () => {});
@@ -44,5 +43,5 @@ describe.each(profileTestData as any[])(
     it('throws error on invalid base64', () => {
       expect(() => encoder.decode(INVALID_BASE64)).toThrow();
     });
-  },
-);
+  });
+});

@@ -5,13 +5,13 @@
   "description": "MealPlan Card for Home Assistant",
   "type": "module",
   "scripts": {
-    "test": "vitest run --coverage",
+    "test": "vitest run --coverage --reporter=verbose",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "build": "vite build",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint . && prettier --check .",
-    "lint:fix": "eslint --fix . && prettier --write ."
+    "lint:fix": "npx tsc --noEmit && eslint --fix . && prettier --write ."
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import '../../src/components/edit-dialog.js';
 import { MealEditDialog } from '../../src/components/edit-dialog.js';
-import { EVENT_SAVE, EVENT_MEAL_MESSAGE } from '../../src/constants.js';
+import { EVENT_SAVE } from '../../src/constants.js';
 import type { FeedingTime } from '../../src/types.js';
 import { ProfileField } from '../../src/types.js';
 import { testMeals } from '../fixtures/data';
@@ -143,21 +143,16 @@ describe('MealEditDialog', () => {
     expect(saveSpy.mock.calls[0][0].detail.index).to.equal(el.index);
   });
 
-  it('renders error message when error prop is set', async () => {
-    // Error handling changed to use MealMessageEvent instead of error property
-    // This component dispatches events instead of showing errors directly
-    const errorSpy = vi.fn();
-    el.addEventListener(EVENT_MEAL_MESSAGE, errorSpy);
-
-    // Trigger validation error by trying to save invalid data
+  it('validates time input', async () => {
     el['formData'] = { hour: -1, minute: 0, portion: 1 };
+
+    const saveSpy = vi.fn();
+    el.addEventListener(EVENT_SAVE, saveSpy);
+
     el.handleSave();
     await el.updateComplete;
 
-    expect(errorSpy).toHaveBeenCalled();
-    expect(errorSpy.mock.calls[0][0].detail.message).toBe(
-      'Please enter a valid time.',
-    );
+    expect(saveSpy).not.toHaveBeenCalled();
   });
 
   it('prevents form submission', async () => {

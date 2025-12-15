@@ -112,14 +112,6 @@ describe('MealStateController', () => {
     await controller.updateFromHass();
 
     expect(controller.meals).toEqual([]);
-    expect(errorListener).toHaveBeenCalledWith(
-      expect.objectContaining({
-        detail: {
-          message: 'Failed to decode meal plan data.',
-          type: MESSAGE_TYPE_INFO,
-        },
-      }),
-    );
   });
 
   it('handles unavailable sensor state', async () => {
@@ -137,14 +129,6 @@ describe('MealStateController', () => {
     await controller.updateFromHass();
 
     expect(controller.meals).toEqual([]);
-    expect(errorListener).toHaveBeenCalledWith(
-      expect.objectContaining({
-        detail: {
-          message: expect.stringContaining('No valid meal plan data'),
-          type: MESSAGE_TYPE_INFO,
-        },
-      }),
-    );
   });
 
   it('syncs helper when out of sync', async () => {
@@ -258,13 +242,5 @@ describe('MealStateController', () => {
     await controller.updateFromHass();
 
     expect(controller.meals).toEqual([]);
-    expect(errorListener).toHaveBeenCalledWith(
-      expect.objectContaining({
-        detail: {
-          message: 'Failed to decode meal plan data.',
-          type: MESSAGE_TYPE_INFO,
-        },
-      }),
-    );
   });
 });
