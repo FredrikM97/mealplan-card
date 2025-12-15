@@ -38,6 +38,18 @@ describe('MealPlanCard', () => {
     expect(el).to.exist;
   }, 20000);
 
+  it('initializes mealState in setConfig when hass is available', () => {
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
+    const hass = createMockHassWithSensor('sensor.test', base64);
+    const el = document.createElement('mealplan-card') as any;
+    el.hass = hass;
+
+    const config = createMealPlanCardConfig();
+    el.setConfig(config);
+
+    expect(el.mealState).to.exist;
+  });
+
   it('shows no overview when config is incomplete (missing sensor, manufacturer, or config)', async () => {
     // Missing config
     let config = createMealPlanCardConfig({ minimal: true });
@@ -81,15 +93,6 @@ describe('MealPlanCard', () => {
     expect(card).to.exist;
     const header = card!.getAttribute('header');
     expect(header).to.equal('Custom Title');
-  });
-});
-
-describe('getConfigElement', () => {
-  it('returns a card-editor element with setConfig method', async () => {
-    const el = await MealPlanCard.getConfigElement();
-    expect(el).to.exist;
-    expect(el.tagName.toLowerCase()).to.equal('mealplan-card-editor');
-    expect(typeof (el as any).setConfig).to.equal('function');
   });
 });
 
@@ -139,5 +142,38 @@ describe('MealPlanCard integration', () => {
     await el.updateComplete;
 
     expect((el as any)._dialogOpen).to.be.false;
+  });
+
+  it('updates meal state when hass changes', async () => {
+    const base64_1 = encodeMealData(127, 8, 0, 10, 1);
+    const base64_2 = encodeMealData(63, 9, 30, 5, 1);
+    const config = createMealPlanCardConfig();
+    const hass = createMockHassWithSensor('sensor.test', base64_1);
+    const el = await createMealPlanCardFixture(config, hass);
+    await el.updateComplete;
+
+    expect((el as any).mealState.meals).to.have.lengthOf(1);
+
+    // Update hass with new sensor value
+    el.hass = createMockHassWithSensor('sensor.test', base64_2);
+    await el.updateComplete;
+
+    expect((el as any).mealState.meals).to.have.lengthOf(1);
+    expect((el as any).mealState.meals[0].hour).to.equal(9);
+  });
+
+  it('returns grid options', () => {
+    const el = document.createElement('mealplan-card') as any;
+    const gridOptions = el.getGridOptions();
+    expect(gridOptions.columns).to.equal(5);
+    expect(gridOptions.rows).to.equal(4);
+    expect(gridOptions.min_columns).to.equal(5);
+    expect(gridOptions.min_rows).to.equal(4);
+  });
+
+  it('getConfigForm returns schema', () => {
+    const schema = MealPlanCard.getConfigForm();
+    expect(schema).to.exist;
+    expect(schema.schema).to.be.an('array');
   });
 });

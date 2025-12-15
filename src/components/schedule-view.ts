@@ -16,7 +16,6 @@ import {
   MESSAGE_TYPE_ERROR,
 } from '../constants';
 import './edit-dialog';
-import './message-display';
 import './meal-card';
 
 /**
@@ -88,6 +87,22 @@ export class ScheduleView extends LitElement {
       this.dispatchEvent(
         new MealMessageEvent(localize('error_no_profile'), MESSAGE_TYPE_ERROR),
       );
+    }
+  }
+
+  /**
+   * Lifecycle: refresh draft when mealState.meals changes (from external updates)
+   */
+  protected updated(changedProps: Map<string, any>): void {
+    super.updated(changedProps);
+
+    // When mealState updates (hass changes trigger updateFromHass), sync draft if no pending edits
+    if (
+      changedProps.has('mealState') &&
+      this.mealState &&
+      !this.hasPendingChanges()
+    ) {
+      this.resetDraft();
     }
   }
   private updateMeal(index: number, meal: FeedingTime): void {

@@ -105,21 +105,24 @@ describe('MealCard Component', () => {
 
       let eventReceived = false;
       let receivedMeal: any = null;
-      card.addEventListener('edit-meal', (e: Event) => {
-        eventReceived = true;
-        receivedMeal = (e as CustomEvent).detail.meal;
-      });
+      (card as any).onMealAction = (
+        action: string,
+        index: number,
+        meal: any,
+      ) => {
+        if (action === 'edit') {
+          eventReceived = true;
+          receivedMeal = meal;
+        }
+      };
 
-      // Try to find and click the edit button instead of calling handleEdit
-      const editButton = card.shadowRoot?.querySelector('.edit-btn');
-      if (editButton) {
-        (editButton as HTMLElement).click();
-        expect(eventReceived).to.be.true;
-        expect(receivedMeal).to.equal((card as any).meal);
-      } else {
-        // If edit button does not exist, test passes (no-op)
-        // No assertion needed
-      }
+      const editButton = card.shadowRoot?.querySelector('ha-button');
+      expect(editButton).to.exist;
+      (editButton as HTMLElement).click();
+      await card.updateComplete;
+
+      expect(eventReceived).to.be.true;
+      expect(receivedMeal).to.deep.equal((card as any).meal);
     });
 
     it('emits delete-meal event with meal data when delete is triggered', async () => {
@@ -130,23 +133,67 @@ describe('MealCard Component', () => {
 
       await card.updateComplete;
 
+      // Mock confirm to return true
+      const originalConfirm = window.confirm;
+      window.confirm = () => true;
+
       let eventReceived = false;
       let receivedMeal: any = null;
-      card.addEventListener('delete-meal', (e: Event) => {
-        eventReceived = true;
-        receivedMeal = (e as CustomEvent).detail.meal;
-      });
+      (card as any).onMealAction = (
+        action: string,
+        index: number,
+        meal: any,
+      ) => {
+        if (action === 'delete') {
+          eventReceived = true;
+          receivedMeal = meal;
+        }
+      };
 
-      // Try to find and click the delete button
-      const deleteButton = card.shadowRoot?.querySelector('.delete-btn');
-      if (deleteButton) {
-        (deleteButton as HTMLElement).click();
-        expect(eventReceived).to.be.true;
-        expect(receivedMeal).to.equal((card as any).meal);
-      } else {
-        // If delete button does not exist, test passes (no-op)
-        // No assertion needed
-      }
+      const deleteButton = card.shadowRoot?.querySelector('.delete-button');
+      expect(deleteButton).to.exist;
+      (deleteButton as HTMLElement).click();
+      await card.updateComplete;
+
+      expect(eventReceived).to.be.true;
+      expect(receivedMeal).to.deep.equal((card as any).meal);
+
+      // Restore confirm
+      window.confirm = originalConfirm;
+    });
+
+    it('does not delete when confirm is cancelled', async () => {
+      const card = (await createMealCardFixture(
+        { ...testMeals.lunch, _idx: 1 },
+        { expanded: true },
+      )) as MealCard;
+
+      await card.updateComplete;
+
+      // Mock confirm to return false
+      const originalConfirm = window.confirm;
+      window.confirm = () => false;
+
+      let eventReceived = false;
+      (card as any).onMealAction = (
+        action: string,
+        index: number,
+        meal: any,
+      ) => {
+        if (action === 'delete') {
+          eventReceived = true;
+        }
+      };
+
+      const deleteButton = card.shadowRoot?.querySelector('.delete-button');
+      expect(deleteButton).to.exist;
+      (deleteButton as HTMLElement).click();
+      await card.updateComplete;
+
+      expect(eventReceived).to.be.false;
+
+      // Restore confirm
+      window.confirm = originalConfirm;
     });
 
     it('emits meal-changed event when enabled toggle is changed', async () => {

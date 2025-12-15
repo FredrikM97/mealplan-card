@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getEncoder } from '../../src/profiles/serializer';
-import { profiles } from '../../src/profiles/profiles';
+import { getProfileWithTransformer } from '../../src/profiles/profiles';
 import profileTestData from '../fixtures/profiles-test-data.json';
 
 const INVALID_BASE64 = '!@#$';
@@ -9,7 +9,7 @@ const INVALID_BASE64 = '!@#$';
   const { manufacturer, decoded, encoded } = testCase;
 
   describe(manufacturer, () => {
-    const profileGroup = profiles.find((p) => p.manufacturer === manufacturer);
+    const profileGroup = getProfileWithTransformer(manufacturer);
 
     if (!profileGroup) {
       it.skip(`profile not found in source`, () => {});

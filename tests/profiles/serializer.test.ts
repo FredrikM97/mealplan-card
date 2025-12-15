@@ -5,7 +5,6 @@ import {
   getEncoder,
   EncodingType,
   createDayTransformer,
-  createFirstDayTransformer,
 } from '../../src/profiles/serializer';
 import { f, TemplateFieldName as F, Day } from '../../src/types';
 import { FeedingTime } from '../../src/types';
@@ -198,96 +197,6 @@ describe('TemplateEncoder edge cases', () => {
   });
 });
 
-describe('createFirstDayTransformer', () => {
-  // Tests for day transformers that convert between:
-  // - Internal format: bit 0 (rightmost) = Monday, bit 6 (leftmost) = Sunday
-  // - Device format: varies by device (Monday-first, Sunday-first, etc.)
-  //
-  // Bit positions use standard binary notation (bit 0 = LSB/rightmost)
-
-  it('Monday-first: identity transform (no conversion needed)', () => {
-    const transformer = createFirstDayTransformer(Day.Monday);
-
-    // When device is also Monday-first, no transformation occurs
-    // This is the default case where internal = device format
-    expect(transformer.encode(1)).toBe(1); // Monday stays as bit 0
-    expect(transformer.encode(64)).toBe(64); // Sunday stays as bit 6
-    expect(transformer.encode(127)).toBe(127); // All days unchanged
-  });
-
-  it('Monday-first: encode/decode preserves all values (identity)', () => {
-    const transformer = createFirstDayTransformer(Day.Monday);
-    // Verify identity transform for all possible day combinations (0-127)
-    for (let i = 0; i < 128; i++) {
-      expect(transformer.encode(i)).toBe(i);
-      expect(transformer.decode(i)).toBe(i);
-    }
-  });
-
-  it('Sunday-first (Tuya): device bit 0=Sun, 1=Mon...6=Sat', () => {
-    const transformer = createFirstDayTransformer(Day.Sunday);
-
-    // Transformation shifts bits: device starts week on Sunday instead of Monday
-    // Internal: bit0=Mon, bit1=Tue...bit6=Sun
-    // Device:   bit0=Sun, bit1=Mon...bit6=Sat
-
-    // Internal bit 0 (Monday) → device bit 1 (Monday in Sunday-first)
-    expect(transformer.encode(1)).toBe(2); // 0b0000001 → 0b0000010
-    expect(transformer.decode(2)).toBe(1);
-
-    // Internal bit 6 (Sunday) → device bit 0 (Sunday in Sunday-first)
-    expect(transformer.encode(64)).toBe(1); // 0b1000000 → 0b0000001
-    expect(transformer.decode(1)).toBe(64);
-  });
-
-  it('Sunday-first: encodes Mon+Tue correctly', () => {
-    const transformer = createFirstDayTransformer(Day.Sunday);
-    // Internal: bits 0,1 (Mon+Tue) = 3
-    // Device: bits 1,2 (Mon+Tue in Sunday-first) = 6
-    expect(transformer.encode(3)).toBe(6);
-    expect(transformer.decode(6)).toBe(3);
-  });
-
-  it('Sunday-first: encodes Sun+Mon correctly', () => {
-    const transformer = createFirstDayTransformer(Day.Sunday);
-    // Internal: bits 0,6 (Mon+Sun) = 65
-    // Device: bits 0,1 (Sun+Mon in Sunday-first) = 3
-    expect(transformer.encode(65)).toBe(3);
-    expect(transformer.decode(3)).toBe(65);
-  });
-
-  it('Sunday-first: encodes all days correctly', () => {
-    const transformer = createFirstDayTransformer(Day.Sunday);
-    // All 7 days = 127
-    expect(transformer.encode(127)).toBe(127);
-    expect(transformer.decode(127)).toBe(127);
-  });
-
-  it('Sunday-first: roundtrip preserves all combinations', () => {
-    const transformer = createFirstDayTransformer(Day.Sunday);
-    for (let i = 0; i < 128; i++) {
-      const encoded = transformer.encode(i);
-      const decoded = transformer.decode(encoded);
-      expect(decoded).toBe(i);
-    }
-  });
-
-  it('Saturday-first: correctly maps days', () => {
-    const transformer = createFirstDayTransformer(Day.Saturday);
-
-    // Device starts week on Saturday (bit 0)
-    // Device:   bit0=Sat, bit1=Sun, bit2=Mon...bit6=Fri
-
-    // Internal bit 0 (Monday) → device bit 2 (Monday in Saturday-first)
-    expect(transformer.encode(1)).toBe(4); // 0b0000001 → 0b0000100
-    expect(transformer.decode(4)).toBe(1);
-
-    // Internal bit 5 (Saturday) → device bit 0 (Saturday in Saturday-first)
-    expect(transformer.encode(32)).toBe(1); // 0b0100000 → 0b0000001
-    expect(transformer.decode(1)).toBe(32);
-  });
-});
-
 describe('createDayTransformer', () => {
   it('handles custom mappings (Puppy Kitty style)', () => {
     const transformer = createDayTransformer([
@@ -315,5 +224,20 @@ describe('createDayTransformer', () => {
     const encoded = transformer.encode(7); // bits 0,1,2
     const decoded = transformer.decode(encoded);
     expect(decoded).toBe(7);
+  });
+  it('maps device bit 0 (0b00000001) to internal Sunday with Cleverio/Meowmatic mapping', () => {
+    const transformer = createDayTransformer([
+      [0, 6], // Mon
+      [1, 5], // Tue
+      [2, 4], // Wed
+      [3, 3], // Thu
+      [4, 2], // Fri
+      [5, 1], // Sat
+      [6, 0], // Sun
+    ]);
+    // Device bit 0 set (0b00000001) should map to internal bit 6 (Sunday)
+    expect(transformer.decode(0b00000001)).toBe(1 << 6); // 0b1000000
+    // And the reverse: encoding internal Sunday should set device bit 0
+    expect(transformer.encode(1 << 6)).toBe(0b00000001);
   });
 });

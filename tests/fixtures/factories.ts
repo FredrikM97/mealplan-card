@@ -118,10 +118,9 @@ export function createMealPlanCardConfig(
   overrides?: Partial<{
     sensor: string;
     title: string;
-    profile: any;
+    manufacturer: string;
+    model: string;
     helper: string;
-    device_manufacturer: string;
-    device_model: string;
     portions: number;
     minimal: boolean;
   }>,
@@ -134,14 +133,13 @@ export function createMealPlanCardConfig(
     };
   }
 
-  const profile = overrides?.profile ?? getCleverioProfile();
+  const profile = getCleverioProfile();
   return {
     sensor: overrides?.sensor ?? 'sensor.test',
     title: overrides?.title ?? 'Test',
-    profile,
+    manufacturer: overrides?.manufacturer ?? profile.manufacturer,
+    model: overrides?.model ?? '',
     helper: overrides?.helper ?? '',
-    device_manufacturer: overrides?.device_manufacturer ?? profile.manufacturer,
-    device_model: overrides?.device_model ?? '',
     ...(overrides?.portions !== undefined && { portions: overrides.portions }),
   };
 }

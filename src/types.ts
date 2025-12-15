@@ -37,8 +37,8 @@ export interface MealPlanCardConfig {
   title: string;
   helper: string;
   portions?: number;
-  profile?: DeviceProfile;
-  selectedModel?: string;
+  manufacturer?: string;
+  model?: string;
 }
 
 export enum ProfileField {

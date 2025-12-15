@@ -6,11 +6,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { FeedingTime, DeviceProfile } from './types';
 import { getEncoder, EncoderBase } from './profiles/serializer';
-import {
-  MealMessageEvent,
-  MESSAGE_TYPE_ERROR,
-  MESSAGE_TYPE_INFO,
-} from './constants';
 
 export class MealStateController implements ReactiveController {
   meals: FeedingTime[] = [];
@@ -19,7 +14,7 @@ export class MealStateController implements ReactiveController {
   private encoder: EncoderBase;
 
   constructor(
-    private host: ReactiveControllerHost & EventTarget,
+    private host: ReactiveControllerHost,
     private sensorID: string,
     profile: DeviceProfile,
     hass: any,
@@ -105,16 +100,6 @@ export class MealStateController implements ReactiveController {
    * Update from Home Assistant - decode from sensor/helper
    */
   async updateFromHass(allowUpdate: boolean = true): Promise<void> {
-    if (!this.hass) {
-      this.host.dispatchEvent(
-        new MealMessageEvent(
-          'Home Assistant connection not available. Please refresh the page.',
-          MESSAGE_TYPE_ERROR,
-        ),
-      );
-      return;
-    }
-
     const sensorValue = this.getEntityValue(this.sensorID);
     const helperValue = this.helperID
       ? this.getEntityValue(this.helperID)
@@ -122,10 +107,6 @@ export class MealStateController implements ReactiveController {
 
     // Early validation
     if (!sensorValue && !helperValue) {
-      const infoMsg = this.helperID
-        ? 'No valid meal plan data found. Both sensor and helper are empty or unavailable.'
-        : 'No valid meal plan data found. Sensor is empty or unavailable. Consider configuring a helper (input_text) to store your meal plan.';
-      this.host.dispatchEvent(new MealMessageEvent(infoMsg, MESSAGE_TYPE_INFO));
       if (allowUpdate) {
         this.meals = [];
         this.host.requestUpdate();
@@ -146,16 +127,6 @@ export class MealStateController implements ReactiveController {
       }
     } catch (err) {
       decodedMeals = null;
-    }
-
-    // Show message if decode failed
-    if (!decodedMeals && (sensorValue || helperValue)) {
-      this.host.dispatchEvent(
-        new MealMessageEvent(
-          'Failed to decode meal plan data.',
-          MESSAGE_TYPE_INFO,
-        ),
-      );
     }
 
     if (allowUpdate) {

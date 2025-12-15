@@ -1,10 +1,6 @@
-import { Day, ProfileField as pf, TemplateFieldName as F, f } from '../types';
+import { ProfileField as pf, TemplateFieldName as F, f } from '../types';
 import type { DeviceProfile } from '../types';
-import {
-  EncodingType,
-  createDayTransformer,
-  createFirstDayTransformer,
-} from './serializer';
+import { EncodingType, createDayTransformer } from './serializer';
 
 // Common encoding templates
 const TEMPLATE_FULL = `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`;
@@ -110,16 +106,37 @@ const baseProfiles: DeviceProfile[] = [
   },
 ];
 
-// Apply default transformer to profiles that don't have custom transformers
-export const profiles: DeviceProfile[] = baseProfiles.map((profile) => {
-  // Skip if profile already has encode/decode (custom transformer)
-  if (profile.encode || profile.decode) {
+// Export base profiles directly - transformers will be added lazily when needed
+export const profiles: DeviceProfile[] = baseProfiles;
+
+/**
+ * Get a profile with its transformer applied (lazy initialization)
+ */
+export function getProfileWithTransformer(
+  manufacturer: string,
+): DeviceProfile | undefined {
+  const profile = baseProfiles.find((p) => p.manufacturer === manufacturer);
+
+  if (!profile) return undefined;
+
+  // Return as-is if it already has encode/decode or doesn't need DAYS transformer
+  if (profile.encode || profile.decode || !profile.fields.includes(pf.DAYS)) {
     return profile;
   }
-  // Skip if profile doesn't have DAYS field
-  if (!profile.fields.includes(pf.DAYS)) {
-    return profile;
-  }
-  // Apply default Monday-first transformer (identity transformation)
-  return { ...profile, ...createFirstDayTransformer(Day.Sunday) };
-});
+
+  // Apply default identity transformer
+  const transformer = createDayTransformer([
+    [0, 6], // Mon
+    [1, 5], // Tue
+    [2, 4], // Wed
+    [3, 3], // Thu
+    [4, 2], // Fri
+    [5, 1], // Sat
+    [6, 0], // Sun
+  ]);
+
+  return {
+    ...profile,
+    ...transformer,
+  };
+}

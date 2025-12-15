@@ -25,10 +25,12 @@ export const createDayTransformer = (map: [number, number][]) => ({
         encoded |= 1 << custom;
       }
     });
-    return encoded;
+    const result = encoded & 0x7f;
+    return result;
   },
   decode: (encoded: number) => {
     let standardDays = 0;
+    encoded = encoded & 0x7f;
     map.forEach(([std, custom]) => {
       if (encoded & (1 << custom)) {
         standardDays |= 1 << std;
@@ -37,36 +39,6 @@ export const createDayTransformer = (map: [number, number][]) => ({
     return standardDays;
   },
 });
-
-/**
- * Creates day transformer based on device's first day of week.
- *
- * Internal format: bit 0=Mon, bit 1=Tue ... bit 6=Sun
- *
- * @param firstDay - Which day is at bit 0 in the DEVICE's format
- *   - Day.Monday (=0): Device Monday-first → identity (no transform)
- *   - Day.Sunday (=6): Device Sunday-first (Tuya) → transforms bits
- *
- * Tuya/Sunday-first bit mapping:
- * ┌───────────┬──────────────┬──────────────┐
- * │ Day       │ Internal Bit │ Device Bit   │
- * ├───────────┼──────────────┼──────────────┤
- * │ Monday    │ 0 (rightmost)│ 1            │
- * │ Tuesday   │ 1            │ 2            │
- * │ Wednesday │ 2            │ 3            │
- * │ Thursday  │ 3            │ 4            │
- * │ Friday    │ 4            │ 5            │
- * │ Saturday  │ 5            │ 6 (leftmost) │
- * │ Sunday    │ 6 (leftmost) │ 0 (rightmost)│
- * └───────────┴──────────────┴──────────────┘
- */
-export const createFirstDayTransformer = (firstDay: Day = Day.Monday) =>
-  createDayTransformer(
-    Array.from({ length: 7 }, (_, deviceBit) => [
-      (deviceBit + firstDay) % 7,
-      deviceBit,
-    ]),
-  );
 
 function validateTemplateInput(template: string): void {
   if (!template || typeof template !== 'string') {
@@ -126,10 +98,10 @@ export function chunkLength(tokens: TemplateToken[]): number {
 
 export class TemplateEncoder {
   private tokens: TemplateToken[];
-  private profile?: DeviceProfile;
+  private profile: DeviceProfile;
   private chunkLen: number;
 
-  constructor(template: string, profile?: DeviceProfile) {
+  constructor(template: string, profile: DeviceProfile) {
     if (!template) throw new Error('Template is required');
     this.tokens = parseTemplate(template);
     this.profile = profile;
@@ -142,7 +114,7 @@ export class TemplateEncoder {
 
   private transformValue(name: string, value: number): number {
     // Apply custom day encoding if transformer is configured
-    return name === TemplateFieldName.DAYS && this.profile?.encode
+    return name === TemplateFieldName.DAYS && this.profile.encode
       ? this.profile.encode(value)
       : value;
   }
@@ -167,7 +139,7 @@ export class TemplateEncoder {
     // For BASE64 encoding type, use hex for all fields
     // For HEX encoding type, use hex only for DAYS field
     const useHex =
-      !this.profile?.encodingType ||
+      !this.profile.encodingType ||
       this.profile.encodingType === EncodingType.BASE64
         ? true
         : HEX_FIELDS.has(name as TemplateFieldName);
@@ -210,7 +182,7 @@ export class TemplateEncoder {
     // For BASE64 encoding type, use hex for all fields
     // For HEX encoding type, use hex only for DAYS field
     const useHex =
-      !this.profile?.encodingType ||
+      !this.profile.encodingType ||
       this.profile.encodingType === EncodingType.BASE64
         ? true
         : HEX_FIELDS.has(name as TemplateFieldName);
@@ -220,9 +192,9 @@ export class TemplateEncoder {
 
   private untransformValue(name: string, value: number): number {
     // Apply custom day decoding if transformer is configured
-    return name === TemplateFieldName.DAYS && this.profile?.decode
-      ? this.profile.decode(value)
-      : value;
+    const shouldTransform =
+      name === TemplateFieldName.DAYS && this.profile.decode;
+    return shouldTransform ? this.profile.decode(value) : value;
   }
 }
 

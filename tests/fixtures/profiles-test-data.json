@@ -7,7 +7,7 @@
       { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 4, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
   },
   {
@@ -30,7 +30,7 @@
       { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 4, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
   },
   {
@@ -41,7 +41,7 @@
       { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 4, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
   },
 
@@ -53,7 +53,7 @@
       { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 4, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
   },
   {
@@ -64,7 +64,7 @@
       { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 4, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
   },
   {
@@ -75,7 +75,7 @@
       { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
       { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 4, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
     ]
   },
   {
@@ -96,19 +96,19 @@
     "manufacturer": "Petrust",
     "encoded": "AwseAQE=",
     "decoded": [
-      { "days": 65, "hour": 11, "minute": 30, "portion": 1, "enabled": 1 }
+      { "days": 96, "hour": 11, "minute": 30, "portion": 1, "enabled": 1 }
     ]
   },
   {
     "manufacturer": "Meowmatic",
-    "encoded": "PwgAAQF/CgABAX8MAAEBfQ4AAQF+EAABAX4SAAEBfxQAAQB/FgABAQ==",
+    "encoded": "PwgAAQF/CgABAX8MAAEAfw4AAQF+EAABAX8SAAEBfxQAAQB/FgABAQ==",
     "decoded": [
-      { "days": 95, "hour": 8, "minute": 0, "portion": 1, "enabled": 1 },
+      { "days": 126, "hour": 8, "minute": 0, "portion": 1, "enabled": 1 },
       { "days": 127, "hour": 10, "minute": 0, "portion": 1, "enabled": 1 },
-      { "days": 127, "hour": 12, "minute": 0, "portion": 1, "enabled": 1 },
-      { "days": 126, "hour": 14, "minute": 0, "portion": 1, "enabled": 1 },
+      { "days": 127, "hour": 12, "minute": 0, "portion": 1, "enabled": 0 },
+      { "days": 127, "hour": 14, "minute": 0, "portion": 1, "enabled": 1 },
       { "days": 63, "hour": 16, "minute": 0, "portion": 1, "enabled": 1 },
-      { "days": 63, "hour": 18, "minute": 0, "portion": 1, "enabled": 1 },
+      { "days": 127, "hour": 18, "minute": 0, "portion": 1, "enabled": 1 },
       { "days": 127, "hour": 20, "minute": 0, "portion": 1, "enabled": 0 },
       { "days": 127, "hour": 22, "minute": 0, "portion": 1, "enabled": 1 }
     ]
