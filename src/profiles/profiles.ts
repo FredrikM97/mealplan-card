@@ -26,15 +26,6 @@ const FIELDS_FULL = [
   pf.ADD,
 ];
 const FIELDS_MINIMAL = [pf.TIME, pf.PORTION, pf.ENABLED, pf.EDIT];
-const FIELDS_AQARA = [
-  pf.TIME,
-  pf.SIZE, // Aqara uses 'size' instead of 'portion'
-  pf.DAYS,
-  pf.ENABLED,
-  pf.EDIT,
-  pf.DELETE,
-  pf.ADD,
-];
 
 const baseProfiles: DeviceProfile[] = [
   {
@@ -126,8 +117,7 @@ const baseProfiles: DeviceProfile[] = [
     manufacturer: 'Aqara',
     models: ['C1'],
     encodingType: EncodingType.DICT,
-    encodingTemplate: '', // Not used for DICT encoding
-    fields: FIELDS_AQARA,
+    fields: [pf.TIME, pf.SIZE, pf.DAYS, pf.EDIT, pf.DELETE, pf.ADD],
     ...createDictEncoderWithWrapper(
       'schedule',
       createStringDayTransformer({

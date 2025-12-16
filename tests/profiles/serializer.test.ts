@@ -101,14 +101,9 @@ describe('encoder error handling', () => {
   });
 
   it('throws on invalid profile', () => {
-    expect(() =>
-      getEncoder({
-        manufacturer: 'Test',
-        models: [],
-        fields: [],
-        encodingTemplate: undefined as any,
-      }),
-    ).toThrow('Invalid device profile for encoding/decoding');
+    expect(() => getEncoder(undefined as any)).toThrow(
+      'Device profile is required for encoder initialization',
+    );
   });
 
   it('throws on invalid meal plan length', () => {

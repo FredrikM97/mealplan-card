@@ -166,7 +166,7 @@ export class TemplateEncoder {
 export abstract class EncoderBase {
   protected profile: DeviceProfile;
   constructor(profile: DeviceProfile) {
-    if (!profile || typeof (profile as any).encodingTemplate !== 'string') {
+    if (!profile) {
       throw new Error('Invalid device profile for encoding/decoding');
     }
     this.profile = profile;
@@ -243,10 +243,6 @@ class TemplateBasedEncoder extends EncoderBase {
 }
 
 class DictEncoder extends EncoderBase {
-  constructor(profile: DeviceProfile) {
-    super({ ...profile, encodingTemplate: profile.encodingTemplate || '' });
-  }
-
   encode(data: FeedingTime[]): string {
     // If profile has encode transformer, use it (handles everything: field mapping, day transform, wrapping)
     const output = this.profile.encode ? this.profile.encode(data) : data;
