@@ -5,6 +5,7 @@ import {
   getEncoder,
   EncodingType,
   createDayTransformer,
+  createStringDayTransformer,
 } from '../../src/profiles/serializer';
 import { f, TemplateFieldName as F, Day } from '../../src/types';
 import { FeedingTime } from '../../src/types';
@@ -239,5 +240,129 @@ describe('createDayTransformer', () => {
     expect(transformer.decode(0b00000001)).toBe(1 << 6); // 0b1000000
     // And the reverse: encoding internal Sunday should set device bit 0
     expect(transformer.encode(1 << 6)).toBe(0b00000001);
+  });
+});
+
+describe('DictEncoder', () => {
+  const encoder = getEncoder({
+    manufacturer: 'Test',
+    models: [],
+    fields: [],
+    encodingType: EncodingType.DICT,
+    encodingTemplate: '',
+  });
+
+  it('encodes feeding times as JSON with portion->size mapping', () => {
+    const feedingTimes: FeedingTime[] = [
+      { hour: 8, minute: 0, portion: 2, days: 127, enabled: 1 },
+      { hour: 18, minute: 30, portion: 1, days: 62, enabled: 1 },
+    ];
+    const encoded = encoder.encode(feedingTimes);
+    const parsed = JSON.parse(encoded);
+    
+    expect(parsed).toHaveLength(2);
+    expect(parsed[0]).toMatchObject({ hour: 8, minute: 0, size: 2, days: 127, enabled: 1 });
+    expect(parsed[0].portion).toBeUndefined();
+  });
+
+  it('decodes JSON with size->portion mapping', () => {
+    const deviceData = [
+      { hour: 8, minute: 0, size: 2, days: 127, enabled: 1 },
+      { hour: 18, minute: 30, size: 1, days: 62, enabled: 1 },
+    ];
+    const decoded = encoder.decode(JSON.stringify(deviceData));
+    
+    expect(decoded).toEqual([
+      { hour: 8, minute: 0, portion: 2, days: 127, enabled: 1 },
+      { hour: 18, minute: 30, portion: 1, days: 62, enabled: 1 },
+    ]);
+  });
+
+  it('returns empty array for unknown/empty data', () => {
+    expect(encoder.decode('unknown')).toEqual([]);
+    expect(encoder.decode('')).toEqual([]);
+    expect(encoder.decode('{"key": "value"}')).toEqual([]);
+  });
+
+  it('throws error for invalid JSON', () => {
+    expect(() => encoder.decode('not valid json')).toThrow('Invalid JSON data for DICT encoding');
+  });
+
+  it('encodes empty array', () => {
+    expect(encoder.encode([])).toBe('[]');
+  });
+
+  it('applies day transformer', () => {
+    const aqaraEncoder = getEncoder({
+      manufacturer: 'Aqara',
+      models: ['C1'],
+      fields: [],
+      encodingType: EncodingType.DICT,
+      encodingTemplate: '',
+      ...createStringDayTransformer({ 127: 'everyday', 31: 'workdays' }),
+    });
+
+    const feedingTimes: FeedingTime[] = [
+      { hour: 8, minute: 0, portion: 6, days: 127 },
+      { hour: 16, minute: 0, portion: 6, days: 31 },
+    ];
+
+    const encoded = aqaraEncoder.encode(feedingTimes);
+    const parsed = JSON.parse(encoded);
+    
+    expect(parsed[0].days).toBe('everyday');
+    expect(parsed[1].days).toBe('workdays');
+
+    const decoded = aqaraEncoder.decode(encoded);
+    expect(decoded[0].days).toBe(127);
+    expect(decoded[1].days).toBe(31);
+  });
+});
+
+describe('createStringDayTransformer', () => {
+  const transformer = createStringDayTransformer({
+    127: 'everyday',
+    31: 'workdays',
+    96: 'weekend',
+    1: 'mon',
+  });
+
+  it('encodes bitmask to string when mapped', () => {
+    expect(transformer.encode(127)).toBe('everyday');
+    expect(transformer.encode(31)).toBe('workdays');
+    expect(transformer.encode(96)).toBe('weekend');
+    expect(transformer.encode(1)).toBe('mon');
+  });
+
+  it('passes through unmapped values', () => {
+    expect(transformer.encode(15)).toBe(15);
+    expect(transformer.encode(63)).toBe(63);
+    expect(transformer.decode(15)).toBe(15);
+    expect(transformer.decode(63)).toBe(63);
+  });
+
+  it('decodes string to bitmask when mapped', () => {
+    expect(transformer.decode('everyday')).toBe(127);
+    expect(transformer.decode('workdays')).toBe(31);
+    expect(transformer.decode('weekend')).toBe(96);
+    expect(transformer.decode('mon')).toBe(1);
+  });
+
+  it('roundtrip preserves values', () => {
+    expect(transformer.decode(transformer.encode(127))).toBe(127);
+    expect(transformer.decode(transformer.encode(31))).toBe(31);
+  });
+
+  it('handles Aqara complex day patterns', () => {
+    const aqaraTransformer = createStringDayTransformer({
+      127: 'everyday',
+      85: 'mon-wed-fri-sun',
+      42: 'tue-thu-sat',
+    });
+
+    expect(aqaraTransformer.encode(85)).toBe('mon-wed-fri-sun');
+    expect(aqaraTransformer.decode('mon-wed-fri-sun')).toBe(85);
+    expect(aqaraTransformer.encode(42)).toBe('tue-thu-sat');
+    expect(aqaraTransformer.decode('tue-thu-sat')).toBe(42);
   });
 });
