@@ -40,6 +40,35 @@ export const createDayTransformer = (map: [number, number][]) => ({
   },
 });
 
+/**
+ * Creates a string-based day transformer for devices that use string values like "everyday".
+ * 
+ * @param stringMap - Map of bitmask values to string representations
+ * @returns Transformer with encode/decode functions
+ */
+export const createStringDayTransformer = (stringMap: Record<number, string>) => {
+  // Create reverse map for decoding
+  const reverseMap: Record<string, number> = {};
+  Object.entries(stringMap).forEach(([bitmask, str]) => {
+    reverseMap[str] = parseInt(bitmask, 10);
+  });
+
+  return {
+    encode: (standardDays: number) => {
+      // Convert bitmask to string if mapping exists, otherwise return number
+      return stringMap[standardDays] !== undefined 
+        ? (stringMap[standardDays] as any) 
+        : standardDays;
+    },
+    decode: (encoded: any) => {
+      // Convert string to bitmask if mapping exists, otherwise return as number
+      return typeof encoded === 'string' && reverseMap[encoded] !== undefined
+        ? reverseMap[encoded]
+        : (encoded as number);
+    },
+  };
+};
+
 function validateTemplateInput(template: string): void {
   if (!template || typeof template !== 'string') {
     throw new Error('Invalid template');
@@ -277,14 +306,67 @@ class TemplateBasedEncoder extends EncoderBase {
   }
 }
 
+class DictEncoder extends EncoderBase {
+  constructor(profile: DeviceProfile) {
+    super({ ...profile, encodingTemplate: profile.encodingTemplate || '' });
+  }
+
+  encode(data: FeedingTime[]): string {
+    const encoded = data.map((entry) => {
+      const result: any = {};
+      
+      Object.entries(entry).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        
+        const outputKey = key === 'portion' ? 'size' : key;
+        result[outputKey] = key === 'days' && this.profile.encode 
+          ? this.profile.encode(value)
+          : value;
+      });
+      
+      return result;
+    });
+    
+    return JSON.stringify(encoded);
+  }
+
+  decode(data: string): FeedingTime[] {
+    if (!data || data === 'unknown') return [];
+    
+    try {
+      const parsed = JSON.parse(data);
+      if (!Array.isArray(parsed)) return [];
+      
+      return parsed.map((entry: any) => {
+        const result: any = {};
+        
+        Object.entries(entry).forEach(([key, value]) => {
+          if (value === undefined || value === null) return;
+          
+          const outputKey = key === 'size' ? 'portion' : key;
+          result[outputKey] = key === 'days' && this.profile.decode
+            ? this.profile.decode(value as any)
+            : value;
+        });
+        
+        return result as FeedingTime;
+      });
+    } catch {
+      throw new Error('Invalid JSON data for DICT encoding');
+    }
+  }
+}
+
 export enum EncodingType {
   BASE64 = 'base64',
   HEX = 'hex',
+  DICT = 'dict',
 }
 
 const ENCODERS = {
   [EncodingType.BASE64]: Base64Encoder,
   [EncodingType.HEX]: TemplateBasedEncoder,
+  [EncodingType.DICT]: DictEncoder,
 };
 
 export function getEncoder(profile: DeviceProfile) {

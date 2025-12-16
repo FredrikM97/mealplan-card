@@ -1,6 +1,10 @@
 import { ProfileField as pf, TemplateFieldName as F, f } from '../types';
 import type { DeviceProfile } from '../types';
-import { EncodingType, createDayTransformer } from './serializer';
+import {
+  EncodingType,
+  createDayTransformer,
+  createStringDayTransformer,
+} from './serializer';
 
 // Common encoding templates
 const TEMPLATE_FULL = `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`;
@@ -103,6 +107,27 @@ const baseProfiles: DeviceProfile[] = [
       [1, 5], // Tue
       [6, 6], // Sun
     ]),
+  },
+  {
+    manufacturer: 'Aqara',
+    models: ['C1'],
+    encodingType: EncodingType.DICT,
+    encodingTemplate: '', // Not used for DICT encoding
+    fields: FIELDS_FULL,
+    ...createStringDayTransformer({
+      127: 'everyday', // 0b1111111 - all days
+      31: 'workdays', // 0b0011111 - Mon-Fri
+      96: 'weekend', // 0b1100000 - Sat-Sun
+      1: 'mon', // 0b0000001
+      2: 'tue', // 0b0000010
+      4: 'wed', // 0b0000100
+      8: 'thu', // 0b0001000
+      16: 'fri', // 0b0010000
+      32: 'sat', // 0b0100000
+      64: 'sun', // 0b1000000
+      85: 'mon-wed-fri-sun', // 0b1010101 - Mon(1) + Wed(4) + Fri(16) + Sun(64)
+      42: 'tue-thu-sat', // 0b0101010 - Tue(2) + Thu(8) + Sat(32)
+    }),
   },
 ];
 

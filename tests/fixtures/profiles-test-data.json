@@ -120,5 +120,14 @@
       { "days": 2, "hour": 19, "minute": 12, "portion": 1, "enabled": 1 },
       { "days": 67, "hour": 19, "minute": 10, "portion": 3, "enabled": 1 }
     ]
+  },
+  {
+    "manufacturer": "Aqara",
+    "encoded": "[{\"days\":\"everyday\",\"hour\":8,\"minute\":0,\"size\":6},{\"days\":\"everyday\",\"hour\":16,\"minute\":0,\"size\":6},{\"days\":\"everyday\",\"hour\":0,\"minute\":0,\"size\":4}]",
+    "decoded": [
+      { "days": 127, "hour": 8, "minute": 0, "portion": 6 },
+      { "days": 127, "hour": 16, "minute": 0, "portion": 6 },
+      { "days": 127, "hour": 0, "minute": 0, "portion": 4 }
+    ]
   }
 ]
