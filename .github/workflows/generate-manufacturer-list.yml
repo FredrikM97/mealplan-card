@@ -20,7 +20,7 @@ jobs:
         run: |
           node scripts/generate-manufacturer-list.mjs > SUPPORTED.md
       - name: Upload SUPPORTED.md as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: supported-manufacturers
           path: SUPPORTED.md
