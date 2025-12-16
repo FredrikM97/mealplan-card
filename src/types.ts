@@ -64,7 +64,7 @@ export interface DeviceProfile {
   models: string[];
   encodingType?: EncodingType;
   fields: ProfileField[];
-  encodingTemplate: string;
+  encodingTemplate?: string;
   featureFields?: ProfileField[];
   // Custom transformers for encoding/decoding
   encode?: (data: any) => any;
