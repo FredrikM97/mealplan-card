@@ -4,26 +4,49 @@
  */
 
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
-import { FeedingTime, DeviceProfile } from './types';
+import {
+  FeedingTime,
+  DeviceProfile,
+  MealPlanCardConfig,
+  TransportType,
+} from './types';
 import { getEncoder, EncoderBase } from './profiles/serializer';
 
 export class MealStateController implements ReactiveController {
-  meals: FeedingTime[] = [];
+  private _meals: FeedingTime[] = [];
+  private subscribers = new Set<() => void>();
+
+  // Getter/setter with notification
+  get meals(): FeedingTime[] {
+    return this._meals;
+  }
+
+  set meals(value: FeedingTime[]) {
+    this._meals = value;
+    this.notifySubscribers();
+  }
+
   hass: any;
   profile: DeviceProfile;
   private encoder: EncoderBase;
+  private writeValue: (value: string) => Promise<void>;
 
   constructor(
     private host: ReactiveControllerHost,
-    private sensorID: string,
     profile: DeviceProfile,
     hass: any,
-    private helperID?: string,
+    private config: MealPlanCardConfig,
   ) {
     this.host.addController(this);
     this.profile = profile;
     this.hass = hass;
     this.encoder = getEncoder(profile);
+
+    // Map transport type to write function
+    this.writeValue = {
+      [TransportType.SENSOR]: (value: string) => this.setSensorValue(value),
+      [TransportType.MQTT]: (value: string) => this.publishMQTT(value),
+    }[this.config.transport_type];
 
     // Load initial data after construction
     if (this.hass) {
@@ -38,11 +61,19 @@ export class MealStateController implements ReactiveController {
   hostConnected(): void {}
 
   /**
-   * Set meals (updates local state - does not persist) - used by tests
+   * Subscribe to meals changes
    */
-  setMeals(meals: FeedingTime[]): void {
-    this.meals = Array.isArray(meals) ? [...meals] : [];
+  subscribe(callback: () => void): () => void {
+    this.subscribers.add(callback);
+    return () => this.subscribers.delete(callback);
+  }
+
+  /**
+   * Notify all subscribers of changes
+   */
+  private notifySubscribers(): void {
     this.host.requestUpdate();
+    this.subscribers.forEach((callback) => callback());
   }
 
   /**
@@ -67,31 +98,12 @@ export class MealStateController implements ReactiveController {
   }
 
   /**
-   * Decode and sync sensor value
+   * Set entity value via set_value service
    */
-  private async decodeFromSensor(
-    sensorValue: string,
-    helperValue: string | null,
-  ): Promise<FeedingTime[] | null> {
-    const decoded = this.encoder.decode(sensorValue);
-
-    // Sync helper if out of sync
-    if (decoded && helperValue && helperValue !== sensorValue) {
-      await this.syncHelper(sensorValue);
-    }
-
-    return decoded;
-  }
-
-  /**
-   * Sync helper to match sensor value
-   */
-  private async syncHelper(value: string): Promise<void> {
-    if (!this.helperID) return;
-
-    const domain = this.helperID.split('.')[0];
+  private async setEntityValue(entityId: string, value: string): Promise<void> {
+    const domain = entityId.split('.')[0];
     await this.hass.callService(domain, 'set_value', {
-      entity_id: this.helperID,
+      entity_id: entityId,
       value,
     });
   }
@@ -100,38 +112,24 @@ export class MealStateController implements ReactiveController {
    * Update from Home Assistant - decode from sensor/helper
    */
   async updateFromHass(allowUpdate: boolean = true): Promise<void> {
-    const sensorValue = this.getEntityValue(this.sensorID);
-    const helperValue = this.helperID
-      ? this.getEntityValue(this.helperID)
+    const sensorValue = this.getEntityValue(this.config.sensor);
+    const helperValue = this.config.helper
+      ? this.getEntityValue(this.config.helper)
       : null;
-
-    // Early validation
-    if (!sensorValue && !helperValue) {
-      if (allowUpdate) {
-        this.meals = [];
-        this.host.requestUpdate();
-      }
-      return;
-    }
 
     let decodedMeals: FeedingTime[] | null = null;
 
-    try {
-      // Prefer sensor if valid
-      if (sensorValue) {
-        decodedMeals = await this.decodeFromSensor(sensorValue, helperValue);
-      }
-      // Fall back to helper
-      else if (helperValue) {
-        decodedMeals = this.encoder.decode(helperValue);
-      }
-    } catch (err) {
-      decodedMeals = null;
+    // Prefer sensor if valid
+    if (sensorValue) {
+      decodedMeals = this.encoder.decode(sensorValue);
+    }
+    // Fall back to helper
+    else if (helperValue) {
+      decodedMeals = this.encoder.decode(helperValue);
     }
 
     if (allowUpdate) {
       this.meals = decodedMeals ? [...decodedMeals] : [];
-      this.host.requestUpdate();
     }
   }
 
@@ -139,20 +137,33 @@ export class MealStateController implements ReactiveController {
    * Save meals to sensor and update local state
    */
   async saveMeals(meals: FeedingTime[]): Promise<void> {
-    if (!this.hass) {
-      throw new Error('Cannot save: hass not initialized');
-    }
-
-    const value = this.encoder.encode(meals);
-
-    const domain = this.sensorID.split('.')[0];
-    await this.hass.callService(domain, 'set_value', {
-      entity_id: this.sensorID,
-      value,
-    });
-
-    // Update local state after successful save
+    await this.writeValue(this.encoder.encode(meals));
     this.meals = [...meals];
-    this.host.requestUpdate();
+  }
+
+  /**
+   * Set sensor value (and optionally helper for backup)
+   */
+  private async setSensorValue(value: string): Promise<void> {
+    await this.setEntityValue(this.config.sensor, value);
+
+    // Also sync helper if configured (for backup/persistence)
+    if (this.config.helper) {
+      await this.setEntityValue(this.config.helper, value);
+    }
+  }
+
+  /**
+   * Publish to MQTT
+   */
+  private async publishMQTT(value: string): Promise<void> {
+    // Build topic from sensor entity ID
+    const parts = this.config.sensor.split('.');
+    const deviceName = parts[1]?.split('_')[0] || parts[1];
+    const topic = `zigbee2mqtt/${deviceName}/set`;
+    await this.hass.callService('mqtt', 'publish', {
+      topic,
+      payload: value,
+    });
   }
 }

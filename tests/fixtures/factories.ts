@@ -3,8 +3,12 @@ import { fixture, html } from '@open-wc/testing';
 import type { ReactiveControllerHost } from 'lit';
 import { profiles } from '../../src/profiles/profiles';
 import { MealStateController } from '../../src/mealStateController';
-import type { FeedingTime, DeviceProfile } from '../../src/types';
-import { ProfileField } from '../../src/types';
+import type {
+  FeedingTime,
+  DeviceProfile,
+  MealPlanCardConfig,
+} from '../../src/types';
+import { ProfileField, TransportType } from '../../src/types';
 
 export function createMockHass(options?: {
   sensor?: { id: string; state: string; attributes?: Record<string, any> };
@@ -72,7 +76,6 @@ export function createMockProfile(
     encodingTemplate:
       overrides?.encodingTemplate ??
       '{DAYS:8}{HOUR:5}{MINUTE:6}{PORTION:4}{ENABLED:1}',
-    firstDay: overrides?.firstDay ?? 0,
     fields: overrides?.fields ?? [ProfileField.DAYS, ProfileField.PORTION],
   };
 }
@@ -84,19 +87,29 @@ export function createMealStateController(
     profile?: DeviceProfile;
     hass?: any;
     helper?: string;
+    config?: Partial<MealPlanCardConfig>;
   },
 ) {
   const host = createMockHost();
+  const config: MealPlanCardConfig = {
+    sensor: options?.sensor ?? 'sensor.test',
+    helper: options?.helper,
+    manufacturer: 'Test',
+    title: 'Test Card',
+    portions: 6,
+    transport_type: TransportType.SENSOR,
+    ...options?.config,
+  };
+
   const controller = new MealStateController(
     host,
-    options?.sensor ?? 'sensor.test',
     options?.profile ?? profiles[0],
     options?.hass ?? createMockHass(),
-    options?.helper,
+    config,
   );
 
   if (meals.length > 0) {
-    controller.setMeals(meals);
+    controller.meals = meals;
   }
 
   return controller;

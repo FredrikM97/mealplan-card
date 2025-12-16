@@ -1,5 +1,10 @@
 import type { DeviceProfile, FeedingTime } from '../types';
-import { TOKEN_REGEX, TemplateFieldName, HEX_FIELDS } from '../types';
+import {
+  TOKEN_REGEX,
+  TemplateFieldName,
+  HEX_FIELDS,
+  EncodingType,
+} from '../types';
 
 export interface TemplateToken {
   name: string;
@@ -7,124 +12,16 @@ export interface TemplateToken {
 }
 
 /**
- * Creates day transformer with custom bit mapping.
+ * Serializes/deserializes FeedingTime entries using a templated string format.
  *
- * @param map - Array of [internalBit, deviceBit] tuples.
- *   Internal format: bit 0 (rightmost) = Monday, bit 1 = Tuesday ... bit 6 (leftmost) = Sunday
+ * Template format: "{FIELD:length}" where fields are concatenated into fixed-width strings.
+ * Example: "{HOUR:2}{MINUTE:2}{PORTION:2}{DAYS:2}" → "08003007f" (8:00, 30g portion, all days)
  *
- * Bit positions use standard binary notation:
- *   - bit 0 is the rightmost/LSB (least significant bit)
- *   - bit 6 is the leftmost/MSB (most significant bit)
- *   - Example: 0b0000011 has bits 0 and 1 set (Mon+Tue)
+ * Supports:
+ * - Custom field transformers via profile.encode/decode (e.g., day bit remapping)
+ * - Hex or decimal encoding per field type
+ * - Multiple entries concatenated into single string
  */
-export const createDayTransformer = (map: [number, number][]) => ({
-  encode: (standardDays: number) => {
-    let encoded = 0;
-    map.forEach(([std, custom]) => {
-      if (standardDays & (1 << std)) {
-        encoded |= 1 << custom;
-      }
-    });
-    const result = encoded & 0x7f;
-    return result;
-  },
-  decode: (encoded: number) => {
-    let standardDays = 0;
-    const maskedEncoded = encoded & 0x7f;
-    map.forEach(([std, custom]) => {
-      if (maskedEncoded & (1 << custom)) {
-        standardDays |= 1 << std;
-      }
-    });
-    return standardDays;
-  },
-});
-
-/**
- * Creates a string-based day transformer for devices that use string values like "everyday".
- * 
- * @param stringMap - Map of bitmask values to string representations
- * @returns Transformer with encode/decode functions
- */
-export const createStringDayTransformer = (stringMap: Record<number, string>) => {
-  // Create reverse map for decoding
-  const reverseMap: Record<string, number> = {};
-  Object.entries(stringMap).forEach(([bitmask, str]) => {
-    reverseMap[str] = parseInt(bitmask, 10);
-  });
-
-  return {
-    encode: (standardDays: number) => {
-      // Convert bitmask to string if mapping exists, otherwise return number
-      return stringMap[standardDays] !== undefined 
-        ? (stringMap[standardDays] as any) 
-        : standardDays;
-    },
-    decode: (encoded: any) => {
-      // Convert string to bitmask if mapping exists, otherwise return as number
-      return typeof encoded === 'string' && reverseMap[encoded] !== undefined
-        ? reverseMap[encoded]
-        : (encoded as number);
-    },
-  };
-};
-
-function validateTemplateInput(template: string): void {
-  if (!template || typeof template !== 'string') {
-    throw new Error('Invalid template');
-  }
-}
-
-function validateTokenPosition(
-  matchIndex: number,
-  expectedIndex: number,
-): void {
-  if (matchIndex !== expectedIndex) {
-    throw new Error('Invalid template: unexpected characters between tokens');
-  }
-}
-
-function parseTokenLength(lengthStr: string): number {
-  const len = parseInt(lengthStr, 10);
-  if (!Number.isInteger(len) || len <= 0) {
-    throw new Error('Invalid token length');
-  }
-  return len;
-}
-
-export function parseTemplate(template: string): TemplateToken[] {
-  validateTemplateInput(template);
-
-  const tokens: TemplateToken[] = [];
-  TOKEN_REGEX.lastIndex = 0;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = TOKEN_REGEX.exec(template)) !== null) {
-    validateTokenPosition(match.index, lastIndex);
-
-    const name = match[1];
-    const lengthStr = match[2];
-    if (!name || !lengthStr) {
-      throw new Error('Invalid token format in template');
-    }
-    const length = parseTokenLength(lengthStr);
-
-    tokens.push({ name, length });
-    lastIndex = TOKEN_REGEX.lastIndex;
-  }
-
-  if (lastIndex !== template.length) {
-    throw new Error('Invalid template: tokens must exactly cover template');
-  }
-
-  return tokens;
-}
-
-export function chunkLength(tokens: TemplateToken[]): number {
-  return tokens.reduce((acc, t) => acc + t.length, 0);
-}
-
 export class TemplateEncoder {
   private tokens: TemplateToken[];
   private profile: DeviceProfile;
@@ -132,98 +29,137 @@ export class TemplateEncoder {
 
   constructor(template: string, profile: DeviceProfile) {
     if (!template) throw new Error('Template is required');
-    this.tokens = parseTemplate(template);
+    this.tokens = TemplateEncoder.parseTemplate(template);
     this.profile = profile;
-    this.chunkLen = chunkLength(this.tokens);
+    this.chunkLen = TemplateEncoder.calculateChunkLength(this.tokens);
+  }
+
+  private static parseTemplate(template: string): TemplateToken[] {
+    if (!template || typeof template !== 'string') {
+      throw new Error('Invalid template');
+    }
+
+    const tokens: TemplateToken[] = [];
+    TOKEN_REGEX.lastIndex = 0;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = TOKEN_REGEX.exec(template)) !== null) {
+      if (match.index !== lastIndex) {
+        throw new Error(
+          'Invalid template: unexpected characters between tokens',
+        );
+      }
+
+      const name = match[1];
+      const lengthStr = match[2];
+      if (!name || !lengthStr) {
+        throw new Error('Invalid token format in template');
+      }
+
+      const len = parseInt(lengthStr, 10);
+      if (!Number.isInteger(len) || len <= 0) {
+        throw new Error('Invalid token length');
+      }
+
+      tokens.push({ name, length: len });
+      lastIndex = TOKEN_REGEX.lastIndex;
+    }
+
+    if (lastIndex !== template.length) {
+      throw new Error('Invalid template: tokens must exactly cover template');
+    }
+
+    return tokens;
+  }
+
+  private static calculateChunkLength(tokens: TemplateToken[]): number {
+    return tokens.reduce((acc, t) => acc + t.length, 0);
   }
 
   encode(data: FeedingTime[]): string {
-    return data.map((entry) => this.encodeEntry(entry)).join('');
+    return data.map((entry) => this.serializeEntry(entry)).join('');
   }
 
-  private transformValue(name: string, value: number): number {
-    // Apply custom day encoding if transformer is configured
-    return name === TemplateFieldName.DAYS && this.profile.encode
-      ? this.profile.encode(value)
-      : value;
+  decode(data: string): FeedingTime[] {
+    if (data.length % this.chunkLen !== 0) {
+      throw new Error('Invalid templated meal plan length');
+    }
+    const entries: FeedingTime[] = [];
+    for (let i = 0; i < data.length; i += this.chunkLen) {
+      const chunk = data.slice(i, i + this.chunkLen);
+      entries.push(this.parseEntry(chunk));
+    }
+    return entries;
   }
 
-  private encodeEntry(entry: FeedingTime): string {
+  private serializeEntry(entry: FeedingTime): string {
+    // Apply profile transformer first if configured
+    const transformedEntry = this.profile.encode
+      ? this.profile.encode(entry)
+      : entry;
+
     return this.tokens
-      .map((t) => {
-        if (t.name === TemplateFieldName.FILL) {
-          return '0'.repeat(t.length);
+      .map((token) => {
+        if (token.name === TemplateFieldName.FILL) {
+          return '0'.repeat(token.length);
         }
-        const rawValue = (entry as any)[t.name.toLowerCase()];
-        if (rawValue === undefined || rawValue === null) {
-          return ''.padStart(t.length, '0');
+
+        const fieldName = token.name.toLowerCase();
+        const value = (transformedEntry as any)[fieldName];
+
+        if (value === undefined || value === null) {
+          return ''.padStart(token.length, '0');
         }
-        const value = this.transformValue(t.name, rawValue);
-        return this.formatValue(t.name, value, t.length);
+
+        return this.formatField(token.name, value, token.length);
       })
       .join('');
   }
 
-  private formatValue(name: string, value: number, length: number): string {
-    // For BASE64 encoding type, use hex for all fields
-    // For HEX encoding type, use hex only for DAYS field
-    const useHex =
-      !this.profile.encodingType ||
-      this.profile.encodingType === EncodingType.BASE64
-        ? true
-        : HEX_FIELDS.has(name as TemplateFieldName);
+  private parseEntry(chunk: string): FeedingTime {
+    let position = 0;
+    const entry: any = {};
 
+    for (const token of this.tokens) {
+      const segment = chunk.slice(position, position + token.length);
+      position += token.length;
+
+      if (token.name === TemplateFieldName.FILL) continue;
+
+      const fieldName = token.name.toLowerCase();
+      entry[fieldName] = this.parseField(token.name, segment);
+    }
+
+    // Apply profile transformer after parsing if configured
+    if (this.profile.decode) {
+      const transformed = this.profile.decode(entry);
+      Object.assign(entry, transformed);
+    }
+
+    return entry as FeedingTime;
+  }
+
+  private formatField(fieldName: string, value: number, width: number): string {
+    const useHex = this.shouldUseHex(fieldName);
     return useHex
-      ? value.toString(16).padStart(length, '0')
-      : value.toString(10).padStart(length, '0');
+      ? value.toString(16).padStart(width, '0')
+      : value.toString(10).padStart(width, '0');
   }
 
-  decode(data: string): FeedingTime[] {
-    if (data.length % this.chunkLen !== 0)
-      throw new Error('Invalid templated meal plan length');
-    const out: FeedingTime[] = [];
-    for (let i = 0; i < data.length; i += this.chunkLen) {
-      const chunk = data.slice(i, i + this.chunkLen);
-      out.push(this.decodeChunk(chunk));
-    }
-    return out;
+  private parseField(fieldName: string, segment: string): number {
+    const useHex = this.shouldUseHex(fieldName);
+    return useHex ? parseInt(segment, 16) || 0 : parseInt(segment, 10) || 0;
   }
 
-  private decodeChunk(chunk: string): FeedingTime {
-    let pos = 0;
-    const result: any = {};
-
-    for (const t of this.tokens) {
-      const part = chunk.slice(pos, pos + t.length);
-      pos += t.length;
-
-      if (t.name === TemplateFieldName.FILL) continue;
-
-      const rawValue = this.parseValue(t.name, part);
-      const value = this.untransformValue(t.name, rawValue);
-      result[t.name.toLowerCase()] = value;
-    }
-
-    return result as FeedingTime;
-  }
-
-  private parseValue(name: string, part: string): number {
-    // For BASE64 encoding type, use hex for all fields
-    // For HEX encoding type, use hex only for DAYS field
-    const useHex =
+  private shouldUseHex(fieldName: string): boolean {
+    // BASE64 encoding type uses hex for all fields
+    // HEX encoding type uses hex only for specific fields (e.g., DAYS)
+    return (
       !this.profile.encodingType ||
-      this.profile.encodingType === EncodingType.BASE64
-        ? true
-        : HEX_FIELDS.has(name as TemplateFieldName);
-
-    return useHex ? parseInt(part, 16) || 0 : parseInt(part, 10) || 0;
-  }
-
-  private untransformValue(name: string, value: number): number {
-    // Apply custom day decoding if transformer is configured
-    const shouldTransform =
-      name === TemplateFieldName.DAYS && this.profile.decode;
-    return shouldTransform ? this.profile.decode!(value) : value;
+      this.profile.encodingType === EncodingType.BASE64 ||
+      HEX_FIELDS.has(fieldName as TemplateFieldName)
+    );
   }
 }
 
@@ -312,55 +248,25 @@ class DictEncoder extends EncoderBase {
   }
 
   encode(data: FeedingTime[]): string {
-    const encoded = data.map((entry) => {
-      const result: any = {};
-      
-      Object.entries(entry).forEach(([key, value]) => {
-        if (value === undefined || value === null) return;
-        
-        const outputKey = key === 'portion' ? 'size' : key;
-        result[outputKey] = key === 'days' && this.profile.encode 
-          ? this.profile.encode(value)
-          : value;
-      });
-      
-      return result;
-    });
-    
-    return JSON.stringify(encoded);
+    // If profile has encode transformer, use it (handles everything: field mapping, day transform, wrapping)
+    const output = this.profile.encode ? this.profile.encode(data) : data;
+    return JSON.stringify(output);
   }
 
   decode(data: string): FeedingTime[] {
     if (!data || data === 'unknown') return [];
-    
+
     try {
       const parsed = JSON.parse(data);
-      if (!Array.isArray(parsed)) return [];
-      
-      return parsed.map((entry: any) => {
-        const result: any = {};
-        
-        Object.entries(entry).forEach(([key, value]) => {
-          if (value === undefined || value === null) return;
-          
-          const outputKey = key === 'size' ? 'portion' : key;
-          result[outputKey] = key === 'days' && this.profile.decode
-            ? this.profile.decode(value as any)
-            : value;
-        });
-        
-        return result as FeedingTime;
-      });
+
+      // If profile has decode transformer, use it (handles everything: unwrapping, field mapping, day transform)
+      const output = this.profile.decode ? this.profile.decode(parsed) : parsed;
+
+      return Array.isArray(output) ? output : [];
     } catch {
       throw new Error('Invalid JSON data for DICT encoding');
     }
   }
-}
-
-export enum EncodingType {
-  BASE64 = 'base64',
-  HEX = 'hex',
-  DICT = 'dict',
 }
 
 const ENCODERS = {
@@ -373,6 +279,6 @@ export function getEncoder(profile: DeviceProfile) {
   if (!profile) {
     throw new Error('Device profile is required for encoder initialization');
   }
-  const EncoderClass = ENCODERS[profile.encodingType ?? 'base64'];
+  const EncoderClass = ENCODERS[profile.encodingType ?? EncodingType.BASE64];
   return new EncoderClass(profile);
 }
