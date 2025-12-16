@@ -68,6 +68,18 @@ export function generateConfigFormSchema() {
           },
         },
       },
+      {
+        name: 'transport_type',
+        selector: {
+          select: {
+            options: [
+              { value: 'sensor', label: 'Sensor (default)' },
+              { value: 'mqtt', label: 'MQTT' },
+            ],
+            mode: 'dropdown',
+          },
+        },
+      },
     ],
     computeLabel: (schema: any) => {
       switch (schema.name) {
@@ -81,6 +93,8 @@ export function generateConfigFormSchema() {
           return 'Portions per Meal';
         case 'helper':
           return 'Helper Entity (Optional)';
+        case 'transport_type':
+          return 'Transport Type';
         default:
           return undefined;
       }
@@ -95,6 +109,8 @@ export function generateConfigFormSchema() {
           return 'This input_text helper stores and syncs your meal plan schedule. The card will always read and write the schedule to this helper, making it the single source of truth for your meal plan.';
         case 'portions':
           return 'Number of portions per feeding';
+        case 'transport_type':
+          return 'How to write data: Sensor (via set_value service) or MQTT (publish to zigbee2mqtt topic)';
         default:
           return undefined;
       }

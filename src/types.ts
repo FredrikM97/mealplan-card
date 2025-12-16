@@ -1,5 +1,3 @@
-import { EncodingType } from './profiles/serializer';
-
 /**
  * Represents a single feeding time entry
  */
@@ -35,20 +33,27 @@ export enum Day {
 export interface MealPlanCardConfig {
   sensor: string;
   title: string;
-  helper: string;
+  helper?: string;
   portions?: number;
   manufacturer?: string;
   model?: string;
+  transport_type: TransportType;
 }
 
 export enum ProfileField {
   TIME = 'time',
   PORTION = 'portion',
+  SIZE = 'size',
   DAYS = 'days',
   ENABLED = 'enabled',
   EDIT = 'edit',
   DELETE = 'delete',
   ADD = 'add',
+}
+
+export enum TransportType {
+  SENSOR = 'sensor', // Write via sensor.set_value (default)
+  MQTT = 'mqtt', // Write via mqtt.publish
 }
 
 /**
@@ -61,9 +66,9 @@ export interface DeviceProfile {
   fields: ProfileField[];
   encodingTemplate: string;
   featureFields?: ProfileField[];
-  // Custom transformers for encoding/decoding days field
-  encode?: (days: number) => number;
-  decode?: (encoded: number) => number;
+  // Custom transformers for encoding/decoding
+  encode?: (data: any) => any;
+  decode?: (data: any) => any;
 }
 
 /**
@@ -95,3 +100,9 @@ export const HEX_FIELDS = new Set([TemplateFieldName.DAYS]);
 // Helper function to create template field with length
 export const f = (field: TemplateFieldName, len: number): string =>
   `{${field}:${len}}`;
+
+export enum EncodingType {
+  BASE64 = 'base64',
+  HEX = 'hex',
+  DICT = 'dict',
+}

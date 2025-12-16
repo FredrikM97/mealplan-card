@@ -2,7 +2,7 @@
 import { customElement, property, state } from 'lit/decorators.js';
 import { localize, setLanguage } from './locales/localize';
 import { MealStateController } from './mealStateController';
-import type { MealPlanCardConfig } from './types';
+import { TransportType, type MealPlanCardConfig } from './types';
 import { getProfileWithTransformer } from './profiles/profiles';
 import { generateConfigFormSchema } from './config-form';
 import './components/overview';
@@ -36,10 +36,9 @@ export class MealPlanCard extends LitElement {
       if (profile) {
         this.mealState = new MealStateController(
           this,
-          this.config.sensor,
           profile,
           this.hass,
-          this.config.helper,
+          this.config,
         );
       }
     }
@@ -56,10 +55,9 @@ export class MealPlanCard extends LitElement {
       if (profile) {
         this.mealState = new MealStateController(
           this,
-          this.config.sensor,
           profile,
           this.hass,
-          this.config.helper,
+          this.config,
         );
       }
     }
@@ -115,11 +113,11 @@ export class MealPlanCard extends LitElement {
     `;
   }
 
-  static getConfigForm() {
+  static getConfigForm(): ReturnType<typeof generateConfigFormSchema> {
     return generateConfigFormSchema();
   }
 
-  static getStubConfig() {
+  static getStubConfig(): MealPlanCardConfig {
     return {
       sensor: '',
       title: 'MealPlan Card',
@@ -127,7 +125,8 @@ export class MealPlanCard extends LitElement {
       portions: 6,
       manufacturer: '',
       model: '',
-    };
+      transport_type: TransportType.SENSOR,
+    } as MealPlanCardConfig;
   }
 
   static getGridOptions() {

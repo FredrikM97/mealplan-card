@@ -1,58 +1,56 @@
 import { describe, it, expect } from 'vitest';
+import { getEncoder } from '../../src/profiles/serializer';
 import {
-  parseTemplate,
-  chunkLength,
-  getEncoder,
-  EncodingType,
   createDayTransformer,
   createStringDayTransformer,
-} from '../../src/profiles/serializer';
-import { f, TemplateFieldName as F, Day } from '../../src/types';
+} from '../../src/profiles/transformers';
+import { f, TemplateFieldName as F, Day, EncodingType } from '../../src/types';
 import { FeedingTime } from '../../src/types';
 import { daySpecificMeals } from '../fixtures/data';
 
-describe('parseTemplate', () => {
+describe('TemplateEncoder error handling', () => {
   it('throws error for empty template', () => {
-    expect(() => parseTemplate('')).toThrow('Invalid template');
+    const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
+      fields: [],
+      encodingTemplate: '',
+    });
+    expect(() => encoder.encode([])).toThrow('Template is required');
   });
 
-  it('throws error for non-string template', () => {
-    expect(() => parseTemplate(null as any)).toThrow('Invalid template');
-  });
-
-  it('throws error for unexpected characters between tokens', () => {
-    expect(() =>
-      parseTemplate(`${f(F.DAYS, 2)}INVALID${f(F.HOUR, 2)}`),
-    ).toThrow('Invalid template: unexpected characters between tokens');
-  });
-
-  it('throws error for invalid token length', () => {
-    expect(() => parseTemplate('{DAYS:0}')).toThrow('Invalid token length');
-  });
-
-  it('throws error if tokens do not cover entire template', () => {
-    expect(() => parseTemplate(`${f(F.DAYS, 2)}EXTRA`)).toThrow(
-      'Invalid template: tokens must exactly cover template',
+  it('throws error for invalid template with unexpected characters', () => {
+    const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
+      fields: [],
+      encodingTemplate: `${f(F.DAYS, 2)}INVALID${f(F.HOUR, 2)}`,
+    });
+    expect(() => encoder.encode([])).toThrow(
+      'Invalid template: unexpected characters between tokens',
     );
   });
 
-  it('parses valid template correctly', () => {
-    const result = parseTemplate(`${f(F.DAYS, 2)}${f(F.HOUR, 2)}`);
-    expect(result).toEqual([
-      { name: 'DAYS', length: 2 },
-      { name: 'HOUR', length: 2 },
-    ]);
+  it('throws error for invalid token length', () => {
+    const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
+      fields: [],
+      encodingTemplate: '{DAYS:0}',
+    });
+    expect(() => encoder.encode([])).toThrow('Invalid token length');
   });
-});
 
-describe('chunkLength', () => {
-  it('calculates total length correctly', () => {
-    const tokens = [
-      { name: 'DAYS', length: 2 },
-      { name: 'HOUR', length: 2 },
-      { name: 'MINUTE', length: 2 },
-    ];
-    expect(chunkLength(tokens)).toBe(6);
+  it('throws error if tokens do not cover entire template', () => {
+    const encoder = getEncoder({
+      manufacturer: 'Test',
+      models: [],
+      fields: [],
+      encodingTemplate: `${f(F.DAYS, 2)}EXTRA`,
+    });
+    expect(() => encoder.encode([])).toThrow(
+      'Invalid template: tokens must exactly cover template',
+    );
   });
 });
 
@@ -160,7 +158,7 @@ describe('TemplateEncoder edge cases', () => {
       fields: [],
       encodingType: EncodingType.HEX,
       encodingTemplate: `${f(F.DAYS, 2)}`,
-      encode: (value: number) => value ^ 0xff, // XOR transformer
+      encode: (entry: any) => ({ ...entry, days: entry.days ^ 0xff }), // XOR transformer
     });
     const result = encoder.encode([{ days: 127 }]);
     expect(result).toBe('80'); // 127 ^ 255 = 128 = 0x80
@@ -173,7 +171,7 @@ describe('TemplateEncoder edge cases', () => {
       fields: [],
       encodingType: EncodingType.HEX,
       encodingTemplate: `${f(F.DAYS, 2)}`,
-      decode: (value: number) => value ^ 0xff, // XOR transformer
+      decode: (entry: any) => ({ ...entry, days: entry.days ^ 0xff }), // XOR transformer
     });
     const result = encoder.decode('80');
     expect(result[0].days).toBe(127); // 128 ^ 255 = 127
@@ -207,12 +205,12 @@ describe('createDayTransformer', () => {
     ]);
 
     // Saturday (internal bit 5)
-    expect(transformer.encode(32)).toBe(1);
-    expect(transformer.decode(1)).toBe(32);
+    expect(transformer.encode({ days: 32 }).days).toBe(1);
+    expect(transformer.decode({ days: 1 }).days).toBe(32);
 
     // Friday (internal bit 4)
-    expect(transformer.encode(16)).toBe(2);
-    expect(transformer.decode(2)).toBe(16);
+    expect(transformer.encode({ days: 16 }).days).toBe(2);
+    expect(transformer.decode({ days: 2 }).days).toBe(16);
   });
 
   it('roundtrip preserves values with custom mapping', () => {
@@ -222,9 +220,9 @@ describe('createDayTransformer', () => {
       [2, 0],
     ]);
 
-    const encoded = transformer.encode(7); // bits 0,1,2
+    const encoded = transformer.encode({ days: 7 }); // bits 0,1,2
     const decoded = transformer.decode(encoded);
-    expect(decoded).toBe(7);
+    expect(decoded.days).toBe(7);
   });
   it('maps device bit 0 (0b00000001) to internal Sunday with Cleverio/Meowmatic mapping', () => {
     const transformer = createDayTransformer([
@@ -237,9 +235,22 @@ describe('createDayTransformer', () => {
       [6, 0], // Sun
     ]);
     // Device bit 0 set (0b00000001) should map to internal bit 6 (Sunday)
-    expect(transformer.decode(0b00000001)).toBe(1 << 6); // 0b1000000
+    expect(transformer.decode({ days: 0b00000001 }).days).toBe(1 << 6); // 0b1000000
     // And the reverse: encoding internal Sunday should set device bit 0
-    expect(transformer.encode(1 << 6)).toBe(0b00000001);
+    expect(transformer.encode({ days: 1 << 6 }).days).toBe(0b00000001);
+  });
+
+  it('preserves other fields in entry', () => {
+    const transformer = createDayTransformer([
+      [0, 1],
+      [1, 0],
+    ]);
+    const entry = { hour: 8, minute: 30, portion: 6, days: 1 };
+    const encoded = transformer.encode(entry);
+    expect(encoded).toEqual({ hour: 8, minute: 30, portion: 6, days: 2 });
+
+    const decoded = transformer.decode(encoded);
+    expect(decoded).toEqual(entry);
   });
 });
 
@@ -259,10 +270,15 @@ describe('DictEncoder', () => {
     ];
     const encoded = encoder.encode(feedingTimes);
     const parsed = JSON.parse(encoded);
-    
+
     expect(parsed).toHaveLength(2);
-    expect(parsed[0]).toMatchObject({ hour: 8, minute: 0, size: 2, days: 127, enabled: 1 });
-    expect(parsed[0].portion).toBeUndefined();
+    expect(parsed[0]).toMatchObject({
+      hour: 8,
+      minute: 0,
+      portion: 2,
+      days: 127,
+      enabled: 1,
+    });
   });
 
   it('decodes JSON with size->portion mapping', () => {
@@ -271,10 +287,10 @@ describe('DictEncoder', () => {
       { hour: 18, minute: 30, size: 1, days: 62, enabled: 1 },
     ];
     const decoded = encoder.decode(JSON.stringify(deviceData));
-    
+
     expect(decoded).toEqual([
-      { hour: 8, minute: 0, portion: 2, days: 127, enabled: 1 },
-      { hour: 18, minute: 30, portion: 1, days: 62, enabled: 1 },
+      { hour: 8, minute: 0, size: 2, days: 127, enabled: 1 },
+      { hour: 18, minute: 30, size: 1, days: 62, enabled: 1 },
     ]);
   });
 
@@ -285,21 +301,29 @@ describe('DictEncoder', () => {
   });
 
   it('throws error for invalid JSON', () => {
-    expect(() => encoder.decode('not valid json')).toThrow('Invalid JSON data for DICT encoding');
+    expect(() => encoder.decode('not valid json')).toThrow(
+      'Invalid JSON data for DICT encoding',
+    );
   });
 
   it('encodes empty array', () => {
     expect(encoder.encode([])).toBe('[]');
   });
 
-  it('applies day transformer', () => {
+  it('applies day transformer through encode/decode functions', () => {
+    const transformer = createStringDayTransformer({
+      127: 'everyday',
+      31: 'workdays',
+    });
     const aqaraEncoder = getEncoder({
       manufacturer: 'Aqara',
       models: ['C1'],
       fields: [],
       encodingType: EncodingType.DICT,
       encodingTemplate: '',
-      ...createStringDayTransformer({ 127: 'everyday', 31: 'workdays' }),
+      encode: (data: any[]) => data.map((e) => transformer.encode(e)),
+      decode: (data: any) =>
+        Array.isArray(data) ? data.map((e) => transformer.decode(e)) : data,
     });
 
     const feedingTimes: FeedingTime[] = [
@@ -309,7 +333,7 @@ describe('DictEncoder', () => {
 
     const encoded = aqaraEncoder.encode(feedingTimes);
     const parsed = JSON.parse(encoded);
-    
+
     expect(parsed[0].days).toBe('everyday');
     expect(parsed[1].days).toBe('workdays');
 
@@ -328,29 +352,31 @@ describe('createStringDayTransformer', () => {
   });
 
   it('encodes bitmask to string when mapped', () => {
-    expect(transformer.encode(127)).toBe('everyday');
-    expect(transformer.encode(31)).toBe('workdays');
-    expect(transformer.encode(96)).toBe('weekend');
-    expect(transformer.encode(1)).toBe('mon');
+    expect(transformer.encode({ days: 127 }).days).toBe('everyday');
+    expect(transformer.encode({ days: 31 }).days).toBe('workdays');
+    expect(transformer.encode({ days: 96 }).days).toBe('weekend');
+    expect(transformer.encode({ days: 1 }).days).toBe('mon');
   });
 
   it('passes through unmapped values', () => {
-    expect(transformer.encode(15)).toBe(15);
-    expect(transformer.encode(63)).toBe(63);
-    expect(transformer.decode(15)).toBe(15);
-    expect(transformer.decode(63)).toBe(63);
+    expect(transformer.encode({ days: 15 }).days).toBe(15);
+    expect(transformer.encode({ days: 63 }).days).toBe(63);
+    expect(transformer.decode({ days: 15 }).days).toBe(15);
+    expect(transformer.decode({ days: 63 }).days).toBe(63);
   });
 
   it('decodes string to bitmask when mapped', () => {
-    expect(transformer.decode('everyday')).toBe(127);
-    expect(transformer.decode('workdays')).toBe(31);
-    expect(transformer.decode('weekend')).toBe(96);
-    expect(transformer.decode('mon')).toBe(1);
+    expect(transformer.decode({ days: 'everyday' }).days).toBe(127);
+    expect(transformer.decode({ days: 'workdays' }).days).toBe(31);
+    expect(transformer.decode({ days: 'weekend' }).days).toBe(96);
+    expect(transformer.decode({ days: 'mon' }).days).toBe(1);
   });
 
   it('roundtrip preserves values', () => {
-    expect(transformer.decode(transformer.encode(127))).toBe(127);
-    expect(transformer.decode(transformer.encode(31))).toBe(31);
+    expect(transformer.decode(transformer.encode({ days: 127 })).days).toBe(
+      127,
+    );
+    expect(transformer.decode(transformer.encode({ days: 31 })).days).toBe(31);
   });
 
   it('handles Aqara complex day patterns', () => {
@@ -360,9 +386,23 @@ describe('createStringDayTransformer', () => {
       42: 'tue-thu-sat',
     });
 
-    expect(aqaraTransformer.encode(85)).toBe('mon-wed-fri-sun');
-    expect(aqaraTransformer.decode('mon-wed-fri-sun')).toBe(85);
-    expect(aqaraTransformer.encode(42)).toBe('tue-thu-sat');
-    expect(aqaraTransformer.decode('tue-thu-sat')).toBe(42);
+    expect(aqaraTransformer.encode({ days: 85 }).days).toBe('mon-wed-fri-sun');
+    expect(aqaraTransformer.decode({ days: 'mon-wed-fri-sun' }).days).toBe(85);
+    expect(aqaraTransformer.encode({ days: 42 }).days).toBe('tue-thu-sat');
+    expect(aqaraTransformer.decode({ days: 'tue-thu-sat' }).days).toBe(42);
+  });
+
+  it('preserves other fields in entry', () => {
+    const entry = { hour: 8, minute: 30, portion: 6, days: 127 };
+    const encoded = transformer.encode(entry);
+    expect(encoded).toEqual({
+      hour: 8,
+      minute: 30,
+      portion: 6,
+      days: 'everyday',
+    });
+
+    const decoded = transformer.decode(encoded);
+    expect(decoded).toEqual(entry);
   });
 });

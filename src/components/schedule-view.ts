@@ -27,6 +27,24 @@ export class ScheduleView extends LitElement {
   @state() private editMeal: EditMealState | null = null;
   @state() private heading: string = localize('manage_schedules');
 
+  private unsubscribe?: () => void;
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Initialize draft from current meals
+    this.draftMeals = [...this.mealState.meals];
+
+    // Subscribe to meals changes from MealStateController
+    this.unsubscribe = this.mealState.subscribe(() => {
+      this.resetDraft();
+    });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.unsubscribe?.();
+  }
+
   static styles = css`
     .schedule-cards {
       display: block;
@@ -71,30 +89,6 @@ export class ScheduleView extends LitElement {
     this.draftMeals = [...this.mealState.meals];
   }
 
-  /**
-   * Lifecycle: sync draft with controller when needed
-   */
-  protected willUpdate(): void {
-    if (this.draftMeals.length === 0 && this.mealState?.meals.length > 0) {
-      this.resetDraft();
-    }
-  }
-
-  /**
-   * Lifecycle: refresh draft when mealState.meals changes (from external updates)
-   */
-  protected updated(changedProps: Map<string, any>): void {
-    super.updated(changedProps);
-
-    // When mealState updates (hass changes trigger updateFromHass), sync draft if no pending edits
-    if (
-      changedProps.has('mealState') &&
-      this.mealState &&
-      !this.hasPendingChanges()
-    ) {
-      this.resetDraft();
-    }
-  }
   private updateMeal(index: number, meal: FeedingTime): void {
     this.draftMeals = this.draftMeals.map((m, i) => (i === index ? meal : m));
   }
