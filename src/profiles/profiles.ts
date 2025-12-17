@@ -38,6 +38,7 @@ const baseProfiles: DeviceProfile[] = [
   {
     manufacturer: 'HoneyGuardian',
     models: ['S56'],
+    encodingType: EncodingType.BASE64,
     encodingTemplate: TEMPLATE_NO_DAYS,
     fields: FIELDS_MINIMAL,
   },
@@ -51,6 +52,7 @@ const baseProfiles: DeviceProfile[] = [
   {
     manufacturer: 'Yuposl',
     models: ['enyxp8'],
+    encodingType: EncodingType.BASE64,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },

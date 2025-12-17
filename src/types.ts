@@ -62,7 +62,7 @@ export enum TransportType {
 export interface DeviceProfile {
   manufacturer: string;
   models: string[];
-  encodingType?: EncodingType;
+  encodingType: EncodingType;
   fields: ProfileField[];
   encodingTemplate?: string;
   featureFields?: ProfileField[];

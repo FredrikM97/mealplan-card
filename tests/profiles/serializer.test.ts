@@ -13,6 +13,7 @@ describe('TemplateEncoder error handling', () => {
     const encoder = getEncoder({
       manufacturer: 'Test',
       models: [],
+      encodingType: EncodingType.BASE64,
       fields: [],
       encodingTemplate: '',
     });
@@ -23,6 +24,7 @@ describe('TemplateEncoder error handling', () => {
     const encoder = getEncoder({
       manufacturer: 'Test',
       models: [],
+      encodingType: EncodingType.BASE64,
       fields: [],
       encodingTemplate: `${f(F.DAYS, 2)}INVALID${f(F.HOUR, 2)}`,
     });
@@ -35,6 +37,7 @@ describe('TemplateEncoder error handling', () => {
     const encoder = getEncoder({
       manufacturer: 'Test',
       models: [],
+      encodingType: EncodingType.BASE64,
       fields: [],
       encodingTemplate: '{DAYS:0}',
     });
@@ -45,6 +48,7 @@ describe('TemplateEncoder error handling', () => {
     const encoder = getEncoder({
       manufacturer: 'Test',
       models: [],
+      encodingType: EncodingType.BASE64,
       fields: [],
       encodingTemplate: `${f(F.DAYS, 2)}EXTRA`,
     });
@@ -58,6 +62,7 @@ describe('encoder decode/encode', () => {
   const encoder = getEncoder({
     manufacturer: 'Test',
     models: [],
+    encodingType: EncodingType.BASE64,
     fields: [],
     encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}`,
   });
@@ -76,6 +81,7 @@ describe('encoder decode/encode', () => {
     const encoder2 = getEncoder({
       manufacturer: 'Test',
       models: [],
+      encodingType: EncodingType.BASE64,
       fields: [],
       encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.DAYS, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}`,
     });
@@ -94,6 +100,7 @@ describe('encoder error handling', () => {
     const encoder = getEncoder({
       manufacturer: 'Test',
       models: [],
+      encodingType: EncodingType.BASE64,
       fields: [],
       encodingTemplate: f(F.HOUR, 2),
     });
@@ -110,6 +117,7 @@ describe('encoder error handling', () => {
     const encoder = getEncoder({
       manufacturer: 'Test',
       models: [],
+      encodingType: EncodingType.BASE64,
       fields: [],
       encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}`,
     });

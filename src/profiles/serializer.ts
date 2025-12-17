@@ -275,6 +275,6 @@ export function getEncoder(profile: DeviceProfile) {
   if (!profile) {
     throw new Error('Device profile is required for encoder initialization');
   }
-  const EncoderClass = ENCODERS[profile.encodingType ?? EncodingType.BASE64];
+  const EncoderClass = ENCODERS[profile.encodingType];
   return new EncoderClass(profile);
 }
