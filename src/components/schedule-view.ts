@@ -9,7 +9,7 @@ import { localize } from '../locales/localize';
 import type { FeedingTime, EditMealState } from '../types';
 import { ProfileField } from '../types';
 import { MealStateController } from '../mealStateController';
-import { hasProfileField } from '../utils';
+import { hasProfileField, timeToMinutes } from '../utils';
 import { ScheduleClosedEvent } from '../constants';
 import './edit-dialog';
 import './meal-card';
@@ -31,13 +31,23 @@ export class ScheduleView extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    // Initialize draft from current meals
-    this.draftMeals = [...this.mealState.meals];
+    // Initialize draft from current meals (sorted by time)
+    this.draftMeals = this.sortMealsByTime([...this.mealState.meals]);
 
     // Subscribe to meals changes from MealStateController
     this.unsubscribe = this.mealState.subscribe(() => {
       this.resetDraft();
     });
+  }
+
+  /**
+   * Sort meals by time (hour, then minute)
+   */
+  private sortMealsByTime(meals: FeedingTime[]): FeedingTime[] {
+    return [...meals].sort(
+      (a, b) =>
+        timeToMinutes(a.hour, a.minute) - timeToMinutes(b.hour, b.minute),
+    );
   }
 
   disconnectedCallback() {
@@ -86,11 +96,13 @@ export class ScheduleView extends LitElement {
    * Reset draft to match controller's saved meals
    */
   private resetDraft(): void {
-    this.draftMeals = [...this.mealState.meals];
+    this.draftMeals = this.sortMealsByTime([...this.mealState.meals]);
   }
 
   private updateMeal(index: number, meal: FeedingTime): void {
-    this.draftMeals = this.draftMeals.map((m, i) => (i === index ? meal : m));
+    this.draftMeals = this.sortMealsByTime(
+      this.draftMeals.map((m, i) => (i === index ? meal : m)),
+    );
   }
 
   /**
@@ -115,7 +127,7 @@ export class ScheduleView extends LitElement {
    * Add new meal to draft
    */
   private addMeal(meal: FeedingTime): void {
-    this.draftMeals = [...this.draftMeals, meal];
+    this.draftMeals = this.sortMealsByTime([...this.draftMeals, meal]);
   }
 
   private handleOpenAdd() {

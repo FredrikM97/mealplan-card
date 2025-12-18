@@ -5,7 +5,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { renderDaySelector } from '../day-selector';
+import { renderDaySelector } from './day-selector';
 import { localize } from '../locales/localize';
 import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
 import { SaveEvent } from '../constants';
