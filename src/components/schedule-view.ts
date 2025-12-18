@@ -6,12 +6,13 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { localize } from '../locales/localize';
-import type { FeedingTime, EditMealState } from '../types';
+import type { FeedingTime, EditMealState, HomeAssistant } from '../types';
 import { ProfileField } from '../types';
 import { MealStateController } from '../mealStateController';
 import { hasProfileField, timeToMinutes } from '../utils';
 import { ScheduleClosedEvent } from '../constants';
 import './edit-dialog';
+import type { MealEditDialog } from './edit-dialog';
 import './meal-card';
 
 /**
@@ -21,7 +22,7 @@ import './meal-card';
 @customElement('schedule-view')
 export class ScheduleView extends LitElement {
   @property({ type: Object }) mealState!: MealStateController;
-  @property({ type: Object }) hass: any;
+  @property({ type: Object }) hass!: HomeAssistant;
 
   @state() private draftMeals: FeedingTime[] = [];
   @state() private editMeal: EditMealState | null = null;
@@ -196,9 +197,8 @@ export class ScheduleView extends LitElement {
         slot="primaryAction"
         class="ha-primary"
         @click=${() => {
-          const dialog = this.shadowRoot?.querySelector(
-            'meal-edit-dialog',
-          ) as any;
+          const dialog =
+            this.shadowRoot?.querySelector<MealEditDialog>('meal-edit-dialog');
           dialog?.handleSave();
         }}
       >

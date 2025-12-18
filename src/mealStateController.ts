@@ -8,6 +8,7 @@ import {
   FeedingTime,
   DeviceProfile,
   MealPlanCardConfig,
+  HomeAssistant,
   TransportType,
 } from './types';
 import { getEncoder, EncoderBase } from './profiles/serializer';
@@ -26,7 +27,7 @@ export class MealStateController implements ReactiveController {
     this.notifySubscribers();
   }
 
-  hass: any;
+  hass: HomeAssistant;
   profile: DeviceProfile;
   private encoder: EncoderBase;
   private writeValue: (value: string) => Promise<void>;
@@ -34,7 +35,7 @@ export class MealStateController implements ReactiveController {
   constructor(
     private host: ReactiveControllerHost,
     profile: DeviceProfile,
-    hass: any,
+    hass: HomeAssistant,
     private config: MealPlanCardConfig,
   ) {
     this.host.addController(this);
@@ -50,7 +51,12 @@ export class MealStateController implements ReactiveController {
 
     // Load initial data after construction
     if (this.hass) {
-      this.updateFromHass();
+      this.updateFromHass().catch((error) => {
+        console.error(
+          '[MealStateController] Failed to load initial data:',
+          error,
+        );
+      });
     } else {
       console.warn(
         '[MealStateController] Initialized without hass object. Data loading will be skipped.',
@@ -100,8 +106,13 @@ export class MealStateController implements ReactiveController {
   /**
    * Set entity value via set_value service
    */
-  private async setEntityValue(entityId: string, value: string): Promise<void> {
+  private async setEntityValue(
+    entityId: string | undefined,
+    value: string,
+  ): Promise<void> {
+    if (!entityId) return;
     const domain = entityId.split('.')[0];
+    if (!domain) return;
     await this.hass.callService(domain, 'set_value', {
       entity_id: entityId,
       value,

@@ -4,7 +4,6 @@ import { MealEditDialog } from '../../src/components/edit-dialog.js';
 import { EVENT_SAVE } from '../../src/constants.js';
 import type { FeedingTime } from '../../src/types.js';
 import { ProfileField } from '../../src/types.js';
-import { testMeals } from '../fixtures/data';
 import {
   createMockProfile,
   createEditDialogFixture,
@@ -164,8 +163,6 @@ describe('MealEditDialog', () => {
   });
 
   it('updates formData via handleUpdate and preserves unchanged fields', async () => {
-    const original = { ...el['formData'] };
-
     // Updates specific fields via handleUpdate
     el['handleUpdate']({ hour: 15, minute: 30 });
     await el.updateComplete;
@@ -179,7 +176,7 @@ describe('MealEditDialog', () => {
     expect(el['formData'].days).toBe(31);
 
     // Preserves existing data when updating single field
-    el['handlePortionInput']({ target: { value: '10' } } as any);
+    el['handlePortionInput']({ target: { value: '10' } } as unknown as Event);
     await el.updateComplete;
     expect(el['formData'].portion).toBe(10);
     expect(el['formData'].hour).toBe(15); // Still updated value

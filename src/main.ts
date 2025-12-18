@@ -1,8 +1,12 @@
-﻿import { LitElement, html, css } from 'lit';
+﻿import { LitElement, html, css, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { localize, setLanguage } from './locales/localize';
 import { MealStateController } from './mealStateController';
-import { TransportType, type MealPlanCardConfig } from './types';
+import {
+  TransportType,
+  type MealPlanCardConfig,
+  type HomeAssistant,
+} from './types';
 import { getProfileWithTransformer } from './profiles/profiles';
 import { generateConfigFormSchema } from './config-form';
 import './components/overview';
@@ -10,7 +14,7 @@ import './components/schedule-view';
 
 @customElement('mealplan-card')
 export class MealPlanCard extends LitElement {
-  @property({ type: Object }) hass: any;
+  @property({ type: Object }) hass!: HomeAssistant;
   @property({ type: Object }) config!: MealPlanCardConfig;
   @state() private mealState?: MealStateController;
   @state() private _dialogOpen = false;
@@ -63,7 +67,7 @@ export class MealPlanCard extends LitElement {
     }
   }
 
-  updated(changedProps: Map<string, any>) {
+  updated(changedProps: PropertyValues) {
     super.updated(changedProps);
 
     if (changedProps.has('hass') && this.mealState) {
@@ -141,7 +145,12 @@ export class MealPlanCard extends LitElement {
 
 declare global {
   interface Window {
-    customCards?: any[];
+    customCards?: Array<{
+      type: string;
+      name: string;
+      description: string;
+      preview?: boolean;
+    }>;
   }
 }
 

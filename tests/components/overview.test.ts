@@ -14,11 +14,12 @@ describe('Overview Component', () => {
     it('displays all overview chips with meal data', async () => {
       const mealState = createMealStateController([testMeals.breakfast]);
 
-      const component = await fixture<any>(
+      const component = await fixture<HTMLElement>(
         html`<meal-overview .mealState=${mealState}></meal-overview>`,
       );
 
-      await component.updateComplete;
+      await (component as unknown as { updateComplete: Promise<boolean> })
+        .updateComplete;
 
       expect(component.shadowRoot?.querySelector('.overview-schedules')).to
         .exist;
@@ -31,18 +32,19 @@ describe('Overview Component', () => {
       const mealState = createMealStateController([testMeals.breakfast]);
 
       // 10g meal × 3 portions = 30g total
-      const component = await fixture<any>(
+      const component = await fixture<HTMLElement>(
         html`<meal-overview
           .meals=${mealState.meals}
           .portions=${3}
         ></meal-overview>`,
       );
 
-      await component.updateComplete;
+      await (component as unknown as { updateComplete: Promise<boolean> })
+        .updateComplete;
 
       const gramsChip = component.shadowRoot?.querySelector('.overview-grams');
-      const gramsText = gramsChip.textContent
-        .toLowerCase()
+      const gramsText = gramsChip?.textContent
+        ?.toLowerCase()
         .replace(/\s+/g, ' ')
         .trim();
       expect(gramsText).to.include('30g');
@@ -81,7 +83,12 @@ describe('Overview Component', () => {
 
       // Meals without portion field
       const mealsWithoutPortion: FeedingTime[] = [
-        { hour: 8, minute: 0, days: 0b0000001, enabled: 1 } as any,
+        {
+          hour: 8,
+          minute: 0,
+          days: 0b0000001,
+          enabled: 1,
+        } as unknown as FeedingTime,
       ];
       expect(getWeeklyAveragePortion(mealsWithoutPortion)).to.equal(0);
 

@@ -9,7 +9,21 @@ export default tseslint.config(
         project: './tsconfig.json',
       },
     },
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+    },
     rules: {
+      // TypeScript specific
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          // varsIgnorePattern intentionally omitted - unused vars should be removed, not prefixed
+        },
+      ],
+      '@typescript-eslint/no-unused-private-class-members': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
+
       // Code style
       'no-nested-ternary': 'error',
       'prefer-const': 'error',
@@ -34,7 +48,21 @@ export default tseslint.config(
     languageOptions: {
       parser: tseslint.parser,
     },
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+    },
     rules: {
+      // TypeScript specific
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          // varsIgnorePattern intentionally omitted - unused vars should be removed, not prefixed
+        },
+      ],
+      '@typescript-eslint/no-unused-private-class-members': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
+
       // Code style
       'no-nested-ternary': 'error',
       'prefer-const': 'error',

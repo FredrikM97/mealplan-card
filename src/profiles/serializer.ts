@@ -106,20 +106,20 @@ export class TemplateEncoder {
         }
 
         const fieldName = token.name.toLowerCase();
-        const value = (transformedEntry as any)[fieldName];
+        const value = (transformedEntry as Record<string, unknown>)[fieldName];
 
         if (value === undefined || value === null) {
           return ''.padStart(token.length, '0');
         }
 
-        return this.formatField(token.name, value, token.length);
+        return this.formatField(token.name, value as number, token.length);
       })
       .join('');
   }
 
   private parseEntry(chunk: string): FeedingTime {
     let position = 0;
-    const entry: any = {};
+    const entry: Record<string, unknown> = {};
 
     for (const token of this.tokens) {
       const segment = chunk.slice(position, position + token.length);
@@ -128,13 +128,16 @@ export class TemplateEncoder {
       if (token.name === TemplateFieldName.FILL) continue;
 
       const fieldName = token.name.toLowerCase();
-      entry[fieldName] = this.parseField(token.name, segment);
+      const parsedValue = this.parseField(token.name, segment);
+      if (parsedValue !== null && parsedValue !== undefined) {
+        entry[fieldName] = parsedValue;
+      }
     }
 
     // Apply profile transformer after parsing if configured
     if (this.profile.decode) {
-      const transformed = this.profile.decode(entry);
-      Object.assign(entry, transformed);
+      const transformed = this.profile.decode(entry) as FeedingTime;
+      return transformed;
     }
 
     return entry as FeedingTime;
@@ -199,46 +202,46 @@ class Base64Encoder extends EncoderBase {
   }
 
   encode(data: FeedingTime[]): string {
-    const template = (this.profile as any)?.encodingTemplate;
+    const template = this.profile.encodingTemplate;
     if (!template) {
       throw new Error('encodingTemplate is required for Base64Encoder');
     }
 
     const encoder = new TemplateEncoder(template, this.profile);
-    const hex = encoder.encode(data as any);
+    const hex = encoder.encode(data);
     return this.hexToBase64(hex);
   }
 
   decode(data: string): FeedingTime[] {
     if (!data || data === 'unknown') return [];
 
-    const template = (this.profile as any)?.encodingTemplate;
+    const template = this.profile.encodingTemplate;
     if (!template) {
       throw new Error('encodingTemplate is required for Base64Encoder');
     }
 
     const hex = this.base64ToHex(data);
     const encoder = new TemplateEncoder(template, this.profile);
-    return encoder.decode(hex) as FeedingTime[];
+    return encoder.decode(hex);
   }
 }
 
 class TemplateBasedEncoder extends EncoderBase {
   encode(data: FeedingTime[]): string {
-    const template = (this.profile as any)?.encodingTemplate;
+    const template = this.profile.encodingTemplate;
     if (!template) {
       throw new Error('encodingTemplate is required for TemplateBasedEncoder');
     }
     const t = new TemplateEncoder(template, this.profile);
-    return t.encode(data as any);
+    return t.encode(data);
   }
   decode(data: string): FeedingTime[] {
-    const template = (this.profile as any)?.encodingTemplate;
+    const template = this.profile.encodingTemplate;
     if (!template) {
       throw new Error('encodingTemplate is required for TemplateBasedEncoder');
     }
     const t = new TemplateEncoder(template, this.profile);
-    return t.decode(data) as FeedingTime[];
+    return t.decode(data);
   }
 }
 

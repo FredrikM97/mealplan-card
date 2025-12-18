@@ -62,7 +62,6 @@ describe('MealStateController', () => {
     // Wait for initial load
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    const original = [...controller.meals];
     controller.meals = [];
     expect(controller.meals).toEqual([]);
 
@@ -71,20 +70,19 @@ describe('MealStateController', () => {
   });
 
   it('decodes meals from hass sensor state', async () => {
-    controller = new MealStateController(mockHost, profile, undefined, {
-      sensor: 'sensor.test',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
-    });
     const base64 = encodeMealData(127, 8, 0, 10, 1);
     const hass = {
       ...createMockHassWithSensor('sensor.test', base64),
       callService: vi.fn(),
     };
 
-    controller.hass = hass;
+    controller = new MealStateController(mockHost, profile, hass, {
+      sensor: 'sensor.test',
+      manufacturer: 'Test',
+      title: 'Test',
+      portions: 6,
+      transport_type: TransportType.SENSOR,
+    });
     await controller.updateFromHass();
 
     const meals = controller.meals;
@@ -99,14 +97,14 @@ describe('MealStateController', () => {
       ...createMockHassWithSensor('sensor.test', 'invalid_base64'),
       callService: vi.fn(),
     };
-    controller = new MealStateController(mockHost, profile, undefined, {
+
+    controller = new MealStateController(mockHost, profile, hass, {
       sensor: 'sensor.test',
       manufacturer: 'Test',
       title: 'Test',
       portions: 6,
       transport_type: TransportType.SENSOR,
     });
-    controller.hass = hass;
 
     // Should throw on decode error
     await expect(controller.updateFromHass()).rejects.toThrow('Invalid base64');
@@ -131,7 +129,13 @@ describe('MealStateController', () => {
   });
 
   it('syncs helper when saving meals', async () => {
-    controller = new MealStateController(mockHost, profile, undefined, {
+    const meals = [testMeals.breakfast];
+    const hass = {
+      ...createMockHass(),
+      callService: vi.fn(),
+    };
+
+    controller = new MealStateController(mockHost, profile, hass, {
       sensor: 'sensor.test',
       helper: 'input_text.helper',
       manufacturer: 'Test',
@@ -139,13 +143,6 @@ describe('MealStateController', () => {
       portions: 6,
       transport_type: TransportType.SENSOR,
     });
-    const meals = [testMeals.breakfast];
-    const hass = {
-      states: {},
-      callService: vi.fn(),
-    };
-
-    controller.hass = hass;
     await controller.saveMeals(meals);
 
     // Should call set_value for both sensor and helper
@@ -160,20 +157,19 @@ describe('MealStateController', () => {
   });
 
   it('saves meals to sensor', async () => {
-    controller = new MealStateController(mockHost, profile, undefined, {
+    const meals = [testMeals.breakfast];
+    const hass = {
+      ...createMockHass(),
+      callService: vi.fn(),
+    };
+
+    controller = new MealStateController(mockHost, profile, hass, {
       sensor: 'sensor.test',
       manufacturer: 'Test',
       title: 'Test',
       portions: 6,
       transport_type: TransportType.SENSOR,
     });
-    const meals = [testMeals.breakfast];
-    const hass = {
-      states: {},
-      callService: vi.fn(),
-    };
-
-    controller.hass = hass;
     controller.meals = meals;
     await controller.saveMeals(controller.meals);
 
@@ -188,7 +184,14 @@ describe('MealStateController', () => {
   });
 
   it('throws error when saving without hass', async () => {
-    controller = new MealStateController(mockHost, profile, undefined, {
+    const hass = {
+      ...createMockHass(),
+      callService: vi.fn(() =>
+        Promise.reject(new Error('Service call failed')),
+      ),
+    };
+
+    controller = new MealStateController(mockHost, profile, hass, {
       sensor: 'sensor.test',
       manufacturer: 'Test',
       title: 'Test',
@@ -197,12 +200,22 @@ describe('MealStateController', () => {
     });
     controller.meals = [testMeals.breakfast];
 
-    // Will throw because hass is undefined
+    // Will throw because service call fails
     await expect(controller.saveMeals(controller.meals)).rejects.toThrow();
   });
 
   it('fallback to helper when sensor is unknown', async () => {
-    controller = new MealStateController(mockHost, profile, undefined, {
+    const base64 = encodeMealData(127, 8, 0, 10, 1);
+    const hass = {
+      ...createMockHass(),
+      states: {
+        'sensor.test': { state: 'unknown', attributes: {} },
+        'input_text.helper': { state: base64, attributes: {} },
+      },
+      callService: vi.fn(),
+    };
+
+    controller = new MealStateController(mockHost, profile, hass, {
       sensor: 'sensor.test',
       helper: 'input_text.helper',
       manufacturer: 'Test',
@@ -210,16 +223,6 @@ describe('MealStateController', () => {
       portions: 6,
       transport_type: TransportType.SENSOR,
     });
-    const base64 = encodeMealData(127, 8, 0, 10, 1);
-    const hass = {
-      states: {
-        'sensor.test': { state: 'unknown' },
-        'input_text.helper': { state: base64 },
-      },
-      callService: vi.fn(),
-    };
-
-    controller.hass = hass;
     await controller.updateFromHass();
 
     const meals = controller.meals;
@@ -228,13 +231,15 @@ describe('MealStateController', () => {
 
   it('handles invalid helper fallback', async () => {
     const hass = {
+      ...createMockHass(),
       states: {
-        'sensor.test': { state: 'unknown' },
-        'input_text.helper': { state: 'invalid_data' },
+        'sensor.test': { state: 'unknown', attributes: {} },
+        'input_text.helper': { state: 'invalid_data', attributes: {} },
       },
       callService: vi.fn(),
     };
-    controller = new MealStateController(mockHost, profile, undefined, {
+
+    controller = new MealStateController(mockHost, profile, hass, {
       sensor: 'sensor.test',
       helper: 'input_text.helper',
       manufacturer: 'Test',
@@ -242,7 +247,6 @@ describe('MealStateController', () => {
       portions: 6,
       transport_type: TransportType.SENSOR,
     });
-    controller.hass = hass;
 
     // Should throw on decode error from helper
     await expect(controller.updateFromHass()).rejects.toThrow('Invalid base64');
@@ -348,7 +352,7 @@ describe('MealStateController', () => {
   describe('MQTT transport', () => {
     it('publishes to MQTT when transport_type is mqtt', async () => {
       const hass = {
-        states: {},
+        ...createMockHass(),
         callService: vi.fn(),
       };
 
@@ -378,7 +382,7 @@ describe('MealStateController', () => {
       if (!aqaraProfile) throw new Error('Aqara profile not found');
 
       const hass = {
-        states: {},
+        ...createMockHass(),
         callService: vi.fn(),
       };
 
@@ -410,7 +414,7 @@ describe('MealStateController', () => {
 
     it('uses sensor transport by default', async () => {
       const hass = {
-        states: {},
+        ...createMockHass(),
         callService: vi.fn(),
       };
 

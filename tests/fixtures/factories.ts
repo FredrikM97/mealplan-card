@@ -7,16 +7,20 @@ import type {
   FeedingTime,
   DeviceProfile,
   MealPlanCardConfig,
+  HomeAssistant,
 } from '../../src/types';
-import { ProfileField, TransportType } from '../../src/types';
+import { ProfileField, TransportType, EncodingType } from '../../src/types';
 
 export function createMockHass(options?: {
-  sensor?: { id: string; state: string; attributes?: Record<string, any> };
-  overrides?: any;
-}) {
-  const base = {
+  sensor?: { id: string; state: string; attributes?: Record<string, unknown> };
+  overrides?: Record<string, unknown>;
+}): HomeAssistant {
+  const base: HomeAssistant = {
     states: {},
-    callService: vi.fn().mockResolvedValue(undefined),
+    callService: vi
+      .fn()
+      .mockResolvedValue(undefined) as unknown as HomeAssistant['callService'],
+    language: 'en',
   };
 
   if (options?.sensor) {
@@ -28,14 +32,14 @@ export function createMockHass(options?: {
     };
   }
 
-  return { ...base, ...options?.overrides };
+  return { ...base, ...options?.overrides } as HomeAssistant;
 }
 
 export function createMockHassWithSensor(
   sensorId: string,
   base64Data: string,
-  attributes: Record<string, any> = {},
-) {
+  attributes: Record<string, unknown> = {},
+): HomeAssistant {
   return createMockHass({
     sensor: { id: sensorId, state: base64Data, attributes },
   });
@@ -73,6 +77,7 @@ export function createMockProfile(
   return {
     manufacturer: overrides?.manufacturer ?? 'Test',
     models: overrides?.models ?? [],
+    encodingType: overrides?.encodingType ?? EncodingType.BASE64,
     encodingTemplate:
       overrides?.encodingTemplate ??
       '{DAYS:8}{HOUR:5}{MINUTE:6}{PORTION:4}{ENABLED:1}',
@@ -85,11 +90,11 @@ export function createMealStateController(
   options?: {
     sensor?: string;
     profile?: DeviceProfile;
-    hass?: any;
+    hass?: HomeAssistant;
     helper?: string;
     config?: Partial<MealPlanCardConfig>;
   },
-) {
+): MealStateController {
   const host = createMockHost();
   const config: MealPlanCardConfig = {
     sensor: options?.sensor ?? 'sensor.test',
@@ -115,11 +120,11 @@ export function createMealStateController(
   return controller;
 }
 
-export function getTestProfile() {
+export function getTestProfile(): DeviceProfile {
   return profiles[0];
 }
 
-export function getCleverioProfile() {
+export function getCleverioProfile(): DeviceProfile {
   const profileGroup = profiles.find((p) => p.manufacturer === 'Cleverio');
   if (!profileGroup) {
     throw new Error('Cleverio profile not found');
@@ -137,12 +142,13 @@ export function createMealPlanCardConfig(
     portions: number;
     minimal: boolean;
   }>,
-) {
+): MealPlanCardConfig {
   if (overrides?.minimal) {
     return {
       sensor: overrides?.sensor ?? '',
       title: overrides?.title ?? '',
       helper: overrides?.helper ?? '',
+      transport_type: TransportType.SENSOR,
     };
   }
 
@@ -153,26 +159,31 @@ export function createMealPlanCardConfig(
     manufacturer: overrides?.manufacturer ?? profile.manufacturer,
     model: overrides?.model ?? '',
     helper: overrides?.helper ?? '',
+    transport_type: TransportType.SENSOR,
     ...(overrides?.portions !== undefined && { portions: overrides.portions }),
   };
 }
 
 export const createMinimalEditorConfig = (
   overrides?: Partial<{ sensor: string; title: string; helper: string }>,
-) => createMealPlanCardConfig({ ...overrides, minimal: true });
+): MealPlanCardConfig =>
+  createMealPlanCardConfig({ ...overrides, minimal: true });
 
-export const createCardEditorFixture = () =>
-  fixture<any>(html`<mealplan-card-editor></mealplan-card-editor>`);
+export const createCardEditorFixture = (): Promise<HTMLElement> =>
+  fixture<HTMLElement>(html`<mealplan-card-editor></mealplan-card-editor>`);
 
-export const createMealPlanCardFixture = (config: any, hass: any) =>
-  fixture<any>(
+export const createMealPlanCardFixture = (
+  config: MealPlanCardConfig,
+  hass: HomeAssistant,
+): Promise<HTMLElement> =>
+  fixture<HTMLElement>(
     html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
   );
 
 export const createMealCardFixture = (
   meal: FeedingTime & { _idx?: number },
   options?: { profile?: DeviceProfile; expanded?: boolean },
-) => {
+): Promise<HTMLElement> => {
   const profile = options?.profile ?? getTestProfile();
   const mealWithIdx = meal._idx !== undefined ? meal : { ...meal, _idx: 0 };
   return fixture(html`
@@ -186,8 +197,12 @@ export const createMealCardFixture = (
 
 export const createScheduleViewFixture = (
   mealState: MealStateController,
-  options?: { hass?: any; profile?: DeviceProfile; meals?: FeedingTime[] },
-) =>
+  options?: {
+    hass?: HomeAssistant;
+    profile?: DeviceProfile;
+    meals?: FeedingTime[];
+  },
+): Promise<HTMLElement> =>
   fixture(html`
     <schedule-view
       .mealState=${mealState}
@@ -199,7 +214,7 @@ export const createScheduleViewFixture = (
 
 export const createEditDialogFixture = (
   options: { open?: boolean; profile?: DeviceProfile; meal?: FeedingTime } = {},
-) =>
+): Promise<HTMLElement> =>
   fixture(html`
     <meal-edit-dialog
       .open=${options.open ?? true}
@@ -211,7 +226,7 @@ export const createEditDialogFixture = (
 export const createOverviewFixture = (
   mealState: MealStateController,
   portions = 1,
-) =>
+): Promise<HTMLElement> =>
   fixture(
     html`<meal-overview
       .mealState=${mealState}

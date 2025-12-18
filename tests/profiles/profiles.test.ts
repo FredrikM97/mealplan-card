@@ -2,10 +2,17 @@ import { describe, it, expect } from 'vitest';
 import { getEncoder } from '../../src/profiles/serializer';
 import { getProfileWithTransformer } from '../../src/profiles/profiles';
 import profileTestData from '../fixtures/profiles-test-data.json';
+import type { FeedingTime } from '../../src/types';
 
 const INVALID_BASE64 = '!@#$';
 
-(profileTestData as any[]).forEach((testCase) => {
+type ProfileTestCase = {
+  manufacturer: string;
+  decoded: FeedingTime[];
+  encoded: string;
+};
+
+(profileTestData as ProfileTestCase[]).forEach((testCase) => {
   const { manufacturer, decoded, encoded } = testCase;
 
   describe(manufacturer, () => {
