@@ -106,7 +106,7 @@ export function generateConfigFormSchema() {
         case 'manufacturer':
           return 'Select your feeder manufacturer and model';
         case 'helper':
-          return 'This input_text helper stores and syncs your meal plan schedule. The card will always read and write the schedule to this helper, making it the single source of truth for your meal plan.';
+          return 'This input_text helper acts as a backup storage for your meal plan schedule. When the sensor is unavailable, the card will restore the schedule from this helper to prevent data loss.';
         case 'portions':
           return 'Number of portions per feeding';
         case 'transport_type':
