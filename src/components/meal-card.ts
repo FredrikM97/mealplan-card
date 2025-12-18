@@ -162,6 +162,11 @@ export class MealCard extends LitElement {
           }
         });
       }
+
+      // Scroll card into view after expanding
+      this.updateComplete.then(() => {
+        this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
     }
   }
 
@@ -233,6 +238,9 @@ export class MealCard extends LitElement {
         .checked=${!!this.meal.enabled}
         @change=${(e: Event) => {
           this.handleMealUpdate(e);
+        }}
+        @click=${(e: Event) => {
+          e.stopPropagation();
         }}
         title="${this.meal.enabled
           ? localize('enabled')

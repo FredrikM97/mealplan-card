@@ -83,7 +83,7 @@ export function renderDaySelector({
             class="day-cell${days & (1 << i) ? ' selected' : ''}${editable
               ? ''
               : ' readonly'}"
-            @click=${() => handleClick(i)}
+            @click=${editable ? () => handleClick(i) : undefined}
             >${d}</span
           >
         `,
