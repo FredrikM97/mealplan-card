@@ -257,12 +257,10 @@ describe('MealCard Component', () => {
 
       await card.updateComplete;
 
-      const headerActions = card.shadowRoot?.querySelector(
-        '.meal-card-header-actions',
-      );
-      const daySelector = headerActions?.querySelector('.days-row');
+      const daysContainer = card.shadowRoot?.querySelector('.meal-card-days');
+      const daySelector = daysContainer?.querySelector('.days-row');
 
-      expect(headerActions).to.exist;
+      expect(daysContainer).to.exist;
       expect(daySelector).to.exist;
     });
   });
