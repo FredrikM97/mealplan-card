@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import type { FeedingTime, DeviceProfile } from '../types';
 import { ProfileField } from '../types';
 import { localize } from '../locales/localize';
-import { renderDaySelector } from '../day-selector';
+import { renderDaySelector } from './day-selector';
 import { formatTime, hasProfileField } from '../utils';
 
 @customElement('meal-card')
@@ -35,6 +35,10 @@ export class MealCard extends LitElement {
     .meal-card-header:hover {
       background: var(--secondary-background-color, #f5f5f5);
     }
+    .meal-card-header ha-switch,
+    .meal-card-header ha-icon {
+      pointer-events: auto;
+    }
     .meal-card-number {
       font-size: 0.75em;
       font-weight: 600;
@@ -60,44 +64,41 @@ export class MealCard extends LitElement {
       color: var(--secondary-text-color);
       line-height: 1.2;
     }
-    .meal-card-header-actions {
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    .meal-card-days {
+      margin-right: 8px;
     }
-    .meal-card-header-actions .day-cell {
+    .meal-card-days .days-row {
+      margin: 0;
+    }
+    .meal-card-days .day-cell {
       width: 1.6em;
       height: 1.6em;
       font-size: 0.85em;
-      margin-right: 1px;
     }
-    .meal-card-header-actions .days-row {
-      margin-right: 20px;
-      max-width: 200px;
+    ha-switch {
+      margin-left: auto;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 500px) {
       .meal-card-header {
         flex-wrap: wrap;
-        padding: 8px 4px;
       }
-      .meal-card-header-actions {
-        order: 3;
-        width: 100%;
-        justify-content: space-between;
-        margin-top: 4px;
-        padding: 4px 0 0 0;
+      .meal-card-summary {
+        order: 1;
       }
-      .meal-card-header-actions .days-row {
-        max-width: none;
-        margin-right: 8px;
-      }
-      .meal-card-header-actions .day-cell {
-        width: 1.5em;
-        height: 1.5em;
-        font-size: 0.8em;
+      ha-switch {
+        order: 2;
       }
       .meal-card-expand-icon {
-        order: 2;
+        order: 3;
+      }
+      .meal-card-days {
+        order: 10;
+        width: 100%;
+        margin: 4px 0 2px 36px;
+      }
+      .meal-card-days .days-row {
+        gap: 3px;
+        row-gap: 2px;
       }
     }
     .meal-card-expand-icon {
@@ -187,21 +188,17 @@ export class MealCard extends LitElement {
 
     return html`
       <div class="meal-card">
-        <div class="meal-card-header">
-          <div class="meal-card-number" @click=${this.toggleExpand}>
-            ${this.index + 1}
-          </div>
-          <div class="meal-card-summary" @click=${this.toggleExpand}>
+        <div class="meal-card-header" @click=${this.toggleExpand}>
+          <div class="meal-card-number">${this.index + 1}</div>
+          <div class="meal-card-summary">
             <div class="meal-card-time">${time}</div>
             <div class="meal-card-info">${this.getSummary()}</div>
           </div>
-          <div class="meal-card-header-actions">
-            ${this.renderDaysInline()} ${this.renderEnabledToggle()}
-          </div>
+          <div class="meal-card-days">${this.renderDaysInline()}</div>
+          ${this.renderEnabledToggle()}
           <ha-icon
             class="meal-card-expand-icon ${this.expanded ? 'expanded' : ''}"
             icon="mdi:chevron-down"
-            @click=${this.toggleExpand}
           ></ha-icon>
         </div>
         ${this.expanded ? this.renderDetails() : ''}

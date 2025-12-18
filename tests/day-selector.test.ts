@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'lit-html';
-import { renderDaySelector } from '../src/day-selector';
+import { renderDaySelector } from '../src/components/day-selector';
 
 const renderSelector = (options: any) => {
   const container = document.createElement('div');
