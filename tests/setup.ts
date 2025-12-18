@@ -22,6 +22,9 @@ beforeAll(() => {
     }
   });
 
+  // Mock scrollIntoView for tests (not available in JSDOM)
+  Element.prototype.scrollIntoView = () => {};
+
   // Global helper to register any custom element by tag name
   globalThis.registerDummyElement = (tag: string) => {
     if (!customElements.get(tag)) {
