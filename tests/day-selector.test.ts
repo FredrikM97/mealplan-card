@@ -2,7 +2,12 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'lit-html';
 import { renderDaySelector } from '../src/components/day-selector';
 
-const renderSelector = (options: any) => {
+const renderSelector = (options: {
+  days: number;
+  editable: boolean;
+  dayLabels?: string[];
+  onDaysChanged?: (days: number) => void;
+}) => {
   const container = document.createElement('div');
   render(renderDaySelector(options), container);
   document.body.appendChild(container);

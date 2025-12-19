@@ -1,4 +1,4 @@
-import type { FeedingTime, DeviceProfile } from '../../src/types';
+import type { FeedingTime } from '../../src/types';
 
 export const testMeals = {
   breakfast: {

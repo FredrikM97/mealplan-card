@@ -3,7 +3,7 @@
  * Self-contained LitElement component with form validation
  */
 
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { renderDaySelector } from './day-selector';
 import { localize } from '../locales/localize';
@@ -113,7 +113,7 @@ export class MealEditDialog extends LitElement {
     }
   `;
 
-  updated(changedProperties: Map<string, any>) {
+  updated(changedProperties: PropertyValues) {
     if (changedProperties.has('meal') && this.meal) {
       this.formData = { ...this.meal };
     }

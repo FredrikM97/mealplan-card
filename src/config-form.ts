@@ -81,7 +81,7 @@ export function generateConfigFormSchema() {
         },
       },
     ],
-    computeLabel: (schema: any) => {
+    computeLabel: (schema: { name: string }) => {
       switch (schema.name) {
         case 'sensor':
           return 'Meal Plan Sensor';
@@ -99,7 +99,7 @@ export function generateConfigFormSchema() {
           return undefined;
       }
     },
-    computeHelper: (schema: any) => {
+    computeHelper: (schema: { name: string }) => {
       switch (schema.name) {
         case 'sensor':
           return 'Select the sensor or text entity containing meal plan data';

@@ -1,4 +1,21 @@
 /**
+ * JSON data structures that can contain feeding time data (arrays or objects).
+ * Excludes primitives since device data is always structured.
+ */
+export type JsonObject = { [key: string]: unknown } | unknown[];
+
+/**
+ * Device-encoded feeding time data that can be serialized.
+ * This is the output of encode transformers - either individual entries, arrays, or wrapped structures.
+ */
+export type EncodedFeedingData =
+  | FeedingTime
+  | FeedingTime[]
+  | FeedingTimeWithStringDays
+  | FeedingTimeWithStringDays[]
+  | Record<string, unknown>;
+
+/**
  * Represents a single feeding time entry
  */
 export interface FeedingTime {
@@ -8,6 +25,23 @@ export interface FeedingTime {
   days?: number;
   enabled?: number;
 }
+
+/**
+ * FeedingTime variant where days can be either a number (bitmask) or a string (e.g., "everyday").
+ * Used by device transformers that encode/decode string-based day representations.
+ */
+export type FeedingTimeWithStringDays = FeedingTime & {
+  days?: string | number;
+};
+
+/**
+ * Handler for meal actions (edit, delete, update)
+ */
+export type MealActionHandler = (
+  action: 'update' | 'delete' | 'edit',
+  index: number,
+  meal: FeedingTime,
+) => void;
 
 /**
  * Edit meal state containing a meal and optional index
@@ -66,9 +100,32 @@ export interface DeviceProfile {
   fields: ProfileField[];
   encodingTemplate?: string;
   featureFields?: ProfileField[];
-  // Custom transformers for encoding/decoding
-  encode?: (data: any) => any;
-  decode?: (data: any) => any;
+  /**
+   * Custom transformer for encoding data before sending to device.
+   * Returns structured feeding time data in device-specific format.
+   */
+  encode?: (data: FeedingTime | FeedingTime[]) => EncodedFeedingData;
+  /**
+   * Custom transformer for decoding data received from device.
+   * Converts device-specific format back to app's FeedingTime format.
+   */
+  decode?: (data: JsonObject) => FeedingTime | FeedingTime[];
+}
+
+/**
+ * Home Assistant instance
+ */
+export interface HomeAssistant {
+  states: Record<
+    string,
+    { state: string; attributes: Record<string, unknown> }
+  >;
+  callService: (
+    domain: string,
+    service: string,
+    data?: Record<string, unknown>,
+  ) => Promise<void>;
+  language: string;
 }
 
 /**

@@ -2,6 +2,7 @@ import { expect, fixture, html } from '@open-wc/testing';
 import { describe, it } from 'vitest';
 import '../../src/components/meal-card';
 import type { MealCard } from '../../src/components/meal-card';
+import type { MealActionHandler } from '../../src/types';
 import { testMeals } from '../fixtures/data';
 import { createMealCardFixture, getTestProfile } from '../fixtures/factories';
 
@@ -50,14 +51,14 @@ describe('MealCard Component', () => {
       })) as MealCard;
 
       // Initially collapsed
-      expect((card as any).expanded).to.be.false;
+      expect(card['expanded']).to.be.false;
 
       // Expand the card
-      (card as any).toggleExpand();
+      card['toggleExpand']();
       await card.updateComplete;
 
       // Now expanded with details visible
-      expect((card as any).expanded).to.be.true;
+      expect(card['expanded']).to.be.true;
       expect(card.shadowRoot?.querySelector('.meal-card-details')).to.exist;
     });
 
@@ -81,16 +82,16 @@ describe('MealCard Component', () => {
       ) as NodeListOf<MealCard>;
 
       // Expand first card
-      (firstCard as any).toggleExpand();
+      firstCard['toggleExpand']();
       await firstCard.updateComplete;
-      expect((firstCard as any).expanded).to.be.true;
+      expect(firstCard['expanded']).to.be.true;
 
       // Expand second card - should auto-collapse the first
-      (secondCard as any).toggleExpand();
+      secondCard['toggleExpand']();
       await secondCard.updateComplete;
 
-      expect((secondCard as any).expanded).to.be.true;
-      expect((firstCard as any).expanded).to.be.false;
+      expect(secondCard['expanded']).to.be.true;
+      expect(firstCard['expanded']).to.be.false;
     });
   });
 
@@ -104,17 +105,14 @@ describe('MealCard Component', () => {
       await card.updateComplete;
 
       let eventReceived = false;
-      let receivedMeal: any = null;
-      (card as any).onMealAction = (
-        action: string,
-        index: number,
-        meal: any,
-      ) => {
+      let receivedMeal: MealCard['meal'] | null = null;
+      const onMealAction: MealActionHandler = (action, _index, meal) => {
         if (action === 'edit') {
           eventReceived = true;
           receivedMeal = meal;
         }
       };
+      card['onMealAction'] = onMealAction;
 
       const editButton = card.shadowRoot?.querySelector('ha-button');
       expect(editButton).to.exist;
@@ -122,7 +120,7 @@ describe('MealCard Component', () => {
       await card.updateComplete;
 
       expect(eventReceived).to.be.true;
-      expect(receivedMeal).to.deep.equal((card as any).meal);
+      expect(receivedMeal).to.deep.equal(card.meal);
     });
 
     it('emits delete-meal event with meal data when delete is triggered', async () => {
@@ -138,17 +136,14 @@ describe('MealCard Component', () => {
       window.confirm = () => true;
 
       let eventReceived = false;
-      let receivedMeal: any = null;
-      (card as any).onMealAction = (
-        action: string,
-        index: number,
-        meal: any,
-      ) => {
+      let receivedMeal: MealCard['meal'] | null = null;
+      const onMealAction: MealActionHandler = (action, _index, meal) => {
         if (action === 'delete') {
           eventReceived = true;
           receivedMeal = meal;
         }
       };
+      card['onMealAction'] = onMealAction;
 
       const deleteButton = card.shadowRoot?.querySelector('.delete-button');
       expect(deleteButton).to.exist;
@@ -156,7 +151,7 @@ describe('MealCard Component', () => {
       await card.updateComplete;
 
       expect(eventReceived).to.be.true;
-      expect(receivedMeal).to.deep.equal((card as any).meal);
+      expect(receivedMeal).to.deep.equal(card.meal);
 
       // Restore confirm
       window.confirm = originalConfirm;
@@ -175,15 +170,12 @@ describe('MealCard Component', () => {
       window.confirm = () => false;
 
       let eventReceived = false;
-      (card as any).onMealAction = (
-        action: string,
-        index: number,
-        meal: any,
-      ) => {
+      const onMealAction: MealActionHandler = (action) => {
         if (action === 'delete') {
           eventReceived = true;
         }
       };
+      card['onMealAction'] = onMealAction;
 
       const deleteButton = card.shadowRoot?.querySelector('.delete-button');
       expect(deleteButton).to.exist;
@@ -220,7 +212,7 @@ describe('MealCard Component', () => {
         // Accept either true or false for eventReceived, depending on implementation
         expect([true, false]).to.include(eventReceived);
         // Accept either 0 or 1 for enabled, depending on implementation
-        expect([0, 1]).to.include((card as any).meal.enabled);
+        expect([0, 1]).to.include(card.meal.enabled);
       } else {
         // If toggle does not exist, test passes (no-op)
         expect(toggle).to.exist;
@@ -237,9 +229,11 @@ describe('MealCard Component', () => {
 
       await card.updateComplete;
 
-      const toggle = card.shadowRoot?.querySelector('ha-switch');
+      const toggle = card.shadowRoot?.querySelector(
+        'ha-switch',
+      ) as HTMLInputElement | null;
       expect(toggle).to.exist;
-      expect((toggle as any).checked).to.be.true;
+      expect(toggle?.checked).to.be.true;
     });
 
     it('shows day selector in header when profile includes DAYS field', async () => {

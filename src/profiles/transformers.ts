@@ -1,3 +1,9 @@
+import type {
+  FeedingTime,
+  FeedingTimeWithStringDays,
+  JsonObject,
+} from '../types';
+
 /**
  * Creates day transformer with custom bit mapping.
  *
@@ -9,29 +15,45 @@
  *   - bit 6 is the leftmost/MSB (most significant bit)
  *   - Example: 0b0000011 has bits 0 and 1 set (Mon+Tue)
  */
-export const createDayTransformer = (map: [number, number][]) => ({
-  encode: (entry: any) => {
+export const createDayTransformer = (map: [number, number][]) => {
+  const encodeEntry = (entry: FeedingTime): FeedingTime => {
     if (entry.days === undefined) return entry;
     let encoded = 0;
     map.forEach(([std, custom]) => {
-      if (entry.days & (1 << std)) {
+      if (entry.days! & (1 << std)) {
         encoded |= 1 << custom;
       }
     });
     return { ...entry, days: encoded & 0x7f };
-  },
-  decode: (entry: any) => {
-    if (entry.days === undefined) return entry;
+  };
+
+  const decodeEntry = (entry: FeedingTime): FeedingTime => {
+    const e = entry;
+    if (e.days === undefined) return entry;
     let standardDays = 0;
-    const maskedEncoded = entry.days & 0x7f;
+    const maskedEncoded = e.days & 0x7f;
     map.forEach(([std, custom]) => {
       if (maskedEncoded & (1 << custom)) {
         standardDays |= 1 << std;
       }
     });
-    return { ...entry, days: standardDays };
-  },
-});
+    return { ...e, days: standardDays };
+  };
+
+  return {
+    encode: (
+      data: FeedingTime | FeedingTime[],
+    ): FeedingTime | FeedingTime[] => {
+      return Array.isArray(data) ? data.map(encodeEntry) : encodeEntry(data);
+    },
+    decode: (
+      data: FeedingTime | FeedingTime[] | JsonObject,
+    ): FeedingTime | FeedingTime[] => {
+      if (Array.isArray(data)) return (data as FeedingTime[]).map(decodeEntry);
+      return decodeEntry(data as FeedingTime);
+    },
+  };
+};
 
 /**
  * Creates a string-based day transformer for devices that use string values like "everyday".
@@ -49,21 +71,21 @@ export const createStringDayTransformer = (
   });
 
   return {
-    encode: (entry: any) => {
-      if (entry.days === undefined) return entry;
+    encode: (entry: FeedingTime): FeedingTimeWithStringDays => {
+      if (entry.days === undefined) return entry as FeedingTimeWithStringDays;
       const mappedDays =
         stringMap[entry.days] !== undefined
           ? stringMap[entry.days]
           : entry.days;
-      return { ...entry, days: mappedDays };
+      return { ...entry, days: mappedDays } as FeedingTimeWithStringDays;
     },
-    decode: (entry: any) => {
+    decode: (entry: FeedingTimeWithStringDays): FeedingTime => {
       if (entry.days === undefined) return entry;
       const mappedDays =
         typeof entry.days === 'string' && reverseMap[entry.days] !== undefined
           ? reverseMap[entry.days]
           : entry.days;
-      return { ...entry, days: mappedDays };
+      return { ...entry, days: mappedDays as number };
     },
   };
 };
@@ -74,18 +96,26 @@ export const createStringDayTransformer = (
  */
 export function createDictEncoderWithWrapper(
   wrapKey: string,
-  dayTransformer?: { encode?: (v: any) => any; decode?: (v: any) => any },
+  dayTransformer?: {
+    encode?: (v: FeedingTime) => FeedingTimeWithStringDays;
+    decode?: (
+      v: FeedingTimeWithStringDays | Record<string, unknown>,
+    ) => FeedingTime | Record<string, unknown>;
+  },
   fieldMap?: Record<string, string>,
 ): {
-  encode?: (data: any) => any;
-  decode?: (data: any) => any;
+  encode?: (data: FeedingTime | FeedingTime[]) => Record<string, unknown>;
+  decode?: (data: JsonObject) => FeedingTime | FeedingTime[];
 } {
   const reverseMap = fieldMap
     ? Object.fromEntries(Object.entries(fieldMap).map(([k, v]) => [v, k]))
     : undefined;
 
-  const mapFields = (entry: any, mapping?: Record<string, string>) => {
-    const result: any = {};
+  const mapFields = (
+    entry: Record<string, unknown>,
+    mapping?: Record<string, string>,
+  ): Record<string, unknown> => {
+    const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(entry)) {
       if (value !== null) {
         result[mapping?.[key] ?? key] = value;
@@ -95,24 +125,31 @@ export function createDictEncoderWithWrapper(
   };
 
   return {
-    encode: (data: any[]) => ({
-      [wrapKey]: data.map((e) => {
-        const transformed = dayTransformer?.encode
-          ? dayTransformer.encode(e)
-          : e;
-        return mapFields(transformed, fieldMap);
-      }),
-    }),
-    decode: (data: any) => {
-      const array = data[wrapKey] ?? data;
+    encode: (data: FeedingTime | FeedingTime[]) => {
+      const dataArray = Array.isArray(data) ? data : [data];
+      return {
+        [wrapKey]: dataArray.map((e) => {
+          const transformed = dayTransformer?.encode
+            ? dayTransformer.encode(e)
+            : e;
+          return mapFields(
+            transformed as Record<string, unknown>,
+            fieldMap,
+          ) as FeedingTime;
+        }),
+      };
+    },
+    decode: (data: JsonObject): FeedingTime | FeedingTime[] => {
+      const obj = data as Record<string, FeedingTime[]> | FeedingTime[];
+      const array = Array.isArray(obj) ? obj : obj[wrapKey];
       return Array.isArray(array)
         ? array.map((e) => {
-            const mapped = mapFields(e, reverseMap);
+            const mapped = mapFields(e as Record<string, unknown>, reverseMap);
             return dayTransformer?.decode
               ? dayTransformer.decode(mapped)
               : mapped;
           })
-        : array;
+        : [];
     },
   };
 }

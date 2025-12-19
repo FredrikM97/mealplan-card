@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { FeedingTime, DeviceProfile } from '../types';
+import type { FeedingTime, DeviceProfile, MealActionHandler } from '../types';
 import { ProfileField } from '../types';
 import { localize } from '../locales/localize';
 import { renderDaySelector } from './day-selector';
@@ -12,11 +12,7 @@ export class MealCard extends LitElement {
   @property({ type: Number }) index: number = 0;
   @property({ type: Object }) profile!: DeviceProfile;
   @property({ type: Boolean }) expanded = false;
-  @property({ attribute: false }) onMealAction?: (
-    action: 'update' | 'delete' | 'edit',
-    index: number,
-    meal: FeedingTime,
-  ) => void;
+  @property({ attribute: false }) onMealAction?: MealActionHandler;
 
   static styles = css`
     .meal-card {
@@ -156,7 +152,7 @@ export class MealCard extends LitElement {
       // Collapse all sibling cards
       const parent = this.parentElement;
       if (parent) {
-        parent.querySelectorAll('meal-card').forEach((card: any) => {
+        parent.querySelectorAll<MealCard>('meal-card').forEach((card) => {
           if (card !== this && card.expanded) {
             card.expanded = false;
           }

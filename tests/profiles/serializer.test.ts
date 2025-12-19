@@ -4,7 +4,12 @@ import {
   createDayTransformer,
   createStringDayTransformer,
 } from '../../src/profiles/transformers';
-import { f, TemplateFieldName as F, Day, EncodingType } from '../../src/types';
+import {
+  f,
+  TemplateFieldName as F,
+  EncodingType,
+  JsonObject,
+} from '../../src/types';
 import { FeedingTime } from '../../src/types';
 import { daySpecificMeals } from '../fixtures/data';
 
@@ -108,9 +113,9 @@ describe('encoder error handling', () => {
   });
 
   it('throws on invalid profile', () => {
-    expect(() => getEncoder(undefined as any)).toThrow(
-      'Device profile is required for encoder initialization',
-    );
+    expect(() =>
+      getEncoder(undefined as unknown as Parameters<typeof getEncoder>[0]),
+    ).toThrow('Device profile is required for encoder initialization');
   });
 
   it('throws on invalid meal plan length', () => {
@@ -137,7 +142,7 @@ describe('TemplateEncoder edge cases', () => {
       encodingTemplate: `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}`,
     });
     const result = encoder.encode([
-      { hour: null as any, minute: undefined as any },
+      { hour: null as unknown as number, minute: undefined },
     ]);
     expect(result).toBe('0000');
   });
@@ -161,7 +166,13 @@ describe('TemplateEncoder edge cases', () => {
       fields: [],
       encodingType: EncodingType.HEX,
       encodingTemplate: `${f(F.DAYS, 2)}`,
-      encode: (entry: any) => ({ ...entry, days: entry.days ^ 0xff }), // XOR transformer
+      encode: (entry: FeedingTime | FeedingTime[]) => {
+        const e = Array.isArray(entry) ? entry[0] : entry;
+        return {
+          ...e,
+          days: e.days! ^ 0xff,
+        }; // XOR transformer
+      },
     });
     const result = encoder.encode([{ days: 127 }]);
     expect(result).toBe('80'); // 127 ^ 255 = 128 = 0x80
@@ -174,7 +185,13 @@ describe('TemplateEncoder edge cases', () => {
       fields: [],
       encodingType: EncodingType.HEX,
       encodingTemplate: `${f(F.DAYS, 2)}`,
-      decode: (entry: any) => ({ ...entry, days: entry.days ^ 0xff }), // XOR transformer
+      decode: (entry: JsonObject) => {
+        const e = entry as FeedingTime;
+        return {
+          ...e,
+          days: e.days! ^ 0xff,
+        };
+      },
     });
     const result = encoder.decode('80');
     expect(result[0].days).toBe(127); // 128 ^ 255 = 127
@@ -182,7 +199,9 @@ describe('TemplateEncoder edge cases', () => {
 
   it('throws error when template is not provided', () => {
     expect(() => {
-      new (getEncoder as any).TemplateEncoder();
+      new (
+        getEncoder as unknown as { TemplateEncoder: new () => unknown }
+      ).TemplateEncoder();
     }).toThrow();
   });
 
@@ -208,12 +227,12 @@ describe('createDayTransformer', () => {
     ]);
 
     // Saturday (internal bit 5)
-    expect(transformer.encode({ days: 32 }).days).toBe(1);
-    expect(transformer.decode({ days: 1 }).days).toBe(32);
+    expect((transformer.encode({ days: 32 }) as { days: number }).days).toBe(1);
+    expect((transformer.decode({ days: 1 }) as { days: number }).days).toBe(32);
 
     // Friday (internal bit 4)
-    expect(transformer.encode({ days: 16 }).days).toBe(2);
-    expect(transformer.decode({ days: 2 }).days).toBe(16);
+    expect((transformer.encode({ days: 16 }) as { days: number }).days).toBe(2);
+    expect((transformer.decode({ days: 2 }) as { days: number }).days).toBe(16);
   });
 
   it('roundtrip preserves values with custom mapping', () => {
@@ -224,7 +243,7 @@ describe('createDayTransformer', () => {
     ]);
 
     const encoded = transformer.encode({ days: 7 }); // bits 0,1,2
-    const decoded = transformer.decode(encoded);
+    const decoded = transformer.decode(encoded) as { days: number };
     expect(decoded.days).toBe(7);
   });
   it('maps device bit 0 (0b00000001) to internal Sunday with Cleverio/Meowmatic mapping', () => {
@@ -238,9 +257,13 @@ describe('createDayTransformer', () => {
       [6, 0], // Sun
     ]);
     // Device bit 0 set (0b00000001) should map to internal bit 6 (Sunday)
-    expect(transformer.decode({ days: 0b00000001 }).days).toBe(1 << 6); // 0b1000000
+    expect(
+      (transformer.decode({ days: 0b00000001 }) as { days: number }).days,
+    ).toBe(1 << 6); // 0b1000000
     // And the reverse: encoding internal Sunday should set device bit 0
-    expect(transformer.encode({ days: 1 << 6 }).days).toBe(0b00000001);
+    expect(
+      (transformer.encode({ days: 1 << 6 }) as { days: number }).days,
+    ).toBe(0b00000001);
   });
 
   it('preserves other fields in entry', () => {
@@ -324,9 +347,12 @@ describe('DictEncoder', () => {
       fields: [],
       encodingType: EncodingType.DICT,
       encodingTemplate: '',
-      encode: (data: any[]) => data.map((e) => transformer.encode(e)),
-      decode: (data: any) =>
-        Array.isArray(data) ? data.map((e) => transformer.decode(e)) : data,
+      encode: (data: FeedingTime | FeedingTime[]) =>
+        (Array.isArray(data) ? data : [data]).map((e) => transformer.encode(e)),
+      decode: (data: JsonObject): FeedingTime[] =>
+        Array.isArray(data)
+          ? data.map((e) => transformer.decode(e as FeedingTime))
+          : [],
     });
 
     const feedingTimes: FeedingTime[] = [
@@ -355,31 +381,66 @@ describe('createStringDayTransformer', () => {
   });
 
   it('encodes bitmask to string when mapped', () => {
-    expect(transformer.encode({ days: 127 }).days).toBe('everyday');
-    expect(transformer.encode({ days: 31 }).days).toBe('workdays');
-    expect(transformer.encode({ days: 96 }).days).toBe('weekend');
-    expect(transformer.encode({ days: 1 }).days).toBe('mon');
+    expect((transformer.encode({ days: 127 }) as { days: string }).days).toBe(
+      'everyday',
+    );
+    expect((transformer.encode({ days: 31 }) as { days: string }).days).toBe(
+      'workdays',
+    );
+    expect((transformer.encode({ days: 96 }) as { days: string }).days).toBe(
+      'weekend',
+    );
+    expect((transformer.encode({ days: 1 }) as { days: string }).days).toBe(
+      'mon',
+    );
   });
 
   it('passes through unmapped values', () => {
-    expect(transformer.encode({ days: 15 }).days).toBe(15);
-    expect(transformer.encode({ days: 63 }).days).toBe(63);
-    expect(transformer.decode({ days: 15 }).days).toBe(15);
-    expect(transformer.decode({ days: 63 }).days).toBe(63);
+    expect((transformer.encode({ days: 15 }) as { days: number }).days).toBe(
+      15,
+    );
+    expect((transformer.encode({ days: 63 }) as { days: number }).days).toBe(
+      63,
+    );
+    expect((transformer.decode({ days: 15 }) as { days: number }).days).toBe(
+      15,
+    );
+    expect((transformer.decode({ days: 63 }) as { days: number }).days).toBe(
+      63,
+    );
   });
 
   it('decodes string to bitmask when mapped', () => {
-    expect(transformer.decode({ days: 'everyday' }).days).toBe(127);
-    expect(transformer.decode({ days: 'workdays' }).days).toBe(31);
-    expect(transformer.decode({ days: 'weekend' }).days).toBe(96);
-    expect(transformer.decode({ days: 'mon' }).days).toBe(1);
+    expect(
+      transformer.decode({ days: 'everyday' } as FeedingTime & { days: string })
+        .days,
+    ).toBe(127);
+    expect(
+      transformer.decode({ days: 'workdays' } as FeedingTime & { days: string })
+        .days,
+    ).toBe(31);
+    expect(
+      transformer.decode({ days: 'weekend' } as FeedingTime & { days: string })
+        .days,
+    ).toBe(96);
+    expect(
+      transformer.decode({ days: 'mon' } as FeedingTime & { days: string })
+        .days,
+    ).toBe(1);
   });
 
   it('roundtrip preserves values', () => {
-    expect(transformer.decode(transformer.encode({ days: 127 })).days).toBe(
-      127,
-    );
-    expect(transformer.decode(transformer.encode({ days: 31 })).days).toBe(31);
+    expect(
+      (
+        transformer.decode(transformer.encode({ days: 127 })) as {
+          days: number;
+        }
+      ).days,
+    ).toBe(127);
+    expect(
+      (transformer.decode(transformer.encode({ days: 31 })) as { days: number })
+        .days,
+    ).toBe(31);
   });
 
   it('handles Aqara complex day patterns', () => {
@@ -389,10 +450,24 @@ describe('createStringDayTransformer', () => {
       42: 'tue-thu-sat',
     });
 
-    expect(aqaraTransformer.encode({ days: 85 }).days).toBe('mon-wed-fri-sun');
-    expect(aqaraTransformer.decode({ days: 'mon-wed-fri-sun' }).days).toBe(85);
-    expect(aqaraTransformer.encode({ days: 42 }).days).toBe('tue-thu-sat');
-    expect(aqaraTransformer.decode({ days: 'tue-thu-sat' }).days).toBe(42);
+    expect(
+      (aqaraTransformer.encode({ days: 85 }) as unknown as { days: string })
+        .days,
+    ).toBe('mon-wed-fri-sun');
+    expect(
+      aqaraTransformer.decode({ days: 'mon-wed-fri-sun' } as FeedingTime & {
+        days: string;
+      }).days,
+    ).toBe(85);
+    expect(
+      (aqaraTransformer.encode({ days: 42 }) as unknown as { days: string })
+        .days,
+    ).toBe('tue-thu-sat');
+    expect(
+      aqaraTransformer.decode({ days: 'tue-thu-sat' } as FeedingTime & {
+        days: string;
+      }).days,
+    ).toBe(42);
   });
 
   it('preserves other fields in entry', () => {
