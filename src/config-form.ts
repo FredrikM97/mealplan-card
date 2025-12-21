@@ -1,3 +1,4 @@
+import { localize } from './locales/localize';
 import { profiles } from './profiles/profiles';
 
 export function generateConfigFormSchema() {
@@ -90,7 +91,7 @@ export function generateConfigFormSchema() {
         case 'title':
           return 'Title';
         case 'portions':
-          return 'Portions per Meal';
+          return localize('config.portion_label');
         case 'helper':
           return 'Helper Entity (Optional)';
         case 'transport_type':
@@ -108,7 +109,7 @@ export function generateConfigFormSchema() {
         case 'helper':
           return 'This input_text helper acts as a backup storage for your meal plan schedule. When the sensor is unavailable, the card will restore the schedule from this helper to prevent data loss.';
         case 'portions':
-          return 'Number of portions per feeding';
+          return localize('config.portion_helper');
         case 'transport_type':
           return 'How to write data: Sensor (via set_value service) or MQTT (publish to zigbee2mqtt topic)';
         default:
