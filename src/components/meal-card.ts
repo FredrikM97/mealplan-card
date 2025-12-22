@@ -170,7 +170,7 @@ export class MealCard extends LitElement {
     const parts: string[] = [];
 
     if (hasProfileField(this.profile, ProfileField.PORTION)) {
-      parts.push(`${localize('portion')}: ${this.meal.portion}g`);
+      parts.push(`${localize('meal-card.portion')}: ${this.meal.portion}`);
     }
 
     return parts.join(' • ');
@@ -271,7 +271,7 @@ export class MealCard extends LitElement {
           }}
         >
           <ha-icon icon="mdi:delete" slot="icon"></ha-icon>
-          ${localize('delete')}
+          ${localize('meal-card.delete')}
         </ha-button>
       </div>
     `;

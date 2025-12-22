@@ -18,3 +18,6 @@
 - **Petrust**
 - **Meowmatic**
 - **Puppy Kitty**
+- **Aqara**
+  - Models: C1
+
