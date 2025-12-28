@@ -8,7 +8,8 @@ import { customElement, property } from 'lit/decorators.js';
  */
 @customElement('message-banner')
 export class MessageBanner extends LitElement {
-  @property({ type: String }) type: 'info' | 'success' | 'warning' | 'error' = 'info';
+  @property({ type: String }) type: 'info' | 'success' | 'warning' | 'error' =
+    'info';
   @property({ type: String }) title: string = '';
   @property({ type: String }) message: string = '';
   @property({ type: String }) icon: string = '';
@@ -31,7 +32,7 @@ export class MessageBanner extends LitElement {
     }
     .banner.info {
       border-left-color: var(--info-color);
-      background-color: var(--info-bg-color, rgba(0, 123, 255, 0.10));
+      background-color: var(--info-bg-color, rgba(0, 123, 255, 0.1));
     }
     .banner.error {
       border-left-color: var(--error-color);
@@ -76,7 +77,11 @@ export class MessageBanner extends LitElement {
 
   render() {
     return html`
-      <div class=${classMap({ banner: true, [this.type]: true })} role="alert" aria-live="polite">
+      <div
+        class=${classMap({ banner: true, [this.type]: true })}
+        role="alert"
+        aria-live="polite"
+      >
         <ha-icon .icon=${this.getIcon()}></ha-icon>
         <div class="content">
           ${this.title ? html`<div class="title">${this.title}</div>` : ''}
@@ -86,5 +91,3 @@ export class MessageBanner extends LitElement {
     `;
   }
 }
-
-
