@@ -178,7 +178,7 @@ export class MealEditDialog extends LitElement {
 
     return html`
       <div class="edit-form-group">
-        <label for="edit-portion">${localize('portion')}</label>
+        <label for="edit-portion">${localize('common.portion')}</label>
         <input
           id="edit-portion"
           type="number"
@@ -216,7 +216,7 @@ export class MealEditDialog extends LitElement {
       <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
         ${this.renderDaysField()}
         <div class="edit-form-group">
-          <label for="edit-time">${localize('time')}</label>
+          <label for="edit-time">${localize('common.time')}</label>
           <input
             id="edit-time"
             class="edit-time"

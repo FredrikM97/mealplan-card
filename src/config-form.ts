@@ -1,4 +1,5 @@
 import { profiles } from './profiles/profiles';
+import { localize } from './locales/localize';
 
 export function generateConfigFormSchema() {
   const profileItems = profiles.map((profile) => ({
@@ -51,6 +52,7 @@ export function generateConfigFormSchema() {
                 min: 1,
                 max: 10,
                 mode: 'box',
+                unit_of_measurement: 'g',
               },
             },
           },
@@ -84,17 +86,17 @@ export function generateConfigFormSchema() {
     computeLabel: (schema: { name: string }) => {
       switch (schema.name) {
         case 'sensor':
-          return 'Meal Plan Sensor';
+          return localize('config.sensor_label');
         case 'manufacturer':
-          return 'Feeder Profile';
+          return localize('config.manufacturer_label');
         case 'title':
-          return 'Title';
+          return localize('config.title_label');
         case 'portions':
-          return 'Portions per Meal';
+          return localize('config.portion_label');
         case 'helper':
-          return 'Helper Entity (Optional)';
+          return localize('config.helper_label');
         case 'transport_type':
-          return 'Transport Type';
+          return localize('config.transport_label');
         default:
           return undefined;
       }
@@ -102,15 +104,15 @@ export function generateConfigFormSchema() {
     computeHelper: (schema: { name: string }) => {
       switch (schema.name) {
         case 'sensor':
-          return 'Select the sensor or text entity containing meal plan data';
+          return localize('config.sensor_helper');
         case 'manufacturer':
-          return 'Select your feeder manufacturer and model';
+          return localize('config.manufacturer_helper');
         case 'helper':
-          return 'This input_text helper acts as a backup storage for your meal plan schedule. When the sensor is unavailable, the card will restore the schedule from this helper to prevent data loss.';
+          return localize('config.helper_helper');
         case 'portions':
-          return 'Number of portions per feeding';
+          return localize('config.portion_helper');
         case 'transport_type':
-          return 'How to write data: Sensor (via set_value service) or MQTT (publish to zigbee2mqtt topic)';
+          return localize('config.transport_helper');
         default:
           return undefined;
       }
