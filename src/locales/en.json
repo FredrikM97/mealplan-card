@@ -42,5 +42,7 @@
   "confirm_delete_meal": "Are you sure you want to delete this meal?",
   "disabled": "Disabled",
   "every_day": "Every day",
-  "no_days": "No days"
+  "no_days": "No days",
+  "sensor_unavailable": "Entity Unavailable",
+  "sensor_unavailable_message": "The selected sensor is not available. You cannot save changes until the device is accessible."
 }

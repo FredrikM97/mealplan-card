@@ -29,6 +29,7 @@ export class MealStateController implements ReactiveController {
 
   hass: HomeAssistant;
   profile: DeviceProfile;
+  config: MealPlanCardConfig;
   private encoder: EncoderBase;
   private writeValue: (value: string) => Promise<void>;
 
@@ -36,11 +37,12 @@ export class MealStateController implements ReactiveController {
     private host: ReactiveControllerHost,
     profile: DeviceProfile,
     hass: HomeAssistant,
-    private config: MealPlanCardConfig,
+    config: MealPlanCardConfig,
   ) {
     this.host.addController(this);
     this.profile = profile;
     this.hass = hass;
+    this.config = config;
     this.encoder = getEncoder(profile);
 
     // Map transport type to write function

@@ -42,5 +42,7 @@
   "confirm_delete_meal": "Är du säker på att du vill ta bort denna måltid?",
   "disabled": "Inaktiverad",
   "every_day": "Varje dag",
-  "no_days": "Inga dagar"
+  "no_days": "Inga dagar",
+  "sensor_unavailable": "Sensor otillgänglig",
+  "sensor_unavailable_message": "Den valda sensorn är inte tillgänglig. Du kan inte spara ändringar förrän enheten är åtkomlig."
 }
