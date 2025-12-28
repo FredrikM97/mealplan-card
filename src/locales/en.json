@@ -1,48 +1,59 @@
 {
-  "feed_now": "Feed Now",
-  "schedule": "Schedule",
-  "portion": "Portion",
-  "days": "Days",
-  "enabled": "Enabled",
-  "edit_meal": "Edit Meal",
-  "time": "Time",
-  "suggested": "Suggested:",
-  "back": "Back",
-  "cancel": "Cancel",
-  "save": "Save",
-  "status": "Status",
-  "actions": "Actions",
-  "delete": "Delete",
-  "add_meal": "Add Meal",
-  "schedules": "Schedules",
-  "active_schedules": "Active Schedules",
-  "today": "Today",
-  "edit_feeding_time": "Edit Feeding Time",
-  "manage_schedules": "Manage Schedules",
-  "unsaved_changes": "Unsaved changes",
-  "unsaved_changes_hint": "You have unsaved changes. Don't forget to save!",
-  "days_short": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  "days_full": [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday"
-  ],
-  "avg_week": "Avg/week",
-  "select_layout": "Select layout...",
-  "mealplan_layout": "Meal plan layout",
-  "portions_label": "Number of portions",
-  "error_no_profile": "No device profile selected. Please select a device profile in the card configuration.",
-  "close": "Close",
-  "no_meals_scheduled": "No meals scheduled",
-  "click_add_meal_to_get_started": "Click 'Add Meal' below to create your first feeding schedule",
-  "confirm_delete_meal": "Are you sure you want to delete this meal?",
-  "disabled": "Disabled",
-  "every_day": "Every day",
-  "no_days": "No days",
-  "sensor_unavailable": "Entity Unavailable",
-  "sensor_unavailable_message": "The selected sensor is not available. You cannot save changes until the device is accessible."
+  "common": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "close": "Close",
+    "portion": "Portion",
+    "time": "Time",
+    "days": "Days",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "every_day": "Every day",
+    "no_days": "No days",
+    "add_meal": "Add Meal"
+  },
+  "days": {
+    "short": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "full": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "main": {
+    "manage_schedules": "Manage Schedules",
+    "configuration_required": "Configuration required",
+    "configuration_instructions": "Please configure a sensor and manufacturer in the card settings."
+  },
+  "schedule_view": {
+    "manage_schedules": "Manage Schedules",
+    "edit_feeding_time": "Edit Feeding Time",
+    "no_meals_scheduled": "No meals scheduled",
+    "click_add_meal_to_get_started": "Click 'Add Meal' below to create your first feeding schedule",
+    "sensor_unavailable": "Entity Unavailable",
+    "sensor_unavailable_message": "The selected sensor is not available. You cannot save changes until the device is accessible."
+  },
+  "meal_card": {
+    "edit_meal": "Edit Meal",
+    "confirm_delete": "Are you sure you want to delete this meal?"
+  },
+  "config": {
+    "portion_label": "Portion size",
+    "portion_helper": "Grams per portion",
+    "sensor_label": "Meal Plan Sensor",
+    "sensor_helper": "Select the sensor or text entity containing meal plan data",
+    "manufacturer_label": "Feeder Profile",
+    "manufacturer_helper": "Select your feeder manufacturer and model",
+    "title_label": "Title",
+    "helper_label": "Helper Entity (Optional)",
+    "helper_helper": "This input_text helper acts as a backup storage for your meal plan schedule. When the sensor is unavailable, the card will restore the schedule from this helper to prevent data loss.",
+    "transport_label": "Transport Type",
+    "transport_helper": "How to write data: Sensor (via set_value service) or MQTT (publish to zigbee2mqtt topic)"
+  }
 }

@@ -1,48 +1,59 @@
 {
-  "feed_now": "Mata nu",
-  "schedule": "Schema",
-  "portion": "Portion",
-  "days": "Dagar",
-  "enabled": "Aktiverad",
-  "edit_meal": "Redigera måltid",
-  "time": "Tid",
-  "suggested": "Föreslaget:",
-  "back": "Tillbaka",
-  "save": "Spara",
-  "status": "Status",
-  "actions": "Åtgärder",
-  "delete": "Ta bort",
-  "add_meal": "Lägg till måltid",
-  "schedules": "Scheman",
-  "active_schedules": "Aktiva scheman",
-  "today": "Idag",
-  "edit_feeding_time": "Redigera matningstid",
-  "manage_schedules": "Hantera scheman",
-  "unsaved_changes": "Osparade ändringar",
-  "unsaved_changes_hint": "Du har osparade ändringar. Glöm inte att spara!",
-  "days_short": ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"],
-  "days_full": [
-    "Måndag",
-    "Tisdag",
-    "Onsdag",
-    "Torsdag",
-    "Fredag",
-    "Lördag",
-    "Söndag"
-  ],
-  "avg_week": "Snitt/vecka",
-  "select_layout": "Välj layout...",
-  "mealplan_layout": "Matplanlayout",
-  "portions_label": "Antal portioner",
-  "error_no_profile": "Ingen enhetsprofil vald. Välj en enhetsprofil i kortets konfiguration.",
-  "close": "Stäng",
-  "cancel": "Avbryt",
-  "no_meals_scheduled": "Inga måltider schemalagda",
-  "click_add_meal_to_get_started": "Klicka på 'Lägg till måltid' nedan för att skapa ditt första matningsschema",
-  "confirm_delete_meal": "Är du säker på att du vill ta bort denna måltid?",
-  "disabled": "Inaktiverad",
-  "every_day": "Varje dag",
-  "no_days": "Inga dagar",
-  "sensor_unavailable": "Sensor otillgänglig",
-  "sensor_unavailable_message": "Den valda sensorn är inte tillgänglig. Du kan inte spara ändringar förrän enheten är åtkomlig."
+  "common": {
+    "back": "Tillbaka",
+    "cancel": "Avbryt",
+    "save": "Spara",
+    "delete": "Ta bort",
+    "close": "Stäng",
+    "portion": "Portion",
+    "time": "Tid",
+    "days": "Dagar",
+    "enabled": "Aktiverad",
+    "disabled": "Inaktiverad",
+    "every_day": "Varje dag",
+    "no_days": "Inga dagar",
+    "add_meal": "Lägg till måltid"
+  },
+  "days": {
+    "short": ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"],
+    "full": [
+      "Måndag",
+      "Tisdag",
+      "Onsdag",
+      "Torsdag",
+      "Fredag",
+      "Lördag",
+      "Söndag"
+    ]
+  },
+  "main": {
+    "manage_schedules": "Hantera scheman",
+    "configuration_required": "Konfiguration krävs",
+    "configuration_instructions": "Vänligen konfigurera en sensor och tillverkare i kortets inställningar."
+  },
+  "schedule_view": {
+    "manage_schedules": "Hantera scheman",
+    "edit_feeding_time": "Redigera matningstid",
+    "no_meals_scheduled": "Inga måltider schemalagda",
+    "click_add_meal_to_get_started": "Klicka på 'Lägg till måltid' nedan för att skapa ditt första matningsschema",
+    "sensor_unavailable": "Entiteten otillgänglig",
+    "sensor_unavailable_message": "Den valda entitete är inte tillgänglig. Du kan inte spara ändringar förrän enheten är åtkomlig."
+  },
+  "meal_card": {
+    "edit_meal": "Redigera måltid",
+    "confirm_delete": "Är du säker på att du vill ta bort denna måltid?"
+  },
+  "config": {
+    "portion_label": "Portionsstorlek",
+    "portion_helper": "Gram per portion",
+    "sensor_label": "Meal Plan-sensor",
+    "sensor_helper": "Välj sensorn eller textentiteten som innehåller matplanens data",
+    "manufacturer_label": "Matarprofil",
+    "manufacturer_helper": "Välj din tillverkares modell",
+    "title_label": "Titel",
+    "helper_label": "Hjälparentitet (valfritt)",
+    "helper_helper": "Denna input_text fungerar som backup för ditt schema. När sensorn är otillgänglig återställer kortet schemat från hjälparen för att undvika dataförlust.",
+    "transport_label": "Transporttyp",
+    "transport_helper": "Hur data skrivs: Sensor (via set_value) eller MQTT (publish till zigbee2mqtt topic)"
+  }
 }

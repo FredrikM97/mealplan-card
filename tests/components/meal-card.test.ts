@@ -39,7 +39,7 @@ describe('MealCard Component', () => {
 
       await card.updateComplete;
       const summaryInfo = card.shadowRoot?.querySelector('.meal-card-info');
-      expect(summaryInfo?.textContent).to.include('15g');
+      expect(summaryInfo?.textContent).to.include('Portion: 15');
     });
   });
 

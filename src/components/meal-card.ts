@@ -170,7 +170,7 @@ export class MealCard extends LitElement {
     const parts: string[] = [];
 
     if (hasProfileField(this.profile, ProfileField.PORTION)) {
-      parts.push(`${localize('portion')}: ${this.meal.portion}g`);
+      parts.push(`${localize('common.portion')}: ${this.meal.portion}`);
     }
 
     return parts.join(' • ');
@@ -239,8 +239,8 @@ export class MealCard extends LitElement {
           e.stopPropagation();
         }}
         title="${this.meal.enabled
-          ? localize('enabled')
-          : localize('disabled')}"
+          ? localize('common.enabled')
+          : localize('common.disabled')}"
       ></ha-switch>
     `;
   }
@@ -258,12 +258,12 @@ export class MealCard extends LitElement {
           }}
         >
           <ha-icon icon="mdi:pencil" slot="icon"></ha-icon>
-          ${localize('edit_meal')}
+          ${localize('meal_card.edit_meal')}
         </ha-button>
         <ha-button
           class="delete-button"
           @click=${() => {
-            if (confirm(localize('confirm_delete_meal'))) {
+            if (confirm(localize('meal_card.confirm_delete'))) {
               if (this.onMealAction) {
                 this.onMealAction('delete', this.index, this.meal);
               }
@@ -271,7 +271,7 @@ export class MealCard extends LitElement {
           }}
         >
           <ha-icon icon="mdi:delete" slot="icon"></ha-icon>
-          ${localize('delete')}
+          ${localize('common.delete')}
         </ha-button>
       </div>
     `;

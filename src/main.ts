@@ -79,41 +79,53 @@ export class MealPlanCard extends LitElement {
   render() {
     return html`
       <ha-card header="${this.config.title}">
-        ${this.mealState
-          ? html`
-              <meal-overview
-                .meals=${this.mealState.meals}
-                .portions=${this.config?.portions}
-              ></meal-overview>
-              <div class="card-actions">
-                <ha-button @click=${() => (this._dialogOpen = true)}>
-                  <ha-icon icon="mdi:table-edit"></ha-icon>
-                  ${localize('manage_schedules')}
-                </ha-button>
-              </div>
-            `
-          : html`
-              <div class="card-content">
-                <ha-icon icon="mdi:cog"></ha-icon>
-                <p>${localize('configuration_required')}</p>
-                <p>
-                  Please configure a sensor and manufacturer in the card
-                  settings.
-                </p>
-              </div>
-            `}
-        ${this._dialogOpen && this.mealState
-          ? html`
-              <schedule-view
-                .mealState=${this.mealState}
-                .hass=${this.hass}
-                @schedule-closed=${() => {
-                  this._dialogOpen = false;
-                }}
-              ></schedule-view>
-            `
-          : ''}
+        ${this.renderContent()} ${this.renderScheduleDialog()}
       </ha-card>
+    `;
+  }
+
+  private renderContent() {
+    if (!this.mealState) {
+      return this.renderConfigurationRequired();
+    }
+
+    return html`
+      <meal-overview
+        .meals=${this.mealState.meals}
+        .portions=${this.config?.portions}
+      ></meal-overview>
+      <div class="card-actions">
+        <ha-button @click=${() => (this._dialogOpen = true)}>
+          <ha-icon icon="mdi:table-edit"></ha-icon>
+          ${localize('main.manage_schedules')}
+        </ha-button>
+      </div>
+    `;
+  }
+
+  private renderConfigurationRequired() {
+    return html`
+      <div class="card-content">
+        <ha-icon icon="mdi:cog"></ha-icon>
+        <p>${localize('main.configuration_required')}</p>
+        <p>${localize('main.configuration_instructions')}</p>
+      </div>
+    `;
+  }
+
+  private renderScheduleDialog() {
+    if (!this._dialogOpen || !this.mealState) {
+      return '';
+    }
+
+    return html`
+      <schedule-view
+        .mealState=${this.mealState}
+        .hass=${this.hass}
+        @schedule-closed=${() => {
+          this._dialogOpen = false;
+        }}
+      ></schedule-view>
     `;
   }
 

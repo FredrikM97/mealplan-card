@@ -27,7 +27,7 @@ export class ScheduleView extends LitElement {
 
   @state() private draftMeals: FeedingTime[] = [];
   @state() private editMeal: EditMealState | null = null;
-  @state() private heading: string = localize('manage_schedules');
+  @state() private heading: string = localize('schedule_view.manage_schedules');
 
   private unsubscribe?: () => void;
 
@@ -120,7 +120,7 @@ export class ScheduleView extends LitElement {
     } else if (action === 'delete') {
       this.draftMeals = this.draftMeals.filter((_, i) => i !== index);
     } else if (action === 'edit') {
-      this.heading = localize('edit_feeding_time');
+      this.heading = localize('schedule_view.edit_feeding_time');
       this.editMeal = { meal, index };
     }
   }
@@ -133,7 +133,7 @@ export class ScheduleView extends LitElement {
   }
 
   private handleOpenAdd() {
-    this.heading = localize('add_meal');
+    this.heading = localize('common.add_meal');
     this.editMeal = {
       meal: { hour: 12, minute: 0, portion: 1, days: 127, enabled: 1 },
     } satisfies EditMealState;
@@ -164,7 +164,7 @@ export class ScheduleView extends LitElement {
   }
 
   private closeEditForm() {
-    this.heading = localize('manage_schedules');
+    this.heading = localize('schedule_view.manage_schedules');
     this.editMeal = null;
   }
 
@@ -202,7 +202,7 @@ export class ScheduleView extends LitElement {
         ></meal-edit-dialog>
       </div>
       <ha-button slot="secondaryAction" @click=${this.closeEditForm}>
-        ${localize('back')}
+        ${localize('common.back')}
       </ha-button>
       <ha-button
         slot="primaryAction"
@@ -213,7 +213,7 @@ export class ScheduleView extends LitElement {
           dialog?.handleSave();
         }}
       >
-        ${localize('save')}
+        ${localize('common.save')}
       </ha-button>
     `;
   }
@@ -225,9 +225,11 @@ export class ScheduleView extends LitElement {
     return html`
       <div class="empty-state">
         <ha-icon icon="mdi:calendar-blank"></ha-icon>
-        <div class="empty-state-title">${localize('no_meals_scheduled')}</div>
+        <div class="empty-state-title">
+          ${localize('schedule_view.no_meals_scheduled')}
+        </div>
         <div class="empty-state-subtitle">
-          ${localize('click_add_meal_to_get_started')}
+          ${localize('schedule_view.click_add_meal_to_get_started')}
         </div>
       </div>
     `;
@@ -241,7 +243,7 @@ export class ScheduleView extends LitElement {
 
     return html`
       <ha-button slot="secondaryAction" @click=${this.handleOpenAdd}>
-        ${localize('add_meal')}
+        ${localize('common.add_meal')}
       </ha-button>
     `;
   }
@@ -258,8 +260,8 @@ export class ScheduleView extends LitElement {
     return html`
       <message-banner
         .type=${'warning'}
-        .title=${localize('sensor_unavailable')}
-        .message=${localize('sensor_unavailable_message')}
+        .title=${localize('schedule_view.sensor_unavailable')}
+        .message=${localize('schedule_view.sensor_unavailable_message')}
         ?hidden=${sensorAvailable}
       ></message-banner>
       <div class="schedule-cards">
@@ -279,7 +281,7 @@ export class ScheduleView extends LitElement {
       </div>
       ${this.renderAddButton()}
       <ha-button slot="secondaryAction" @click=${this.handleCancel}>
-        ${localize('cancel')}
+        ${localize('common.cancel')}
       </ha-button>
       <ha-button
         slot="primaryAction"
@@ -287,7 +289,7 @@ export class ScheduleView extends LitElement {
         @click=${this.handleSave}
         ?disabled=${!this.hasPendingChanges() || !sensorAvailable}
       >
-        ${localize('save')}
+        ${localize('common.save')}
       </ha-button>
     `;
   }
