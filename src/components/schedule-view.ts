@@ -225,7 +225,9 @@ export class ScheduleView extends LitElement {
     return html`
       <div class="empty-state">
         <ha-icon icon="mdi:calendar-blank"></ha-icon>
-        <div class="empty-state-title">${localize('schedule_view.no_meals_scheduled')}</div>
+        <div class="empty-state-title">
+          ${localize('schedule_view.no_meals_scheduled')}
+        </div>
         <div class="empty-state-subtitle">
           ${localize('schedule_view.click_add_meal_to_get_started')}
         </div>

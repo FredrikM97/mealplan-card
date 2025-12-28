@@ -16,7 +16,15 @@
   },
   "days": {
     "short": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    "full": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    "full": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ]
   },
   "main": {
     "manage_schedules": "Manage Schedules",

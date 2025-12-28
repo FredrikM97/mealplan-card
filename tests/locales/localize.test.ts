@@ -21,7 +21,9 @@ describe('localize', () => {
   it('localize supports nested paths', () => {
     expect(localize('config.sensor_label')).toBe('Meal Plan Sensor');
     expect(localize('schedule_view.manage_schedules')).toBe('Manage Schedules');
-    expect(localize('main.configuration_required')).toBe('Configuration required');
+    expect(localize('main.configuration_required')).toBe(
+      'Configuration required',
+    );
   });
 
   it('localize works with Swedish nested paths', () => {

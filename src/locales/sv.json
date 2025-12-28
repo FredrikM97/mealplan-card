@@ -16,7 +16,15 @@
   },
   "days": {
     "short": ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"],
-    "full": ["Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag", "Söndag"]
+    "full": [
+      "Måndag",
+      "Tisdag",
+      "Onsdag",
+      "Torsdag",
+      "Fredag",
+      "Lördag",
+      "Söndag"
+    ]
   },
   "main": {
     "manage_schedules": "Hantera scheman",
