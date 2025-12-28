@@ -14,6 +14,7 @@ import { ScheduleClosedEvent } from '../constants';
 import './edit-dialog';
 import type { MealEditDialog } from './edit-dialog';
 import './meal-card';
+import './message-banner';
 
 /**
  * Schedule view component
@@ -174,6 +175,16 @@ export class ScheduleView extends LitElement {
   }
 
   /**
+   * Check if the sensor is available (not unknown or unavailable)
+   */
+  private isSensorAvailable(): boolean {
+    const sensorEntity = this.hass?.states?.[this.mealState.config.sensor];
+    if (!sensorEntity) return false;
+    const state = sensorEntity.state;
+    return state !== 'unknown' && state !== 'unavailable';
+  }
+
+  /**
    * Render meal form (for adding or editing)
    */
   private renderMealForm() {
@@ -242,7 +253,15 @@ export class ScheduleView extends LitElement {
     if (this.editMeal !== null) return '';
     if (!this.mealState.profile) return '';
 
+    const sensorAvailable = this.isSensorAvailable();
+
     return html`
+      <message-banner
+        .type=${'warning'}
+        .title=${localize('sensor_unavailable')}
+        .message=${localize('sensor_unavailable_message')}
+        ?hidden=${sensorAvailable}
+      ></message-banner>
       <div class="schedule-cards">
         ${this.draftMeals.length === 0
           ? this.renderEmptyState()
@@ -266,7 +285,7 @@ export class ScheduleView extends LitElement {
         slot="primaryAction"
         class="ha-primary"
         @click=${this.handleSave}
-        ?disabled=${!this.hasPendingChanges()}
+        ?disabled=${!this.hasPendingChanges() || !sensorAvailable}
       >
         ${localize('save')}
       </ha-button>
