@@ -20,4 +20,5 @@
 - **Puppy Kitty**
 - **Aqara**
   - Models: C1
-
+- **Wuipet**
+  - Models: du4l-wc-01
