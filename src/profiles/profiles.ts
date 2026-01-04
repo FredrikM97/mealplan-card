@@ -139,6 +139,13 @@ const baseProfiles: DeviceProfile[] = [
       { portion: 'size' }, // Map internal 'portion' to device 'size'
     ),
   },
+  {
+    manufacturer: 'Wuipet',
+    models: ['du4l-wc-01'],
+    encodingType: EncodingType.BASE64,
+    encodingTemplate: TEMPLATE_FULL,
+    fields: FIELDS_FULL,
+  },
 ];
 
 // Export base profiles directly - transformers will be added lazily when needed

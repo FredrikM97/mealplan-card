@@ -129,5 +129,13 @@
       { "days": 127, "hour": 16, "minute": 0, "portion": 6 },
       { "days": 127, "hour": 0, "minute": 0, "portion": 4 }
     ]
+  },
+  {
+    "manufacturer": "Wuipet",
+    "encoded": "fwUUBgF/EgAGAQ==",
+    "decoded": [
+      { "days": 127, "hour": 5, "minute": 20, "portion": 6, "enabled": 1 },
+      { "days": 127, "hour": 18, "minute": 0, "portion": 6, "enabled": 1 }
+    ]
   }
 ]
