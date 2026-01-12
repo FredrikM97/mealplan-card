@@ -55,5 +55,11 @@
     "helper_helper": "This input_text helper acts as a backup storage for your meal plan schedule. When the sensor is unavailable, the card will restore the schedule from this helper to prevent data loss.",
     "transport_label": "Transport Type",
     "transport_helper": "How to write data: Sensor (via set_value service) or MQTT (publish to zigbee2mqtt topic)"
+  },
+  "overview": {
+    "schedules": "Schedules",
+    "active": "Active",
+    "today": "Today",
+    "avg_week": "Avg/Week"
   }
 }

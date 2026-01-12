@@ -55,5 +55,11 @@
     "helper_helper": "Denna input_text fungerar som backup för ditt schema. När sensorn är otillgänglig återställer kortet schemat från hjälparen för att undvika dataförlust.",
     "transport_label": "Transporttyp",
     "transport_helper": "Hur data skrivs: Sensor (via set_value) eller MQTT (publish till zigbee2mqtt topic)"
+  },
+  "overview": {
+    "schedules": "Scheman",
+    "active": "Aktiva",
+    "today": "Idag",
+    "avg_week": "Snitt/vecka"
   }
 }
