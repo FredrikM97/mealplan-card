@@ -71,6 +71,7 @@ export class MealPlanCard extends LitElement {
     super.updated(changedProps);
 
     if (changedProps.has('hass') && this.mealState) {
+      setLanguage(this.hass?.language);
       this.mealState.hass = this.hass;
       this.mealState.updateFromHass();
     }

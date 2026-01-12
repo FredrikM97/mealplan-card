@@ -1,15 +1,21 @@
 import en from './en.json';
 import sv from './sv.json';
 import ru from './ru.json';
+import es from './es.json';
 
 type Translation = Record<string, any>;
-const translations: Record<string, Translation> = { en, sv, ru };
+const translations: Record<string, Translation> = { en, sv, ru, es };
 
 let currentLang = 'en';
 
-export function setLanguage(lang: string) {
-  if (translations?.[lang]) {
-    currentLang = lang;
+export function setLanguage(lang?: string) {
+  const normalized = (lang ?? '').toLowerCase();
+  const base = normalized.split('-')[0];
+
+  if (translations?.[normalized]) {
+    currentLang = normalized;
+  } else if (translations?.[base]) {
+    currentLang = base;
   } else {
     currentLang = 'en';
   }
