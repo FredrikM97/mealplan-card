@@ -211,4 +211,74 @@ describe('ScheduleView Component', () => {
       (el as unknown as ScheduleViewTestable).draftMeals[0].minute,
     ).to.equal(30);
   });
+
+  it('syncs draft meals when no edits are pending', async () => {
+    const mealState = createMealStateController([testMeals.breakfast]);
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
+
+    await (el as unknown as ScheduleViewTestable).updateComplete;
+    expect((el as unknown as ScheduleViewTestable).draftMeals[0].hour).to.equal(
+      8,
+    );
+
+    // External update from HA/entity
+    mealState.meals = [testMeals.dinner];
+
+    // Draft should follow state when user is not editing
+    expect((el as unknown as ScheduleViewTestable).draftMeals.length).to.equal(
+      1,
+    );
+    expect((el as unknown as ScheduleViewTestable).draftMeals[0].hour).to.equal(
+      18,
+    );
+  });
+
+  it('does not overwrite draft meals when there are pending changes (Fixes #83)', async () => {
+    const mealState = createMealStateController([testMeals.breakfast]);
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
+
+    await (el as unknown as ScheduleViewTestable).updateComplete;
+
+    // Simulate local (unsaved) user change
+    const updatedMeal = {
+      ...(el as unknown as ScheduleViewTestable).draftMeals[0],
+      portion: 9,
+    };
+    (el as unknown as ScheduleViewTestable).handleMealAction(
+      'update',
+      0,
+      updatedMeal,
+    );
+
+    // External update from HA/entity (different from the user's draft)
+    mealState.meals = [{ ...testMeals.breakfast, portion: 1 }];
+
+    // Draft should remain the user's unsaved change
+    expect((el as unknown as ScheduleViewTestable).draftMeals[0].portion).to.equal(
+      9,
+    );
+  });
+
+  it('does not overwrite draft meals while edit dialog is open (Fixes #83)', async () => {
+    const mealState = createMealStateController([testMeals.breakfast]);
+    const el = (await createScheduleViewFixture(mealState)) as ScheduleView;
+
+    await (el as unknown as ScheduleViewTestable).updateComplete;
+
+    // Open edit dialog
+    (el as unknown as ScheduleViewTestable).handleMealAction(
+      'edit',
+      0,
+      (el as unknown as ScheduleViewTestable).draftMeals[0],
+    );
+    expect((el as unknown as ScheduleViewTestable).editMeal).to.exist;
+
+    // External update while editing
+    mealState.meals = [testMeals.dinner];
+
+    // Draft should not be reset during editing
+    expect((el as unknown as ScheduleViewTestable).draftMeals[0].hour).to.equal(
+      8,
+    );
+  });
 });

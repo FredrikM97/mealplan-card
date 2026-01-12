@@ -29,15 +29,22 @@ export class ScheduleView extends LitElement {
   @state() private editMeal: EditMealState | null = null;
   @state() private heading: string = localize('schedule_view.manage_schedules');
 
+  private draftDirty = false;
+
   private unsubscribe?: () => void;
 
   connectedCallback() {
     super.connectedCallback();
     // Initialize draft from current meals (sorted by time)
     this.draftMeals = this.sortMealsByTime([...this.mealState.meals]);
+    this.draftDirty = false;
 
     // Subscribe to meals changes from MealStateController
     this.unsubscribe = this.mealState.subscribe(() => {
+      // Avoid clobbering local edits if the underlying entity updates while the
+      // user is editing (race described in issue #83).
+      if (this.editMeal !== null) return;
+      if (this.draftDirty) return;
       this.resetDraft();
     });
   }
@@ -99,12 +106,14 @@ export class ScheduleView extends LitElement {
    */
   private resetDraft(): void {
     this.draftMeals = this.sortMealsByTime([...this.mealState.meals]);
+    this.draftDirty = false;
   }
 
   private updateMeal(index: number, meal: FeedingTime): void {
     this.draftMeals = this.sortMealsByTime(
       this.draftMeals.map((m, i) => (i === index ? meal : m)),
     );
+    this.draftDirty = true;
   }
 
   /**
@@ -117,8 +126,10 @@ export class ScheduleView extends LitElement {
   ): void {
     if (action === 'update') {
       this.draftMeals = this.draftMeals.map((m, i) => (i === index ? meal : m));
+      this.draftDirty = true;
     } else if (action === 'delete') {
       this.draftMeals = this.draftMeals.filter((_, i) => i !== index);
+      this.draftDirty = true;
     } else if (action === 'edit') {
       this.heading = localize('schedule_view.edit_feeding_time');
       this.editMeal = { meal, index };
@@ -130,6 +141,7 @@ export class ScheduleView extends LitElement {
    */
   private addMeal(meal: FeedingTime): void {
     this.draftMeals = this.sortMealsByTime([...this.draftMeals, meal]);
+    this.draftDirty = true;
   }
 
   private handleOpenAdd() {
@@ -146,6 +158,7 @@ export class ScheduleView extends LitElement {
 
   private async handleSave() {
     await this.mealState.saveMeals(this.draftMeals);
+    this.draftDirty = false;
     this.dispatchEvent(new ScheduleClosedEvent());
   }
 
