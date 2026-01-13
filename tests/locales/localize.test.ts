@@ -38,7 +38,9 @@ describe('localize', () => {
   it('localize works with Spanish nested paths', () => {
     setLanguage('es');
     expect(localize('common.back')).toBe('Atrás');
-    expect(localize('schedule_view.manage_schedules')).toBe('Gestionar horarios');
+    expect(localize('schedule_view.manage_schedules')).toBe(
+      'Gestionar horarios',
+    );
     expect(localize('overview.avg_week')).toBe('Media/semana');
     expect(localize('main.configuration_required')).toBe(
       'Se requiere configuración',
