@@ -1,0 +1,65 @@
+{
+  "common": {
+    "back": "Atrás",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "close": "Cerrar",
+    "portion": "Porción",
+    "time": "Hora",
+    "days": "Días",
+    "enabled": "Activado",
+    "disabled": "Desactivado",
+    "every_day": "Todos los días",
+    "no_days": "Sin días",
+    "add_meal": "Añadir comida"
+  },
+  "days": {
+    "short": ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+    "full": [
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
+      "Domingo"
+    ]
+  },
+  "main": {
+    "manage_schedules": "Gestionar horarios",
+    "configuration_required": "Se requiere configuración",
+    "configuration_instructions": "Configura un sensor y el fabricante en los ajustes de la tarjeta."
+  },
+  "schedule_view": {
+    "manage_schedules": "Gestionar horarios",
+    "edit_feeding_time": "Editar hora de comida",
+    "no_meals_scheduled": "No hay comidas programadas",
+    "click_add_meal_to_get_started": "Pulsa 'Añadir comida' abajo para crear tu primer horario",
+    "sensor_unavailable": "Entidad no disponible",
+    "sensor_unavailable_message": "La entidad seleccionada no está disponible. No puedes guardar cambios hasta que el dispositivo esté accesible."
+  },
+  "meal_card": {
+    "edit_meal": "Editar comida",
+    "confirm_delete": "¿Seguro que quieres eliminar esta comida?"
+  },
+  "config": {
+    "portion_label": "Tamaño de porción",
+    "portion_helper": "Gramos por porción",
+    "sensor_label": "Entidad del plan de comidas",
+    "sensor_helper": "Selecciona la entidad (sensor o texto) que contiene el plan de comidas",
+    "manufacturer_label": "Perfil del comedero",
+    "manufacturer_helper": "Selecciona el fabricante y modelo de tu comedero",
+    "title_label": "Título",
+    "helper_label": "Entidad auxiliar (opcional)",
+    "helper_helper": "Este input_text actúa como copia de seguridad del horario. Si el sensor no está disponible, la tarjeta restaurará el horario desde aquí para evitar pérdida de datos.",
+    "transport_label": "Tipo de transporte",
+    "transport_helper": "Cómo escribir datos: Sensor (vía servicio set_value) o MQTT (publicar en el topic zigbee2mqtt)"
+  },
+  "overview": {
+    "schedules": "Horarios",
+    "active": "Activos",
+    "today": "Hoy",
+    "avg_week": "Media/semana"
+  }
+}
