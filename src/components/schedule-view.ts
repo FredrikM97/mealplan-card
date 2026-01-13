@@ -29,7 +29,7 @@ export class ScheduleView extends LitElement {
   @state() private editMeal: EditMealState | null = null;
   @state() private heading: string = localize('schedule_view.manage_schedules');
 
-  private draftDirty = false;
+  private lastSyncedMealsSignature = '';
 
   private unsubscribe?: () => void;
 
@@ -37,14 +37,20 @@ export class ScheduleView extends LitElement {
     super.connectedCallback();
     // Initialize draft from current meals (sorted by time)
     this.draftMeals = this.sortMealsByTime([...this.mealState.meals]);
-    this.draftDirty = false;
+    this.lastSyncedMealsSignature = this.serializeMeals(this.draftMeals);
 
     // Subscribe to meals changes from MealStateController
     this.unsubscribe = this.mealState.subscribe(() => {
+      // Ignore updates that do not change the underlying meals.
+      const mealsSignature = this.serializeMeals(this.mealState.meals);
+      if (mealsSignature === this.lastSyncedMealsSignature) {
+        return;
+      }
+
       // Avoid clobbering local edits if the underlying entity updates while the
       // user is editing (race described in issue #83).
+      if (this.hasPendingChanges()) return;
       if (this.editMeal !== null) return;
-      if (this.draftDirty) return;
       this.resetDraft();
     });
   }
@@ -55,8 +61,15 @@ export class ScheduleView extends LitElement {
   private sortMealsByTime(meals: FeedingTime[]): FeedingTime[] {
     return [...meals].sort(
       (a, b) =>
-        timeToMinutes(a.hour, a.minute) - timeToMinutes(b.hour, b.minute),
+        timeToMinutes(a.hour, a.minute) - timeToMinutes(b.hour, b.minute) ||
+        (a.portion ?? 0) - (b.portion ?? 0) ||
+        (a.days ?? 0) - (b.days ?? 0) ||
+        (a.enabled ?? 0) - (b.enabled ?? 0),
     );
+  }
+
+  private serializeMeals(meals: FeedingTime[]): string {
+    return JSON.stringify(this.sortMealsByTime([...meals]));
   }
 
   disconnectedCallback() {
@@ -106,14 +119,13 @@ export class ScheduleView extends LitElement {
    */
   private resetDraft(): void {
     this.draftMeals = this.sortMealsByTime([...this.mealState.meals]);
-    this.draftDirty = false;
+    this.lastSyncedMealsSignature = this.serializeMeals(this.draftMeals);
   }
 
   private updateMeal(index: number, meal: FeedingTime): void {
     this.draftMeals = this.sortMealsByTime(
       this.draftMeals.map((m, i) => (i === index ? meal : m)),
     );
-    this.draftDirty = true;
   }
 
   /**
@@ -126,10 +138,8 @@ export class ScheduleView extends LitElement {
   ): void {
     if (action === 'update') {
       this.draftMeals = this.draftMeals.map((m, i) => (i === index ? meal : m));
-      this.draftDirty = true;
     } else if (action === 'delete') {
       this.draftMeals = this.draftMeals.filter((_, i) => i !== index);
-      this.draftDirty = true;
     } else if (action === 'edit') {
       this.heading = localize('schedule_view.edit_feeding_time');
       this.editMeal = { meal, index };
@@ -141,7 +151,6 @@ export class ScheduleView extends LitElement {
    */
   private addMeal(meal: FeedingTime): void {
     this.draftMeals = this.sortMealsByTime([...this.draftMeals, meal]);
-    this.draftDirty = true;
   }
 
   private handleOpenAdd() {
@@ -158,7 +167,7 @@ export class ScheduleView extends LitElement {
 
   private async handleSave() {
     await this.mealState.saveMeals(this.draftMeals);
-    this.draftDirty = false;
+    this.lastSyncedMealsSignature = this.serializeMeals(this.draftMeals);
     this.dispatchEvent(new ScheduleClosedEvent());
   }
 
@@ -183,7 +192,7 @@ export class ScheduleView extends LitElement {
 
   private hasPendingChanges(): boolean {
     return (
-      JSON.stringify(this.draftMeals) !== JSON.stringify(this.mealState.meals)
+      this.serializeMeals(this.draftMeals) !== this.lastSyncedMealsSignature
     );
   }
 
