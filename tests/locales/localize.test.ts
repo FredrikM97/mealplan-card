@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { setLanguage, localize } from '../../src/locales/localize';
 
 describe('localize', () => {
-  it('setLanguage falls back to "en" for unknown language', () => {
+  it('setLanguage keeps current language for unknown language', () => {
+    // Ensure default language first
+    setLanguage('en');
     setLanguage('unknown-lang');
     expect(localize('common.back')).toBe('Back');
   });

@@ -23,8 +23,6 @@ export function setLanguage(lang?: string) {
     currentLang = langCode as Language;
   } else if (baseLang in translations) {
     currentLang = baseLang as Language;
-  } else {
-    currentLang = defaultLang;
   }
 }
 
