@@ -6,6 +6,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { FeedingTime } from '../types';
+import { localize } from '../locales/localize';
 import { isMealEnabled } from '../utils';
 
 /**
@@ -78,21 +79,22 @@ export class MealOverview extends LitElement {
       <div class="overview-row">
         <ha-chip class="overview-schedules">
           <ha-icon icon="mdi:calendar-clock"></ha-icon>
-          Schedules:
+          ${localize('overview.schedules')}:
           <span style="white-space:nowrap;">${this.meals.length}</span>
         </ha-chip>
         <ha-chip class="overview-active">
           <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-          Active:
+          ${localize('overview.active')}:
           <span style="white-space:nowrap;">${enabledMeals.length}</span>
         </ha-chip>
         <ha-chip class="overview-grams">
           <ha-icon icon="mdi:food-drumstick"></ha-icon>
-          Today: <span style="white-space:nowrap;">${totalToday}g</span>
+          ${localize('overview.today')}:
+          <span style="white-space:nowrap;">${totalToday}g</span>
         </ha-chip>
         <ha-chip class="overview-average">
           <ha-icon icon="mdi:scale-balance"></ha-icon>
-          Avg/Week:
+          ${localize('overview.avg_week')}:
           <span style="white-space:nowrap;">${avg.toFixed(1)}g</span>
         </ha-chip>
       </div>

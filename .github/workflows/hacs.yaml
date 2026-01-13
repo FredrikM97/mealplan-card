@@ -2,11 +2,8 @@ name: Validate
 
 on:
   push:
-    paths-ignore:
-      - '.github/**'
-  pull_request:
-    paths-ignore:
-      - '.github/**'
+    branches:
+      - main
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
