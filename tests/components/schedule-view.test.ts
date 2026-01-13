@@ -254,9 +254,9 @@ describe('ScheduleView Component', () => {
     mealState.meals = [{ ...testMeals.breakfast, portion: 1 }];
 
     // Draft should remain the user's unsaved change
-    expect((el as unknown as ScheduleViewTestable).draftMeals[0].portion).to.equal(
-      9,
-    );
+    expect(
+      (el as unknown as ScheduleViewTestable).draftMeals[0].portion,
+    ).to.equal(9);
   });
 
   it('does not overwrite draft meals while edit dialog is open (Fixes #83)', async () => {
