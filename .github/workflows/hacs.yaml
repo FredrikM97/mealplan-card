@@ -2,7 +2,8 @@ name: Validate
 
 on:
   push:
-  pull_request:
+    branches:
+      - main
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
@@ -17,4 +18,3 @@ jobs:
         uses: 'hacs/action@main'
         with:
           category: 'plugin'
-          repository: '${{ github.repository }}@${{ github.sha }}'
