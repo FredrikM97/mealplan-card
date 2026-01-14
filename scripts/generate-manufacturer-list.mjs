@@ -31,4 +31,4 @@ manufacturers.forEach(({ manufacturer, models }) => {
   md += '\n';
 });
 
-console.log(md);
+console.log(md.trimEnd());
