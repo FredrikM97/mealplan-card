@@ -441,4 +441,70 @@ describe('MealStateController', () => {
       );
     });
   });
+
+  describe('updateFromHass', () => {
+    it('does not trigger update when meals data has not changed', async () => {
+      const profile = getTestProfile();
+      const { getEncoder } = await import('../src/profiles/serializer');
+      const encoder = getEncoder(profile);
+      const encodedMeals = encoder.encode([testMeals.breakfast]);
+
+      const hass = createMockHassWithSensor('sensor.test', encodedMeals);
+      const mockHost2 = createMockHost();
+      const requestUpdateSpy = vi.spyOn(mockHost2, 'requestUpdate');
+
+      controller = new MealStateController(mockHost2, profile, hass, {
+        sensor: 'sensor.test',
+        manufacturer: 'Test',
+        title: 'Test',
+        portions: 6,
+        transport_type: TransportType.SENSOR,
+      });
+
+      await controller.updateFromHass();
+      const firstCallCount = requestUpdateSpy.mock.calls.length;
+
+      // Update with same data - should not trigger requestUpdate
+      await controller.updateFromHass();
+      const secondCallCount = requestUpdateSpy.mock.calls.length;
+
+      expect(secondCallCount).toBe(firstCallCount);
+    });
+
+    it('triggers update when meals data has changed', async () => {
+      const profile = getTestProfile();
+      const { getEncoder } = await import('../src/profiles/serializer');
+      const encoder = getEncoder(profile);
+      const initialEncoded = encoder.encode([testMeals.breakfast]);
+
+      const hass = createMockHassWithSensor('sensor.test', initialEncoded);
+      const mockHost2 = createMockHost();
+
+      controller = new MealStateController(mockHost2, profile, hass, {
+        sensor: 'sensor.test',
+        manufacturer: 'Test',
+        title: 'Test',
+        portions: 6,
+        transport_type: TransportType.SENSOR,
+      });
+
+      await controller.updateFromHass();
+      expect(controller.meals[0]).toMatchObject(testMeals.breakfast);
+
+      // Change sensor data to different meal
+      const newEncoded = encoder.encode([testMeals.dinner]);
+      hass.states['sensor.test'].state = newEncoded;
+
+      const requestUpdateSpy = vi.spyOn(mockHost2, 'requestUpdate');
+      const callCountBefore = requestUpdateSpy.mock.calls.length;
+
+      await controller.updateFromHass();
+
+      // Should have triggered update with new data
+      expect(requestUpdateSpy.mock.calls.length).toBeGreaterThan(
+        callCountBefore,
+      );
+      expect(controller.meals[0]).toMatchObject(testMeals.dinner);
+    });
+  });
 });

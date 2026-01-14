@@ -12,6 +12,7 @@ import {
   TransportType,
 } from './types';
 import { getEncoder, EncoderBase } from './profiles/serializer';
+import { areMealsEqual } from './utils';
 
 export class MealStateController implements ReactiveController {
   private _meals: FeedingTime[] = [];
@@ -142,7 +143,15 @@ export class MealStateController implements ReactiveController {
     }
 
     if (allowUpdate) {
-      this.meals = decodedMeals ? [...decodedMeals] : [];
+      const newMeals = decodedMeals ? [...decodedMeals] : [];
+      // Only update if meals have actually changed
+      if (!areMealsEqual(decodedMeals, this.meals)) {
+        this.meals = newMeals;
+      } else {
+        console.debug(
+          '[MealStateController] Skipping update - meals unchanged',
+        );
+      }
     }
   }
 
