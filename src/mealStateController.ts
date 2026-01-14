@@ -25,6 +25,7 @@ export class MealStateController implements ReactiveController {
 
   set meals(value: FeedingTime[]) {
     this._meals = value;
+    console.debug('[MealStateController] Meals set to:', value);
     this.notifySubscribers();
   }
 
@@ -89,12 +90,16 @@ export class MealStateController implements ReactiveController {
    * Check if entity state is valid (not empty, unknown, or unavailable)
    */
   private isValidState(value: unknown): value is string {
-    return (
+    const valid = 
       typeof value === 'string' &&
-      value.trim() !== '' &&
       value !== 'unknown' &&
-      value !== 'unavailable'
-    );
+      value !== 'unavailable' &&
+      value.trim() !== ''
+    
+    if (!valid) {
+      console.debug('[MealStateController] Ignoring invalid state value:', value);
+    }
+    return valid;
   }
 
   /**
@@ -113,9 +118,16 @@ export class MealStateController implements ReactiveController {
     entityId: string | undefined,
     value: string,
   ): Promise<void> {
-    if (!entityId) return;
+    if (!entityId) {
+      console.debug('[MealStateController] No entity ID provided for setting value.');
+      return;
+    }
     const domain = entityId.split('.')[0];
-    if (!domain) return;
+    if (!domain) {
+      console.debug('[MealStateController] Domain could not be determined from entity ID:', entityId); 
+      return;
+    }
+    console.debug('[MealStateController] Setting entity', entityId, 'to value:', value);
     await this.hass.callService(domain, 'set_value', {
       entity_id: entityId,
       value,
@@ -147,9 +159,10 @@ export class MealStateController implements ReactiveController {
       // Only update if meals have actually changed
       if (!areMealsEqual(decodedMeals, this.meals)) {
         this.meals = newMeals;
+        console.debug('[MealStateController] Meals updated from HA:', newMeals);
       } else {
         console.debug(
-          '[MealStateController] Skipping update - meals unchanged',
+          '[MealStateController] Skipping update - meals unchanged', this.meals
         );
       }
     }
@@ -183,6 +196,7 @@ export class MealStateController implements ReactiveController {
     const parts = this.config.sensor.split('.');
     const deviceName = parts[1]?.split('_')[0] || parts[1];
     const topic = `zigbee2mqtt/${deviceName}/set`;
+    console.debug('[MealStateController] Publishing MQTT to topic', topic, 'with value:', value); 
     await this.hass.callService('mqtt', 'publish', {
       topic,
       payload: value,
