@@ -19,8 +19,6 @@ jobs:
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
-        with:
-          node-version: '20'
 
       - name: Generate manufacturer list
         run: node scripts/generate-manufacturer-list.mjs > SUPPORTED.md.new
