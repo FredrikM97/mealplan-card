@@ -32,3 +32,13 @@ export function hasProfileField(
 ): boolean {
   return profile?.fields.includes(field) ?? false;
 }
+
+/**
+ * Compare two arrays of meals for equality using JSON comparison
+ */
+export function areMealsEqual(
+  meals1: FeedingTime[] | null | undefined,
+  meals2: FeedingTime[] | null | undefined,
+): boolean {
+  return JSON.stringify(meals1) === JSON.stringify(meals2);
+}

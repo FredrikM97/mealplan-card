@@ -9,7 +9,7 @@ import { localize } from '../locales/localize';
 import type { FeedingTime, EditMealState, HomeAssistant } from '../types';
 import { ProfileField } from '../types';
 import { MealStateController } from '../mealStateController';
-import { hasProfileField, timeToMinutes } from '../utils';
+import { hasProfileField, timeToMinutes, areMealsEqual } from '../utils';
 import { ScheduleClosedEvent } from '../constants';
 import './edit-dialog';
 import type { MealEditDialog } from './edit-dialog';
@@ -169,9 +169,7 @@ export class ScheduleView extends LitElement {
   }
 
   private hasPendingChanges(): boolean {
-    return (
-      JSON.stringify(this.draftMeals) !== JSON.stringify(this.mealState.meals)
-    );
+    return !areMealsEqual(this.draftMeals, this.mealState.meals);
   }
 
   /**
