@@ -3,6 +3,7 @@ import { getEncoder } from '../../src/profiles/serializer';
 import { getProfileWithTransformer } from '../../src/profiles/profiles';
 import profileTestData from '../fixtures/profiles-test-data.json';
 import type { FeedingTime } from '../../src/types';
+import { profiles } from '../../src/profiles/profiles';
 
 const INVALID_BASE64 = '!@#$';
 
@@ -50,5 +51,22 @@ type ProfileTestCase = {
     it('throws error on invalid base64', () => {
       expect(() => encoder.decode(INVALID_BASE64)).toThrow();
     });
+  });
+});
+
+describe('Profile Coverage', () => {
+  it('all profiles from profiles.ts should have a fixture in profiles-test-data.json', () => {
+    const fixtureManufacturers = new Set(
+      (profileTestData as ProfileTestCase[]).map((tc) => tc.manufacturer),
+    );
+
+    const missingFixtures = profiles
+      .map((p) => p.manufacturer)
+      .filter((manufacturer) => !fixtureManufacturers.has(manufacturer));
+
+    expect(
+      missingFixtures,
+      `All profiles must have fixtures. Missing: ${missingFixtures.join(', ')}`,
+    ).toEqual([]);
   });
 });

@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { setLanguage, localize } from '../../src/locales/localize';
 
 describe('localize', () => {
-  it('setLanguage falls back to "en" for unknown language', () => {
+  it('setLanguage keeps current language for unknown language', () => {
+    // Ensure default language first
+    setLanguage('en');
     setLanguage('unknown-lang');
     expect(localize('common.back')).toBe('Back');
   });
@@ -31,6 +33,27 @@ describe('localize', () => {
     expect(localize('config.sensor_label')).toBe('Meal Plan-sensor');
     expect(localize('schedule_view.manage_schedules')).toBe('Hantera scheman');
     expect(localize('main.configuration_required')).toBe('Konfiguration krävs');
+    // Reset to English
+    setLanguage('en');
+  });
+
+  it('localize works with Spanish nested paths', () => {
+    setLanguage('es');
+    expect(localize('common.back')).toBe('Atrás');
+    expect(localize('schedule_view.manage_schedules')).toBe(
+      'Gestionar horarios',
+    );
+    expect(localize('overview.avg_week')).toBe('Media/semana');
+    expect(localize('main.configuration_required')).toBe(
+      'Se requiere configuración',
+    );
+    // Reset to English
+    setLanguage('en');
+  });
+
+  it('setLanguage supports regional variants (es-ES -> es)', () => {
+    setLanguage('es-ES');
+    expect(localize('common.back')).toBe('Atrás');
     // Reset to English
     setLanguage('en');
   });
