@@ -21,7 +21,7 @@ export type EncodedFeedingData =
 export interface FeedingTime {
   hour?: number;
   minute?: number;
-  portion?: number;
+  portions?: number[];
   days?: number;
   enabled?: number;
 }
@@ -100,6 +100,7 @@ export interface DeviceProfile {
   fields: ProfileField[];
   encodingTemplate?: string;
   featureFields?: ProfileField[];
+  portionCount?: number;
   /**
    * Custom transformer for encoding data before sending to device.
    * Returns structured feeding time data in device-specific format.
@@ -137,7 +138,7 @@ export function isValidProfile(
   return profile !== undefined && profile !== null;
 }
 
-export const TOKEN_REGEX = /\{([A-Z_]+)\:(\d+)\}/g;
+export const TOKEN_REGEX = /\{([A-Z_]+)(?:\[(\d+)\])?\:(\d+)\}/g;
 
 // Template field names
 export enum TemplateFieldName {

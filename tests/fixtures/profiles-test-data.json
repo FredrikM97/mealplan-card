@@ -3,139 +3,138 @@
     "manufacturer": "Cleverio",
     "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      {"days": 127,"hour": 4,"minute": 0,"enabled": 0,"portions": [1]},
+      {"days": 127,"hour": 9,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 127,"hour": 15,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 21,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 8,"hour": 18,"minute": 0,"enabled": 0,"portions": [1]}
     ]
   },
   {
     "manufacturer": "HoneyGuardian",
     "encoded": "DAABAQweAgENAAQBDR4DAQ4ABAEOHgYB",
     "decoded": [
-      { "enabled": 1, "hour": 12, "minute": 0, "portion": 1 },
-      { "enabled": 1, "hour": 12, "minute": 30, "portion": 2 },
-      { "enabled": 1, "hour": 13, "minute": 0, "portion": 4 },
-      { "enabled": 1, "hour": 13, "minute": 30, "portion": 3 },
-      { "enabled": 1, "hour": 14, "minute": 0, "portion": 4 },
-      { "enabled": 1, "hour": 14, "minute": 30, "portion": 6 }
+      {"enabled": 1,"hour": 12,"minute": 0,"portions": [1]},
+      {"enabled": 1,"hour": 12,"minute": 30,"portions": [2]},
+      {"enabled": 1,"hour": 13,"minute": 0,"portions": [4]},
+      {"enabled": 1,"hour": 13,"minute": 30,"portions": [3]},
+      {"enabled": 1,"hour": 14,"minute": 0,"portions": [4]},
+      {"enabled": 1,"hour": 14,"minute": 30,"portions": [6]}
     ]
   },
   {
     "manufacturer": "Fukumaru-W",
     "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      {"days": 127,"hour": 4,"minute": 0,"enabled": 0,"portions": [1]},
+      {"days": 127,"hour": 9,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 127,"hour": 15,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 21,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 8,"hour": 18,"minute": 0,"enabled": 0,"portions": [1]}
     ]
   },
   {
     "manufacturer": "Yuposl",
     "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      {"days": 127,"hour": 4,"minute": 0,"enabled": 0,"portions": [1]},
+      {"days": 127,"hour": 9,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 127,"hour": 15,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 21,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 8,"hour": 18,"minute": 0,"enabled": 0,"portions": [1]}
     ]
   },
-
   {
     "manufacturer": "Arlec",
     "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      {"days": 127,"hour": 4,"minute": 0,"enabled": 0,"portions": [1]},
+      {"days": 127,"hour": 9,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 127,"hour": 15,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 21,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 8,"hour": 18,"minute": 0,"enabled": 0,"portions": [1]}
     ]
   },
   {
     "manufacturer": "PetLibro",
     "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      {"days": 127,"hour": 4,"minute": 0,"enabled": 0,"portions": [1]},
+      {"days": 127,"hour": 9,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 127,"hour": 15,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 21,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 8,"hour": 18,"minute": 0,"enabled": 0,"portions": [1]}
     ]
   },
   {
     "manufacturer": "MolyPet",
     "encoded": "fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==",
     "decoded": [
-      { "days": 127, "portion": 1, "hour": 4, "minute": 0, "enabled": 0 },
-      { "days": 127, "portion": 2, "hour": 9, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 1, "hour": 15, "minute": 0, "enabled": 1 },
-      { "days": 127, "portion": 2, "hour": 21, "minute": 0, "enabled": 1 },
-      { "days": 8, "portion": 1, "hour": 18, "minute": 0, "enabled": 0 }
+      {"days": 127,"hour": 4,"minute": 0,"enabled": 0,"portions": [1]},
+      {"days": 127,"hour": 9,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 127,"hour": 15,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 21,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 8,"hour": 18,"minute": 0,"enabled": 0,"portions": [1]}
     ]
   },
   {
     "manufacturer": "PetNest",
     "encoded": "7f17000200000007f20000210000007f02000100000007f07000200000007f09000200000007f12000200000007f15000200000007f0400020000000",
     "decoded": [
-      { "days": 127, "hour": 17, "minute": 0, "portion": 2, "enabled": 0 },
-      { "days": 127, "hour": 20, "minute": 0, "portion": 2, "enabled": 1 },
-      { "days": 127, "hour": 2, "minute": 0, "portion": 1, "enabled": 0 },
-      { "days": 127, "hour": 7, "minute": 0, "portion": 2, "enabled": 0 },
-      { "days": 127, "hour": 9, "minute": 0, "portion": 2, "enabled": 0 },
-      { "days": 127, "hour": 12, "minute": 0, "portion": 2, "enabled": 0 },
-      { "days": 127, "hour": 15, "minute": 0, "portion": 2, "enabled": 0 },
-      { "days": 127, "hour": 4, "minute": 0, "portion": 2, "enabled": 0 }
+      {"days": 127,"hour": 17,"minute": 0,"enabled": 0,"portions": [2]},
+      {"days": 127,"hour": 20,"minute": 0,"enabled": 1,"portions": [2]},
+      {"days": 127,"hour": 2,"minute": 0,"enabled": 0,"portions": [1]},
+      {"days": 127,"hour": 7,"minute": 0,"enabled": 0,"portions": [2]},
+      {"days": 127,"hour": 9,"minute": 0,"enabled": 0,"portions": [2]},
+      {"days": 127,"hour": 12,"minute": 0,"enabled": 0,"portions": [2]},
+      {"days": 127,"hour": 15,"minute": 0,"enabled": 0,"portions": [2]},
+      {"days": 127,"hour": 4,"minute": 0,"enabled": 0,"portions": [2]}
     ]
   },
   {
     "manufacturer": "Petrust",
     "encoded": "AwseAQE=",
     "decoded": [
-      { "days": 96, "hour": 11, "minute": 30, "portion": 1, "enabled": 1 }
+      {"days": 96,"hour": 11,"minute": 30,"enabled": 1,"portions": [1]}
     ]
   },
   {
     "manufacturer": "Meowmatic",
     "encoded": "PwgAAQF/CgABAX8MAAEAfw4AAQF+EAABAX8SAAEBfxQAAQB/FgABAQ==",
     "decoded": [
-      { "days": 126, "hour": 8, "minute": 0, "portion": 1, "enabled": 1 },
-      { "days": 127, "hour": 10, "minute": 0, "portion": 1, "enabled": 1 },
-      { "days": 127, "hour": 12, "minute": 0, "portion": 1, "enabled": 0 },
-      { "days": 127, "hour": 14, "minute": 0, "portion": 1, "enabled": 1 },
-      { "days": 63, "hour": 16, "minute": 0, "portion": 1, "enabled": 1 },
-      { "days": 127, "hour": 18, "minute": 0, "portion": 1, "enabled": 1 },
-      { "days": 127, "hour": 20, "minute": 0, "portion": 1, "enabled": 0 },
-      { "days": 127, "hour": 22, "minute": 0, "portion": 1, "enabled": 1 }
+      {"days": 126,"hour": 8,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 10,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 12,"minute": 0,"enabled": 0,"portions": [1]},
+      {"days": 127,"hour": 14,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 63,"hour": 16,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 18,"minute": 0,"enabled": 1,"portions": [1]},
+      {"days": 127,"hour": 20,"minute": 0,"enabled": 0,"portions": [1]},
+      {"days": 127,"hour": 22,"minute": 0,"enabled": 1,"portions": [1]}
     ]
   },
   {
     "manufacturer": "Puppy Kitty",
     "encoded": "2019121170191031",
     "decoded": [
-      { "days": 2, "hour": 19, "minute": 12, "portion": 1, "enabled": 1 },
-      { "days": 67, "hour": 19, "minute": 10, "portion": 3, "enabled": 1 }
+      {"days": 2,"hour": 19,"minute": 12,"enabled": 1,"portions": [1]},
+      {"days": 67,"hour": 19,"minute": 10,"enabled": 1,"portions": [3]}
     ]
   },
   {
     "manufacturer": "Aqara",
-    "encoded": "{\"schedule\":[{\"days\":\"everyday\",\"hour\":8,\"minute\":0,\"size\":6},{\"days\":\"everyday\",\"hour\":16,\"minute\":0,\"size\":6},{\"days\":\"everyday\",\"hour\":0,\"minute\":0,\"size\":4}]}",
+    "encoded": "{\"schedule\":[{\"size\":6,\"days\":\"everyday\",\"hour\":8,\"minute\":0},{\"size\":6,\"days\":\"everyday\",\"hour\":16,\"minute\":0},{\"size\":4,\"days\":\"everyday\",\"hour\":0,\"minute\":0}]}",
     "decoded": [
-      { "days": 127, "hour": 8, "minute": 0, "portion": 6 },
-      { "days": 127, "hour": 16, "minute": 0, "portion": 6 },
-      { "days": 127, "hour": 0, "minute": 0, "portion": 4 }
+      {"days": 127,"hour": 8,"minute": 0,"portions": [6]},
+      {"days": 127,"hour": 16,"minute": 0,"portions": [6]},
+      {"days": 127,"hour": 0,"minute": 0,"portions": [4]}
     ]
   },
   {
     "manufacturer": "Wuipet",
     "encoded": "fwUUBgF/EgAGAQ==",
     "decoded": [
-      { "days": 127, "hour": 5, "minute": 20, "portion": 6, "enabled": 1 },
-      { "days": 127, "hour": 18, "minute": 0, "portion": 6, "enabled": 1 }
+      {"days": 127,"hour": 5,"minute": 20,"enabled": 1,"portions": [6]},
+      {"days": 127,"hour": 18,"minute": 0,"enabled": 1,"portions": [6]}
     ]
   }
 ]

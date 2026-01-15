@@ -15,10 +15,17 @@ import { isMealEnabled } from '../utils';
 export function getWeeklyAveragePortion(feedingTimes: FeedingTime[]): number {
   let weeklyTotal = 0;
   feedingTimes.forEach((t) => {
-    if (typeof t.days !== 'number' || typeof t.portion !== 'number') return;
+    if (typeof t.days !== 'number') return;
+    const portions = Array.isArray(t.portions) ? t.portions : [];
+    const portionTotal =
+      portions.reduce(
+        (sum, val) => sum + (typeof val === 'number' ? val : 0),
+        0,
+      );
+    if (portionTotal <= 0) return;
     for (let i = 0; i < 7; i++) {
       if (t.days & (1 << i)) {
-        weeklyTotal += t.portion;
+        weeklyTotal += portionTotal;
       }
     }
   });
@@ -34,9 +41,16 @@ export function getTodaysFoodGrams(
 ): number {
   let total = 0;
   feedingTimes.forEach((t) => {
-    if (typeof t.days !== 'number' || typeof t.portion !== 'number') return;
+    if (typeof t.days !== 'number') return;
+    const portions = Array.isArray(t.portions) ? t.portions : [];
+    const portionTotal =
+      portions.reduce(
+        (sum, val) => sum + (typeof val === 'number' ? val : 0),
+        0,
+      );
+    if (portionTotal <= 0) return;
     if (t.days & (1 << dayIdx)) {
-      total += t.portion;
+      total += portionTotal;
     }
   });
   return total;

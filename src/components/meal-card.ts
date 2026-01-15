@@ -4,7 +4,11 @@ import type { FeedingTime, DeviceProfile, MealActionHandler } from '../types';
 import { ProfileField } from '../types';
 import { localize } from '../locales/localize';
 import { renderDaySelector } from './day-selector';
-import { formatTime, hasProfileField } from '../utils';
+import {
+  formatTime,
+  getProfilePortionCount,
+  hasProfileField,
+} from '../utils';
 
 @customElement('meal-card')
 export class MealCard extends LitElement {
@@ -168,9 +172,19 @@ export class MealCard extends LitElement {
 
   private getSummary(): string {
     const parts: string[] = [];
-
-    if (hasProfileField(this.profile, ProfileField.PORTION)) {
-      parts.push(`${localize('common.portion')}: ${this.meal.portion}`);
+    const label = localize('common.portion');
+    const portionCount = getProfilePortionCount(this.profile);
+    const useNumberedLabels = portionCount > 1;
+    const portions = Array.isArray(this.meal.portions)
+      ? this.meal.portions
+      : [];
+    for (let i = 0; i < portionCount; i++) {
+      const value = portions[i];
+      if (typeof value === 'number') {
+        parts.push(
+          `${useNumberedLabels ? `${label} ${i + 1}` : label}: ${value}`,
+        );
+      }
     }
 
     return parts.join(' • ');

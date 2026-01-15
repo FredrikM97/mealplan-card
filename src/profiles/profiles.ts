@@ -136,7 +136,7 @@ const baseProfiles: DeviceProfile[] = [
         85: 'mon-wed-fri-sun', // 0b1010101 - Mon(1) + Wed(4) + Fri(16) + Sun(64)
         42: 'tue-thu-sat', // 0b0101010 - Tue(2) + Thu(8) + Sat(32)
       }),
-      { portion: 'size' }, // Map internal 'portion' to device 'size'
+      { 'portions[0]': 'size' }, // Map internal portions[0] to device 'size'
     ),
   },
   {

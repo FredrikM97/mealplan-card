@@ -98,7 +98,7 @@ describe('ScheduleView Component', () => {
       (el as unknown as ScheduleViewTestable).editMeal?.meal.hour,
     ).to.equal(12);
     expect(
-      (el as unknown as ScheduleViewTestable).editMeal?.meal.portion,
+      (el as unknown as ScheduleViewTestable).editMeal?.meal.portions?.[0],
     ).to.equal(1);
   });
 
@@ -176,7 +176,7 @@ describe('ScheduleView Component', () => {
     (el as unknown as ScheduleViewTestable).draftMeals = [];
 
     const customEvent = new SaveEvent({
-      meal: { hour: 12, minute: 0, portion: 5, days: 127, enabled: 1 },
+      meal: { hour: 12, minute: 0, portions: [5], days: 127, enabled: 1 },
       index: undefined,
     });
 
@@ -196,7 +196,7 @@ describe('ScheduleView Component', () => {
     (el as unknown as ScheduleViewTestable).draftMeals = [...mealState.meals];
 
     const customEvent = new SaveEvent({
-      meal: { hour: 18, minute: 30, portion: 5, days: 127, enabled: 1 },
+      meal: { hour: 18, minute: 30, portions: [5], days: 127, enabled: 1 },
       index: 0,
     });
 
