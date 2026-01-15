@@ -25,6 +25,7 @@ const FIELDS_FULL = [
   pf.DELETE,
   pf.ADD,
 ];
+
 const FIELDS_MINIMAL = [pf.TIME, pf.PORTION, pf.ENABLED, pf.EDIT];
 
 const baseProfiles: DeviceProfile[] = [
@@ -145,6 +146,23 @@ const baseProfiles: DeviceProfile[] = [
     encodingType: EncodingType.BASE64,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
+  },
+  {
+    manufacturer: 'Xtuoes',
+    models: ['2&PFA0004'],
+    encodingType: EncodingType.BASE64,
+    encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}{PORTION[0]:2}{PORTION[1]:2}${f(F.ENABLED, 2)}`,
+    fields: FIELDS_FULL,
+    portionCount: 2,
+    ...createDayTransformer([
+      [0, 6], // Mon -> 0x40
+      [1, 5], // Tue -> 0x20
+      [2, 4], // Wed -> 0x10
+      [3, 3], // Thu -> 0x08
+      [4, 2], // Fri -> 0x04
+      [5, 1], // Sat -> 0x02
+      [6, 0], // Sun -> 0x01
+    ]),
   },
 ];
 

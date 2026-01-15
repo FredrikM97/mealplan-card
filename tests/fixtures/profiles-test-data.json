@@ -136,5 +136,19 @@
       {"days": 127,"hour": 5,"minute": 20,"enabled": 1,"portions": [6]},
       {"days": 127,"hour": 18,"minute": 0,"enabled": 1,"portions": [6]}
     ]
+  },
+  {
+    "manufacturer": "Xtuoes",
+    "encoded": "CAgABAABfwwAAQIBBAgABQABIAgAAgABQAgAAQABAQgABwABEAgAAwABAggABgAB",
+    "decoded": [
+      {"days": 8,"hour": 8,"minute": 0,"portions": [4,0],"enabled": 1},
+      {"days": 127,"hour": 12,"minute": 0,"portions": [1,2],"enabled": 1},
+      {"days": 16,"hour": 8,"minute": 0,"portions": [5,0],"enabled": 1},
+      {"days": 2,"hour": 8,"minute": 0,"portions": [2,0],"enabled": 1},
+      {"days": 1,"hour": 8,"minute": 0,"portions": [1,0],"enabled": 1},
+      {"days": 64,"hour": 8,"minute": 0,"portions": [7,0],"enabled": 1},
+      {"days": 4,"hour": 8,"minute": 0,"portions": [3,0],"enabled": 1},
+      {"days": 32,"hour": 8,"minute": 0,"portions": [6,0],"enabled": 1}
+    ]
   }
 ]
