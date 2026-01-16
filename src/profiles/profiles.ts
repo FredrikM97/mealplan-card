@@ -120,7 +120,8 @@ const baseProfiles: DeviceProfile[] = [
     manufacturer: 'Aqara',
     models: ['C1'],
     encodingType: EncodingType.DICT,
-    fields: [pf.TIME, pf.SIZE, pf.DAYS, pf.EDIT, pf.DELETE, pf.ADD],
+    fields: [pf.TIME, pf.PORTION, pf.SIZE, pf.DAYS, pf.EDIT, pf.DELETE, pf.ADD],
+    portionCount: 1,
     ...createDictEncoderWithWrapper(
       'schedule',
       createStringDayTransformer({
