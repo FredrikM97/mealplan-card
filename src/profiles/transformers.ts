@@ -92,7 +92,7 @@ export const createStringDayTransformer = (
 
 /**
  * Wraps day transformer with JSON key wrapping and field mapping
- * Usage: ...createDictEncoderWithWrapper('schedule', createStringDayTransformer({...}), {portion: 'size'})
+ * Usage: ...createDictEncoderWithWrapper('schedule', createStringDayTransformer({...}), {'portions[0]': 'size'})
  */
 export function createDictEncoderWithWrapper(
   wrapKey: string,
@@ -116,10 +116,58 @@ export function createDictEncoderWithWrapper(
     mapping?: Record<string, string>,
   ): Record<string, unknown> => {
     const result: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(entry)) {
-      if (value !== null) {
-        result[mapping?.[key] ?? key] = value;
+    const parseIndexedField = (
+      field: string,
+    ): { base: string; index: number } | null => {
+      const match = field.match(/^([^\[]+)\[(\d+)\]$/);
+      if (!match) return null;
+      const base = match[1];
+      const indexStr = match[2];
+      if (!indexStr) return null;
+      const index = parseInt(indexStr, 10);
+      if (!base || Number.isNaN(index)) return null;
+      return { base, index };
+    };
+
+    const getValue = (field: string): unknown => {
+      const indexed = parseIndexedField(field);
+      if (!indexed) return entry[field];
+      const arr = entry[indexed.base];
+      return Array.isArray(arr) ? arr[indexed.index] : undefined;
+    };
+
+    const setValue = (field: string, value: unknown) => {
+      const indexed = parseIndexedField(field);
+      if (!indexed) {
+        result[field] = value;
+        return;
       }
+      const arr = Array.isArray(result[indexed.base])
+        ? (result[indexed.base] as unknown[])
+        : [];
+      arr[indexed.index] = value;
+      result[indexed.base] = arr;
+    };
+
+    const mappedBaseFields = new Set<string>();
+    if (mapping) {
+      for (const [source, target] of Object.entries(mapping)) {
+        const value = getValue(source);
+        if (value !== null && value !== undefined) {
+          setValue(target, value);
+        }
+        const indexed = parseIndexedField(source);
+        if (indexed) {
+          mappedBaseFields.add(indexed.base);
+        }
+      }
+    }
+
+    for (const [key, value] of Object.entries(entry)) {
+      if (value === null) continue;
+      if (mapping?.[key]) continue;
+      if (mappedBaseFields.has(key)) continue;
+      result[key] = value;
     }
     return result;
   };

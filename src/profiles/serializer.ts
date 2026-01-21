@@ -8,6 +8,7 @@ import {
 
 export interface TemplateToken {
   name: string;
+  index?: number;
   length: number;
 }
 
@@ -52,9 +53,16 @@ export class TemplateEncoder {
       }
 
       const name = match[1];
-      const lengthStr = match[2];
+      const indexStr = match[2];
+      const lengthStr = match[3];
       if (!name || !lengthStr) {
         throw new Error('Invalid token format in template');
+      }
+
+      const index =
+        indexStr !== undefined ? parseInt(indexStr, 10) : undefined;
+      if (index !== undefined && (!Number.isInteger(index) || index < 0)) {
+        throw new Error('Invalid token index');
       }
 
       const len = parseInt(lengthStr, 10);
@@ -62,7 +70,7 @@ export class TemplateEncoder {
         throw new Error('Invalid token length');
       }
 
-      tokens.push({ name, length: len });
+      tokens.push({ name, index, length: len });
       lastIndex = TOKEN_REGEX.lastIndex;
     }
 
@@ -106,7 +114,12 @@ export class TemplateEncoder {
         }
 
         const fieldName = token.name.toLowerCase();
-        const value = (transformedEntry as Record<string, unknown>)[fieldName];
+        // Pull array-based values when template tokens include indexes (e.g. PORTION[0]).
+        const value = this.getFieldValue(
+          transformedEntry as Record<string, unknown>,
+          fieldName,
+          token.index,
+        );
 
         if (value === undefined || value === null) {
           return ''.padStart(token.length, '0');
@@ -130,7 +143,8 @@ export class TemplateEncoder {
       const fieldName = token.name.toLowerCase();
       const parsedValue = this.parseField(token.name, segment);
       if (parsedValue !== null && parsedValue !== undefined) {
-        entry[fieldName] = parsedValue;
+        // Write into arrays when template tokens include indexes (e.g. PORTION[1]).
+        this.assignFieldValue(entry, fieldName, token.index, parsedValue);
       }
     }
 
@@ -155,13 +169,64 @@ export class TemplateEncoder {
     return useHex ? parseInt(segment, 16) || 0 : parseInt(segment, 10) || 0;
   }
 
+  private getFieldValue(
+    entry: Record<string, unknown>,
+    fieldName: string,
+    index?: number,
+  ): number | undefined {
+    // Handle indexed template tokens (e.g. PORTION[1]) by reading array values.
+    if (fieldName === 'portion') {
+      const portions = entry.portions;
+      if (Array.isArray(portions)) {
+        return portions[index ?? 0] as number | undefined;
+      }
+      return undefined;
+    }
+
+    if (index === undefined) {
+      return entry[fieldName] as number | undefined;
+    }
+
+    const arr = entry[fieldName];
+    return Array.isArray(arr) ? (arr[index] as number | undefined) : undefined;
+  }
+
+  private assignFieldValue(
+    entry: Record<string, unknown>,
+    fieldName: string,
+    index: number | undefined,
+    value: number,
+  ): void {
+    // Handle indexed template tokens (e.g. PORTION[1]) by writing array values.
+    if (fieldName === 'portion') {
+      const portions = Array.isArray(entry.portions)
+        ? (entry.portions as number[])
+        : [];
+      portions[index ?? 0] = value;
+      entry.portions = portions;
+      return;
+    }
+
+    if (index === undefined) {
+      entry[fieldName] = value;
+      return;
+    }
+
+    const arr = Array.isArray(entry[fieldName])
+      ? (entry[fieldName] as number[])
+      : [];
+    arr[index] = value;
+    entry[fieldName] = arr;
+  }
+
   private shouldUseHex(fieldName: string): boolean {
+    const baseFieldName = fieldName.split('[')[0];
     // BASE64 encoding type uses hex for all fields
     // HEX encoding type uses hex only for specific fields (e.g., DAYS)
     return (
       !this.profile.encodingType ||
       this.profile.encodingType === EncodingType.BASE64 ||
-      HEX_FIELDS.has(fieldName as TemplateFieldName)
+      HEX_FIELDS.has(baseFieldName as TemplateFieldName)
     );
   }
 }

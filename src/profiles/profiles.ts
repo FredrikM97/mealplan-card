@@ -25,6 +25,7 @@ const FIELDS_FULL = [
   pf.DELETE,
   pf.ADD,
 ];
+
 const FIELDS_MINIMAL = [pf.TIME, pf.PORTION, pf.ENABLED, pf.EDIT];
 
 const baseProfiles: DeviceProfile[] = [
@@ -119,7 +120,8 @@ const baseProfiles: DeviceProfile[] = [
     manufacturer: 'Aqara',
     models: ['C1'],
     encodingType: EncodingType.DICT,
-    fields: [pf.TIME, pf.SIZE, pf.DAYS, pf.EDIT, pf.DELETE, pf.ADD],
+    fields: [pf.TIME, pf.PORTION, pf.SIZE, pf.DAYS, pf.EDIT, pf.DELETE, pf.ADD],
+    portionCount: 1,
     ...createDictEncoderWithWrapper(
       'schedule',
       createStringDayTransformer({
@@ -136,7 +138,7 @@ const baseProfiles: DeviceProfile[] = [
         85: 'mon-wed-fri-sun', // 0b1010101 - Mon(1) + Wed(4) + Fri(16) + Sun(64)
         42: 'tue-thu-sat', // 0b0101010 - Tue(2) + Thu(8) + Sat(32)
       }),
-      { portion: 'size' }, // Map internal 'portion' to device 'size'
+      { 'portions[0]': 'size' }, // Map internal portions[0] to device 'size'
     ),
   },
   {
@@ -145,6 +147,23 @@ const baseProfiles: DeviceProfile[] = [
     encodingType: EncodingType.BASE64,
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
+  },
+  {
+    manufacturer: 'Xtuoes',
+    models: ['2&PFA0004'],
+    encodingType: EncodingType.BASE64,
+    encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}{PORTION[0]:2}{PORTION[1]:2}${f(F.ENABLED, 2)}`,
+    fields: FIELDS_FULL,
+    portionCount: 2,
+    ...createDayTransformer([
+      [0, 6], // Mon -> 0x40
+      [1, 5], // Tue -> 0x20
+      [2, 4], // Wed -> 0x10
+      [3, 3], // Thu -> 0x08
+      [4, 2], // Fri -> 0x04
+      [5, 1], // Sat -> 0x02
+      [6, 0], // Sun -> 0x01
+    ]),
   },
 ];
 

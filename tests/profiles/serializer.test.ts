@@ -98,6 +98,23 @@ describe('encoder decode/encode', () => {
     const decoded = encoder2.decode(encoded);
     expect(decoded).toEqual(feedingTimes);
   });
+
+  it('encodes and decodes indexed portion tokens', () => {
+    const encoder2 = getEncoder({
+      manufacturer: 'Test',
+      models: [],
+      encodingType: EncodingType.HEX,
+      fields: [],
+      encodingTemplate: '{HOUR:2}{MINUTE:2}{PORTION[0]:2}{PORTION[1]:2}',
+    });
+    const feedingTimes: FeedingTime[] = [
+      { hour: 8, minute: 30, portions: [1, 2] },
+    ];
+    const encoded = encoder2.encode(feedingTimes);
+    expect(encoded).toEqual('08300102');
+    const decoded = encoder2.decode(encoded);
+    expect(decoded[0].portions).toEqual([1, 2]);
+  });
 });
 
 describe('encoder error handling', () => {
@@ -271,9 +288,9 @@ describe('createDayTransformer', () => {
       [0, 1],
       [1, 0],
     ]);
-    const entry = { hour: 8, minute: 30, portion: 6, days: 1 };
+    const entry = { hour: 8, minute: 30, portions: [6], days: 1 };
     const encoded = transformer.encode(entry);
-    expect(encoded).toEqual({ hour: 8, minute: 30, portion: 6, days: 2 });
+    expect(encoded).toEqual({ hour: 8, minute: 30, portions: [6], days: 2 });
 
     const decoded = transformer.decode(encoded);
     expect(decoded).toEqual(entry);
@@ -289,10 +306,10 @@ describe('DictEncoder', () => {
     encodingTemplate: '',
   });
 
-  it('encodes feeding times as JSON with portion->size mapping', () => {
+  it('encodes feeding times as JSON', () => {
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, portion: 2, days: 127, enabled: 1 },
-      { hour: 18, minute: 30, portion: 1, days: 62, enabled: 1 },
+      { hour: 8, minute: 0, portions: [2], days: 127, enabled: 1 },
+      { hour: 18, minute: 30, portions: [1], days: 62, enabled: 1 },
     ];
     const encoded = encoder.encode(feedingTimes);
     const parsed = JSON.parse(encoded);
@@ -301,13 +318,13 @@ describe('DictEncoder', () => {
     expect(parsed[0]).toMatchObject({
       hour: 8,
       minute: 0,
-      portion: 2,
+      portions: [2],
       days: 127,
       enabled: 1,
     });
   });
 
-  it('decodes JSON with size->portion mapping', () => {
+  it('decodes JSON without mapping', () => {
     const deviceData = [
       { hour: 8, minute: 0, size: 2, days: 127, enabled: 1 },
       { hour: 18, minute: 30, size: 1, days: 62, enabled: 1 },
@@ -356,8 +373,8 @@ describe('DictEncoder', () => {
     });
 
     const feedingTimes: FeedingTime[] = [
-      { hour: 8, minute: 0, portion: 6, days: 127 },
-      { hour: 16, minute: 0, portion: 6, days: 31 },
+      { hour: 8, minute: 0, portions: [6], days: 127 },
+      { hour: 16, minute: 0, portions: [6], days: 31 },
     ];
 
     const encoded = aqaraEncoder.encode(feedingTimes);
@@ -471,12 +488,12 @@ describe('createStringDayTransformer', () => {
   });
 
   it('preserves other fields in entry', () => {
-    const entry = { hour: 8, minute: 30, portion: 6, days: 127 };
+    const entry = { hour: 8, minute: 30, portions: [6], days: 127 };
     const encoded = transformer.encode(entry);
     expect(encoded).toEqual({
       hour: 8,
       minute: 30,
-      portion: 6,
+      portions: [6],
       days: 'everyday',
     });
 

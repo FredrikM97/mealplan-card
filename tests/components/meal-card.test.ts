@@ -241,7 +241,7 @@ describe('MealCard Component', () => {
         {
           hour: 21,
           minute: 30,
-          portion: 5,
+          portions: [5],
           days: 0b0111110,
           enabled: 1,
           _idx: 0,

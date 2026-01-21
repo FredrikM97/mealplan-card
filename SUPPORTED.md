@@ -22,3 +22,5 @@
   - Models: C1
 - **Wuipet**
   - Models: du4l-wc-01
+- **Xtuoes**
+  - Models: 2&PFA0004

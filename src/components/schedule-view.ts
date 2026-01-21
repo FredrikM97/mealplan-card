@@ -9,7 +9,12 @@ import { localize } from '../locales/localize';
 import type { FeedingTime, EditMealState, HomeAssistant } from '../types';
 import { ProfileField } from '../types';
 import { MealStateController } from '../mealStateController';
-import { hasProfileField, timeToMinutes, areMealsEqual } from '../utils';
+import {
+  getProfilePortionCount,
+  hasProfileField,
+  timeToMinutes,
+  areMealsEqual,
+} from '../utils';
 import { ScheduleClosedEvent } from '../constants';
 import './edit-dialog';
 import type { MealEditDialog } from './edit-dialog';
@@ -134,8 +139,16 @@ export class ScheduleView extends LitElement {
 
   private handleOpenAdd() {
     this.heading = localize('common.add_meal');
+    const portionCount = getProfilePortionCount(this.mealState.profile);
+    const meal: FeedingTime = {
+      hour: 12,
+      minute: 0,
+      ...({ portions: Array(portionCount).fill(1) }),
+      days: 127,
+      enabled: 1,
+    };
     this.editMeal = {
-      meal: { hour: 12, minute: 0, portion: 1, days: 127, enabled: 1 },
+      meal,
     } satisfies EditMealState;
   }
 

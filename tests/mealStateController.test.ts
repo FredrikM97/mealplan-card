@@ -89,7 +89,7 @@ describe('MealStateController', () => {
     expect(meals.length).toBeGreaterThan(0);
     expect(meals[0].hour).toBe(8);
     expect(meals[0].minute).toBe(0);
-    expect(meals[0].portion).toBe(10);
+    expect(meals[0].portions?.[0]).toBe(10);
   });
 
   it('handles invalid sensor state', async () => {

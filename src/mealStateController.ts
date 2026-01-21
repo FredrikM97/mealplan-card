@@ -10,6 +10,7 @@ import {
   MealPlanCardConfig,
   HomeAssistant,
   TransportType,
+  ProfileField,
 } from './types';
 import { getEncoder, EncoderBase } from './profiles/serializer';
 import { log } from './logger';
@@ -82,6 +83,24 @@ export class MealStateController implements ReactiveController {
   private notifySubscribers(): void {
     this.host.requestUpdate();
     this.subscribers.forEach((callback) => callback());
+  }
+
+  private normalizeMeals(meals: FeedingTime[]): FeedingTime[] {
+    const hasPortion = this.profile.fields.includes(ProfileField.PORTION);
+    const portionCount = hasPortion ? this.profile.portionCount ?? 1 : 0;
+
+    return meals.map((meal) => {
+      const normalized: FeedingTime = { ...meal };
+      const portions = Array.isArray(meal.portions) ? [...meal.portions] : [];
+      if (portionCount > 0 && portions.length < portionCount) {
+        portions.length = portionCount;
+      }
+      if (portionCount > 0) {
+        normalized.portions = portions;
+      }
+
+      return normalized;
+    });
   }
 
   /**
@@ -161,9 +180,11 @@ export class MealStateController implements ReactiveController {
     }
 
     if (allowUpdate) {
-      const newMeals = decodedMeals ? [...decodedMeals] : [];
+      const newMeals = decodedMeals
+        ? this.normalizeMeals([...decodedMeals])
+        : [];
       // Only update if meals have actually changed
-      if (!areMealsEqual(decodedMeals, this.meals)) {
+      if (!areMealsEqual(newMeals, this.meals)) {
         this.meals = newMeals;
         // Log source of update
         const source =

@@ -15,7 +15,7 @@ describe('MealEditDialog', () => {
   const mockMeal: FeedingTime = {
     hour: 8,
     minute: 30,
-    portion: 2,
+    portions: [2],
     days: 127,
     enabled: 1,
   };
@@ -42,7 +42,7 @@ describe('MealEditDialog', () => {
 
     // Renders portion field (included in profile)
     const portionInput = el.shadowRoot?.querySelector(
-      '#edit-portion',
+      '#edit-portion-0',
     ) as HTMLInputElement;
     expect(portionInput).to.exist;
     expect(portionInput.value).toBe('2');
@@ -68,7 +68,8 @@ describe('MealEditDialog', () => {
       profile: noPortionProfile,
       meal: mockMeal,
     })) as MealEditDialog;
-    expect(noPortionEl.shadowRoot?.querySelector('#edit-portion')).to.not.exist;
+    expect(noPortionEl.shadowRoot?.querySelector('#edit-portion-0')).to.not
+      .exist;
 
     const noDaysProfile = createMockProfile({ fields: [ProfileField.PORTION] });
     const noDaysEl = (await createEditDialogFixture({
@@ -86,7 +87,7 @@ describe('MealEditDialog', () => {
     const newMeal: FeedingTime = {
       hour: 12,
       minute: 0,
-      portion: 3,
+      portions: [3],
       days: 31,
       enabled: 1,
     };
@@ -108,12 +109,12 @@ describe('MealEditDialog', () => {
 
     // Portion input
     const portionInput = el.shadowRoot?.querySelector(
-      '#edit-portion',
+      '#edit-portion-0',
     ) as HTMLInputElement;
     portionInput.value = '5';
     portionInput.dispatchEvent(new Event('input'));
     await el.updateComplete;
-    expect(el['formData'].portion).toBe(5);
+    expect(el['formData'].portions?.[0]).toBe(5);
   });
 
   it('renders and handles predefined time buttons', async () => {
@@ -143,7 +144,7 @@ describe('MealEditDialog', () => {
   });
 
   it('validates time input', async () => {
-    el['formData'] = { hour: -1, minute: 0, portion: 1 };
+    el['formData'] = { hour: -1, minute: 0, portions: [1] };
 
     const saveSpy = vi.fn();
     el.addEventListener(EVENT_SAVE, saveSpy);
@@ -168,7 +169,7 @@ describe('MealEditDialog', () => {
     await el.updateComplete;
     expect(el['formData'].hour).toBe(15);
     expect(el['formData'].minute).toBe(30);
-    expect(el['formData'].portion).toBe(2); // Unchanged
+    expect(el['formData'].portions?.[0]).toBe(2);
 
     // Updates days
     el['handleUpdate']({ days: 31 });
@@ -176,9 +177,9 @@ describe('MealEditDialog', () => {
     expect(el['formData'].days).toBe(31);
 
     // Preserves existing data when updating single field
-    el['handlePortionInput']({ target: { value: '10' } } as unknown as Event);
+    el['handlePortionInput'](0, { target: { value: '10' } } as unknown as Event);
     await el.updateComplete;
-    expect(el['formData'].portion).toBe(10);
+    expect(el['formData'].portions?.[0]).toBe(10);
     expect(el['formData'].hour).toBe(15); // Still updated value
   });
 

@@ -9,7 +9,7 @@ import { renderDaySelector } from './day-selector';
 import { localize } from '../locales/localize';
 import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
 import { SaveEvent } from '../constants';
-import { formatTime, hasProfileField } from '../utils';
+import { formatTime, getProfilePortionCount, hasProfileField } from '../utils';
 
 /**
  * Validate that hour and minute are valid time values
@@ -114,8 +114,22 @@ export class MealEditDialog extends LitElement {
   `;
 
   updated(changedProperties: PropertyValues) {
-    if (changedProperties.has('meal') && this.meal) {
-      this.formData = { ...this.meal };
+    if (
+      (changedProperties.has('meal') || changedProperties.has('profile')) &&
+      this.meal
+    ) {
+      const normalized: Partial<FeedingTime> = { ...this.meal };
+      if (hasProfileField(this.profile, ProfileField.PORTION)) {
+        const portionCount = getProfilePortionCount(this.profile);
+        const portions = this.normalizePortions(normalized, portionCount);
+        for (let i = 0; i < portionCount; i++) {
+          if (portions[i] === undefined) {
+            portions[i] = 1;
+          }
+        }
+        normalized.portions = portions;
+      }
+      this.formData = normalized;
     }
   }
 
@@ -129,10 +143,13 @@ export class MealEditDialog extends LitElement {
     this.handleUpdate({ hour: h, minute: m });
   }
 
-  private handlePortionInput(e: Event) {
-    this.handleUpdate({
-      portion: parseInt((e.target as HTMLInputElement).value, 10),
-    });
+  private handlePortionInput(index: number, e: Event) {
+    const value = parseInt((e.target as HTMLInputElement).value, 10);
+    const portions = Array.isArray(this.formData.portions)
+      ? [...this.formData.portions]
+      : [];
+    portions[index] = value;
+    this.handleUpdate({ portions });
   }
 
   private handlePredefinedTime(time: string) {
@@ -156,11 +173,29 @@ export class MealEditDialog extends LitElement {
       console.warn('Invalid time:', entry.hour, entry.minute);
       return false;
     }
-    if (!entry.portion || entry.portion < 1) {
-      console.warn('Invalid portion:', entry.portion);
-      return false;
+    if (hasProfileField(this.profile, ProfileField.PORTION)) {
+      const portionCount = getProfilePortionCount(this.profile);
+      const portions = this.normalizePortions(entry, portionCount);
+      for (let i = 0; i < portionCount; i++) {
+        const value = portions[i];
+        if (!value || value < 1) {
+          console.warn('Invalid portion:', value);
+          return false;
+        }
+      }
     }
     return true;
+  }
+
+  private normalizePortions(
+    entry: Partial<FeedingTime>,
+    portionCount: number,
+  ): number[] {
+    const portions = Array.isArray(entry.portions) ? [...entry.portions] : [];
+    if (portions.length < portionCount) {
+      portions.length = portionCount;
+    }
+    return portions;
   }
 
   private renderDaysField() {
@@ -173,20 +208,32 @@ export class MealEditDialog extends LitElement {
     });
   }
 
-  private renderPortionRow() {
+  private renderPortionFields() {
     if (!hasProfileField(this.profile, ProfileField.PORTION)) return '';
+    const portionCount = getProfilePortionCount(this.profile);
+    const label = localize('common.portion');
+    const useNumberedLabels = portionCount > 1;
 
     return html`
-      <div class="edit-form-group">
-        <label for="edit-portion">${localize('common.portion')}</label>
-        <input
-          id="edit-portion"
-          type="number"
-          min="1"
-          .value=${String(this.formData?.portion ?? 1)}
-          @input=${this.handlePortionInput}
-        />
-      </div>
+      ${Array.from({ length: portionCount }, (_, index) => {
+        const value = Array.isArray(this.formData.portions)
+          ? this.formData.portions[index]
+          : undefined;
+        return html`
+          <div class="edit-form-group">
+            <label for="edit-portion-${index}">
+              ${useNumberedLabels ? `${label} ${index + 1}` : label}
+            </label>
+            <input
+              id="edit-portion-${index}"
+              type="number"
+              min="1"
+              .value=${String(value ?? 1)}
+              @input=${(e: Event) => this.handlePortionInput(index, e)}
+            />
+          </div>
+        `;
+      })}
     `;
   }
 
@@ -225,7 +272,7 @@ export class MealEditDialog extends LitElement {
             @input=${this.handleTimeInput}
           />
         </div>
-        ${this.renderPortionRow()} ${this.renderPredefinedTimes()}
+        ${this.renderPortionFields()} ${this.renderPredefinedTimes()}
       </form>
     `;
   }

@@ -1,4 +1,4 @@
-import type { FeedingTime, DeviceProfile, ProfileField } from './types';
+import { ProfileField, type FeedingTime, type DeviceProfile } from './types';
 
 /**
  * Format time as HH:MM string
@@ -31,6 +31,33 @@ export function hasProfileField(
   field: ProfileField,
 ): boolean {
   return profile?.fields.includes(field) ?? false;
+}
+
+/**
+ * Get the number of portion inputs supported by a profile.
+ */
+export function getProfilePortionCount(
+  profile: DeviceProfile | undefined,
+): number {
+  if (profile?.portionCount !== undefined) {
+    return profile.portionCount;
+  }
+  const template = profile?.encodingTemplate;
+  if (template) {
+    const re = /PORTION\[(\d+)\]/g;
+    let match: RegExpExecArray | null;
+    let maxIndex = -1;
+    while ((match = re.exec(template)) !== null) {
+      const index = parseInt(match[1], 10);
+      if (!Number.isNaN(index)) {
+        maxIndex = Math.max(maxIndex, index);
+      }
+    }
+    if (maxIndex >= 0) {
+      return maxIndex + 1;
+    }
+  }
+  return 1;
 }
 
 /**
