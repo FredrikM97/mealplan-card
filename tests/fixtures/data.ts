@@ -56,9 +56,6 @@ export const daySpecificMeals = {
   noDayMask: { hour: 8, minute: 0, portion: 2, enabled: 1 } as FeedingTime,
 };
 
-export const encodeMealData = (...bytes: number[]): string =>
-  btoa(String.fromCharCode(...bytes));
-
 export const testProfiles = {
   noModels: () => [
     {

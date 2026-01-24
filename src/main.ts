@@ -2,11 +2,8 @@
 import { customElement, property, state } from 'lit/decorators.js';
 import { localize, setLanguage } from './locales/localize';
 import { MealStateController } from './mealStateController';
-import {
-  TransportType,
-  type MealPlanCardConfig,
-  type HomeAssistant,
-} from './types';
+import type { HomeAssistant, MealPlanCardConfig } from './types';
+import { TransportType, isValidCardConfig } from './types';
 import { getProfileWithTransformer } from './profiles/profiles';
 import { generateConfigFormSchema } from './config-form';
 import './components/overview';
@@ -16,7 +13,7 @@ import './components/schedule-view';
 export class MealPlanCard extends LitElement {
   @property({ type: Object }) hass!: HomeAssistant;
   @property({ type: Object }) config!: MealPlanCardConfig;
-  @state() private mealState?: MealStateController;
+  @state() public mealState?: MealStateController;
   @state() private _dialogOpen = false;
 
   static get styles() {
@@ -34,14 +31,18 @@ export class MealPlanCard extends LitElement {
     this.config = config;
 
     // Initialize controller if we have all prerequisites
-    if (this.hass && this.config.sensor && this.config.manufacturer) {
+    if (
+      this.hass &&
+      isValidCardConfig(this.config) &&
+      this.config.manufacturer
+    ) {
       const profile = getProfileWithTransformer(this.config.manufacturer);
 
       if (profile) {
         this.mealState = new MealStateController(
           this,
           profile,
-          this.hass,
+          () => this.hass,
           this.config,
         );
       }
@@ -53,14 +54,14 @@ export class MealPlanCard extends LitElement {
     await setLanguage(this.hass?.language);
 
     // Initialize meal state controller (hass is now available)
-    if (this.config?.sensor && this.config.manufacturer) {
+    if (isValidCardConfig(this.config) && this.config.manufacturer) {
       const profile = getProfileWithTransformer(this.config.manufacturer);
 
       if (profile) {
         this.mealState = new MealStateController(
           this,
           profile,
-          this.hass,
+          () => this.hass,
           this.config,
         );
       }
@@ -72,8 +73,10 @@ export class MealPlanCard extends LitElement {
 
     if (changedProps.has('hass') && this.mealState) {
       setLanguage(this.hass?.language);
-      this.mealState.hass = this.hass;
-      this.mealState.updateFromHass();
+
+      this.mealState.updateFromHass().catch((error) => {
+        console.error('[MealPlanCard] Failed to update from hass:', error);
+      });
     }
   }
 
@@ -136,12 +139,12 @@ export class MealPlanCard extends LitElement {
 
   static getStubConfig(): MealPlanCardConfig {
     return {
-      sensor: '',
       title: 'MealPlan Card',
-      helper: '',
       portions: 6,
       manufacturer: '',
       model: '',
+      sensor: '',
+      helper: '',
       transport_type: TransportType.SENSOR,
     } as MealPlanCardConfig;
   }

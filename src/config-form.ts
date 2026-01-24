@@ -1,88 +1,100 @@
 import { profiles } from './profiles/profiles';
 import { localize } from './locales/localize';
+import { TransportType } from './types';
+
+const TRANSPORT_FIELDS = {
+  [TransportType.SENSOR]: [
+    {
+      name: 'sensor',
+      required: true,
+      selector: {
+        entity: { filter: [{ domain: ['sensor', 'text', 'input_text'] }] },
+      },
+    },
+    {
+      name: 'helper',
+      selector: { entity: { filter: [{ domain: 'input_text' }] } },
+    },
+  ],
+  [TransportType.MQTT]: [
+    {
+      name: 'sensor',
+      required: true,
+      selector: {
+        entity: { filter: [{ domain: ['sensor', 'text', 'input_text'] }] },
+      },
+    },
+    {
+      name: 'helper',
+      selector: { entity: { filter: [{ domain: 'input_text' }] } },
+    },
+  ],
+};
 
 export function generateConfigFormSchema() {
-  const profileItems = profiles.map((profile) => ({
-    value: profile.manufacturer,
-    label: profile.manufacturer,
-  }));
+  const schema: Record<string, unknown>[] = [
+    {
+      type: 'grid',
+      name: '',
+      flatten: true,
+      column_min_width: '200px',
+      schema: [
+        { name: 'title', selector: { text: {} } },
+        {
+          name: 'portions',
+          selector: {
+            number: { min: 1, max: 10, mode: 'box', unit_of_measurement: 'g' },
+          },
+        },
+      ],
+    },
+    {
+      name: 'manufacturer',
+      required: true,
+      selector: {
+        select: {
+          options: profiles.map(({ manufacturer }) => ({
+            value: manufacturer,
+            label: manufacturer,
+          })),
+          mode: 'dropdown',
+        },
+      },
+    },
+    {
+      name: 'transport_type',
+      required: true,
+      selector: {
+        select: {
+          options: [
+            { value: TransportType.SENSOR, label: 'Sensor (default)' },
+            { value: TransportType.MQTT, label: 'MQTT' },
+          ],
+          mode: 'dropdown',
+        },
+      },
+    },
+    {
+      type: 'expandable',
+      name: 'sensor_config',
+      title: 'Sensor Configuration',
+      icon: 'mdi:pulse',
+      flatten: true,
+      schema: TRANSPORT_FIELDS[TransportType.SENSOR],
+    },
+    {
+      type: 'expandable',
+      name: 'mqtt_config',
+      title: 'MQTT Configuration',
+      icon: 'mdi:mqtt',
+      flatten: true,
+      schema: TRANSPORT_FIELDS[TransportType.MQTT],
+    },
+  ];
 
   return {
-    schema: [
-      {
-        name: 'sensor',
-        required: true,
-        selector: {
-          entity: {
-            filter: [
-              {
-                domain: ['sensor', 'text', 'input_text'],
-              },
-            ],
-          },
-        },
-      },
-      {
-        name: 'manufacturer',
-        required: true,
-        selector: {
-          select: {
-            options: profileItems.map((item) => ({
-              value: item.value,
-              label: item.label,
-            })),
-            mode: 'dropdown',
-          },
-        },
-      },
-      {
-        type: 'grid',
-        name: '',
-        flatten: true,
-        column_min_width: '200px',
-        schema: [
-          {
-            name: 'title',
-            selector: { text: {} },
-          },
-          {
-            name: 'portions',
-            selector: {
-              number: {
-                min: 1,
-                max: 10,
-                mode: 'box',
-                unit_of_measurement: 'g',
-              },
-            },
-          },
-        ],
-      },
-      {
-        name: 'helper',
-        selector: {
-          entity: {
-            filter: [
-              {
-                domain: 'input_text',
-              },
-            ],
-          },
-        },
-      },
-      {
-        name: 'transport_type',
-        selector: {
-          select: {
-            options: [
-              { value: 'sensor', label: 'Sensor (default)' },
-              { value: 'mqtt', label: 'MQTT' },
-            ],
-            mode: 'dropdown',
-          },
-        },
-      },
-    ],
+    schema,
+
     computeLabel: (schema: { name: string }) => {
       switch (schema.name) {
         case 'sensor':

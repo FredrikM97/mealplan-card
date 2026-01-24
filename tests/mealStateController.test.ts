@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MealStateController } from '../src/mealStateController';
 import type { ReactiveControllerHost } from 'lit';
-import { testMeals, encodeMealData } from './fixtures/data';
+import { testMeals } from './fixtures/data';
 import { profiles } from '../src/profiles/profiles';
 import { TransportType } from '../src/types';
 import {
@@ -9,6 +9,9 @@ import {
   createMockHost,
   getTestProfile,
   createMockHassWithSensor,
+  encodeMealData,
+  createMealStateController,
+  createMockHassWithCallService,
 } from './fixtures/factories';
 
 describe('MealStateController', () => {
@@ -21,43 +24,21 @@ describe('MealStateController', () => {
   });
 
   it('initializes with empty meals', () => {
-    controller = new MealStateController(mockHost, profile, createMockHass(), {
-      sensor: 'sensor.test',
-      helper: 'input_text.helper',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
-    });
+    controller = createMealStateController();
     expect(controller.meals).toEqual([]);
   });
 
   it('sets and gets meals', () => {
-    controller = new MealStateController(mockHost, profile, createMockHass(), {
-      sensor: 'sensor.test',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
-    });
+    controller = createMealStateController();
     const meals = [testMeals.breakfast, testMeals.lunch];
     controller.meals = meals;
     expect(controller.meals).toEqual(meals);
   });
 
   it('resets to saved state', async () => {
-    const base64 = encodeMealData(127, 8, 0, 10, 1);
-    const hass = {
-      ...createMockHassWithSensor('sensor.test', base64),
-      callService: vi.fn(),
-    };
-    controller = new MealStateController(mockHost, profile, hass, {
-      sensor: 'sensor.test',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
-    });
+    const base64 = encodeMealData(testMeals.breakfast);
+    const hass = createMockHassWithSensor('sensor.test', base64);
+    controller = createMealStateController({ hass });
 
     // Wait for initial load
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -70,19 +51,10 @@ describe('MealStateController', () => {
   });
 
   it('decodes meals from hass sensor state', async () => {
-    const base64 = encodeMealData(127, 8, 0, 10, 1);
-    const hass = {
-      ...createMockHassWithSensor('sensor.test', base64),
-      callService: vi.fn(),
-    };
+    const base64 = encodeMealData(testMeals.breakfast);
+    const hass = createMockHassWithSensor('sensor.test', base64);
+    controller = createMealStateController({ hass });
 
-    controller = new MealStateController(mockHost, profile, hass, {
-      sensor: 'sensor.test',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
-    });
     await controller.updateFromHass();
 
     const meals = controller.meals;
@@ -93,35 +65,16 @@ describe('MealStateController', () => {
   });
 
   it('handles invalid sensor state', async () => {
-    const hass = {
-      ...createMockHassWithSensor('sensor.test', 'invalid_base64'),
-      callService: vi.fn(),
-    };
-
-    controller = new MealStateController(mockHost, profile, hass, {
-      sensor: 'sensor.test',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
-    });
+    const hass = createMockHassWithSensor('sensor.test', 'invalid_base64');
+    controller = createMealStateController({ hass });
 
     // Should throw on decode error
     await expect(controller.updateFromHass()).rejects.toThrow('Invalid base64');
   });
 
   it('handles unavailable sensor state', async () => {
-    const hass = {
-      ...createMockHassWithSensor('sensor.test', 'unavailable'),
-      callService: vi.fn(),
-    };
-    controller = new MealStateController(mockHost, profile, hass, {
-      sensor: 'sensor.test',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
-    });
+    const hass = createMockHassWithSensor('sensor.test', 'unavailable');
+    controller = createMealStateController({ hass });
 
     await controller.updateFromHass();
 
@@ -135,13 +88,16 @@ describe('MealStateController', () => {
       callService: vi.fn(),
     };
 
-    controller = new MealStateController(mockHost, profile, hass, {
-      sensor: 'sensor.test',
-      helper: 'input_text.helper',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
+    controller = createMealStateController({
+      hass,
+      config: {
+        sensor: 'sensor.test',
+        helper: 'input_text.helper',
+        manufacturer: 'Test',
+        title: 'Test',
+        portions: 6,
+        transport_type: TransportType.SENSOR,
+      },
     });
     await controller.saveMeals(meals);
 
@@ -163,13 +119,7 @@ describe('MealStateController', () => {
       callService: vi.fn(),
     };
 
-    controller = new MealStateController(mockHost, profile, hass, {
-      sensor: 'sensor.test',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
-    });
+    controller = createMealStateController({ hass });
     controller.meals = meals;
     await controller.saveMeals(controller.meals);
 
@@ -191,13 +141,7 @@ describe('MealStateController', () => {
       ),
     };
 
-    controller = new MealStateController(mockHost, profile, hass, {
-      sensor: 'sensor.test',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
-    });
+    controller = createMealStateController({ hass });
     controller.meals = [testMeals.breakfast];
 
     // Will throw because service call fails
@@ -205,7 +149,7 @@ describe('MealStateController', () => {
   });
 
   it('fallback to helper when sensor is unknown', async () => {
-    const base64 = encodeMealData(127, 8, 0, 10, 1);
+    const base64 = encodeMealData(testMeals.breakfast);
     const hass = {
       ...createMockHass(),
       states: {
@@ -215,13 +159,16 @@ describe('MealStateController', () => {
       callService: vi.fn(),
     };
 
-    controller = new MealStateController(mockHost, profile, hass, {
-      sensor: 'sensor.test',
-      helper: 'input_text.helper',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
+    controller = createMealStateController({
+      hass,
+      config: {
+        sensor: 'sensor.test',
+        helper: 'input_text.helper',
+        manufacturer: 'Test',
+        title: 'Test',
+        portions: 6,
+        transport_type: TransportType.SENSOR,
+      },
     });
     await controller.updateFromHass();
 
@@ -239,13 +186,16 @@ describe('MealStateController', () => {
       callService: vi.fn(),
     };
 
-    controller = new MealStateController(mockHost, profile, hass, {
-      sensor: 'sensor.test',
-      helper: 'input_text.helper',
-      manufacturer: 'Test',
-      title: 'Test',
-      portions: 6,
-      transport_type: TransportType.SENSOR,
+    controller = createMealStateController({
+      hass,
+      config: {
+        sensor: 'sensor.test',
+        helper: 'input_text.helper',
+        manufacturer: 'Test',
+        title: 'Test',
+        portions: 6,
+        transport_type: TransportType.SENSOR,
+      },
     });
 
     // Should throw on decode error from helper
@@ -254,18 +204,7 @@ describe('MealStateController', () => {
 
   describe('Subscription system', () => {
     it('notifies subscribers when meals change', () => {
-      controller = new MealStateController(
-        mockHost,
-        profile,
-        createMockHass(),
-        {
-          sensor: 'sensor.test',
-          manufacturer: 'Test',
-          title: 'Test',
-          portions: 6,
-          transport_type: TransportType.SENSOR,
-        },
-      );
+      controller = createMealStateController();
 
       const callback = vi.fn();
       const unsubscribe = controller.subscribe(callback);
@@ -278,18 +217,7 @@ describe('MealStateController', () => {
     });
 
     it('stops notifying after unsubscribe', () => {
-      controller = new MealStateController(
-        mockHost,
-        profile,
-        createMockHass(),
-        {
-          sensor: 'sensor.test',
-          manufacturer: 'Test',
-          title: 'Test',
-          portions: 6,
-          transport_type: TransportType.SENSOR,
-        },
-      );
+      controller = createMealStateController();
 
       const callback = vi.fn();
       const unsubscribe = controller.subscribe(callback);
@@ -303,18 +231,7 @@ describe('MealStateController', () => {
     });
 
     it('supports multiple subscribers', () => {
-      controller = new MealStateController(
-        mockHost,
-        profile,
-        createMockHass(),
-        {
-          sensor: 'sensor.test',
-          manufacturer: 'Test',
-          title: 'Test',
-          portions: 6,
-          transport_type: TransportType.SENSOR,
-        },
-      );
+      controller = createMealStateController();
 
       const callback1 = vi.fn();
       const callback2 = vi.fn();
@@ -328,18 +245,11 @@ describe('MealStateController', () => {
     });
 
     it('triggers host requestUpdate when meals change', () => {
-      controller = new MealStateController(
-        mockHost,
-        profile,
-        createMockHass(),
-        {
-          sensor: 'sensor.test',
-          manufacturer: 'Test',
-          title: 'Test',
-          portions: 6,
-          transport_type: TransportType.SENSOR,
-        },
-      );
+      const hass = createMockHassWithCallService();
+      controller = createMealStateController({
+        host: mockHost,
+        hass,
+      });
 
       const requestUpdate = vi.spyOn(mockHost, 'requestUpdate');
 
@@ -351,17 +261,17 @@ describe('MealStateController', () => {
 
   describe('MQTT transport', () => {
     it('publishes to MQTT when transport_type is mqtt', async () => {
-      const hass = {
-        ...createMockHass(),
-        callService: vi.fn(),
-      };
+      const hass = createMockHassWithCallService();
 
-      controller = new MealStateController(mockHost, profile, hass, {
-        sensor: 'sensor.feeder_kitchen',
-        manufacturer: 'Test',
-        title: 'Test',
-        portions: 6,
-        transport_type: TransportType.MQTT,
+      controller = createMealStateController({
+        hass,
+        config: {
+          sensor: 'sensor.feeder_kitchen',
+          manufacturer: 'Test',
+          title: 'Test',
+          portions: 6,
+          transport_type: TransportType.MQTT,
+        },
       });
 
       await controller.saveMeals([testMeals.breakfast]);
@@ -381,17 +291,15 @@ describe('MealStateController', () => {
       const aqaraProfile = profiles.find((p) => p.manufacturer === 'Aqara');
       if (!aqaraProfile) throw new Error('Aqara profile not found');
 
-      const hass = {
-        ...createMockHass(),
-        callService: vi.fn(),
-      };
+      const hass = createMockHassWithCallService();
 
-      controller = new MealStateController(mockHost, aqaraProfile, hass, {
-        sensor: 'sensor.feeder',
-        manufacturer: 'Aqara',
-        title: 'Test',
-        portions: 6,
-        transport_type: TransportType.MQTT,
+      controller = createMealStateController({
+        profile: aqaraProfile,
+        hass,
+        config: {
+          manufacturer: 'Aqara',
+          transport_type: TransportType.MQTT,
+        },
       });
 
       await controller.saveMeals([testMeals.breakfast]);
@@ -413,17 +321,10 @@ describe('MealStateController', () => {
     });
 
     it('uses sensor transport by default', async () => {
-      const hass = {
-        ...createMockHass(),
-        callService: vi.fn(),
-      };
+      const hass = createMockHassWithCallService();
 
-      controller = new MealStateController(mockHost, profile, hass, {
-        sensor: 'sensor.test',
-        manufacturer: 'Test',
-        title: 'Test',
-        portions: 6,
-        transport_type: TransportType.SENSOR,
+      controller = createMealStateController({
+        hass,
       });
 
       await controller.saveMeals([testMeals.breakfast]);
@@ -444,22 +345,11 @@ describe('MealStateController', () => {
 
   describe('updateFromHass', () => {
     it('does not trigger update when meals data has not changed', async () => {
-      const profile = getTestProfile();
-      const { getEncoder } = await import('../src/profiles/serializer');
-      const encoder = getEncoder(profile);
-      const encodedMeals = encoder.encode([testMeals.breakfast]);
-
+      const encodedMeals = encodeMealData(testMeals.breakfast);
       const hass = createMockHassWithSensor('sensor.test', encodedMeals);
-      const mockHost2 = createMockHost();
-      const requestUpdateSpy = vi.spyOn(mockHost2, 'requestUpdate');
+      const controller = createMealStateController({ hass });
 
-      controller = new MealStateController(mockHost2, profile, hass, {
-        sensor: 'sensor.test',
-        manufacturer: 'Test',
-        title: 'Test',
-        portions: 6,
-        transport_type: TransportType.SENSOR,
-      });
+      const requestUpdateSpy = vi.spyOn(controller['host'], 'requestUpdate');
 
       await controller.updateFromHass();
       const firstCallCount = requestUpdateSpy.mock.calls.length;
@@ -472,30 +362,18 @@ describe('MealStateController', () => {
     });
 
     it('triggers update when meals data has changed', async () => {
-      const profile = getTestProfile();
-      const { getEncoder } = await import('../src/profiles/serializer');
-      const encoder = getEncoder(profile);
-      const initialEncoded = encoder.encode([testMeals.breakfast]);
-
-      const hass = createMockHassWithSensor('sensor.test', initialEncoded);
-      const mockHost2 = createMockHost();
-
-      controller = new MealStateController(mockHost2, profile, hass, {
-        sensor: 'sensor.test',
-        manufacturer: 'Test',
-        title: 'Test',
-        portions: 6,
-        transport_type: TransportType.SENSOR,
-      });
+      const encodedMeals = encodeMealData(testMeals.breakfast);
+      const hass = createMockHassWithSensor('sensor.test', encodedMeals);
+      const controller = createMealStateController({ hass });
 
       await controller.updateFromHass();
       expect(controller.meals[0]).toMatchObject(testMeals.breakfast);
 
       // Change sensor data to different meal
-      const newEncoded = encoder.encode([testMeals.dinner]);
+      const newEncoded = encodeMealData(testMeals.dinner);
       hass.states['sensor.test'].state = newEncoded;
 
-      const requestUpdateSpy = vi.spyOn(mockHost2, 'requestUpdate');
+      const requestUpdateSpy = vi.spyOn(controller['host'], 'requestUpdate');
       const callCountBefore = requestUpdateSpy.mock.calls.length;
 
       await controller.updateFromHass();

@@ -28,6 +28,7 @@ export class ScheduleView extends LitElement {
   @state() private draftMeals: FeedingTime[] = [];
   @state() private editMeal: EditMealState | null = null;
   @state() private heading: string = localize('schedule_view.manage_schedules');
+  @state() private dataAvailable = true;
 
   private unsubscribe?: () => void;
 
@@ -35,6 +36,10 @@ export class ScheduleView extends LitElement {
     super.connectedCallback();
     // Initialize draft from current meals (sorted by time)
     this.draftMeals = this.sortMealsByTime([...this.mealState.meals]);
+
+    this.mealState.isDataAvailable().then((available) => {
+      this.dataAvailable = available;
+    });
 
     // Subscribe to meals changes from MealStateController
     this.unsubscribe = this.mealState.subscribe(() => {
@@ -178,16 +183,6 @@ export class ScheduleView extends LitElement {
   }
 
   /**
-   * Check if the sensor is available (not unknown or unavailable)
-   */
-  private isSensorAvailable(): boolean {
-    const sensorEntity = this.hass?.states?.[this.mealState.config.sensor];
-    if (!sensorEntity) return false;
-    const state = sensorEntity.state;
-    return state !== 'unknown' && state !== 'unavailable';
-  }
-
-  /**
    * Render meal form (for adding or editing)
    */
   private renderMealForm() {
@@ -258,14 +253,12 @@ export class ScheduleView extends LitElement {
     if (this.editMeal !== null) return '';
     if (!this.mealState.profile) return '';
 
-    const sensorAvailable = this.isSensorAvailable();
-
     return html`
       <message-banner
         .type=${'warning'}
         .title=${localize('schedule_view.sensor_unavailable')}
         .message=${localize('schedule_view.sensor_unavailable_message')}
-        ?hidden=${sensorAvailable}
+        ?hidden=${this.dataAvailable}
       ></message-banner>
       <div class="schedule-cards">
         ${this.draftMeals.length === 0
@@ -290,7 +283,7 @@ export class ScheduleView extends LitElement {
         slot="primaryAction"
         class="ha-primary"
         @click=${this.handleSave}
-        ?disabled=${!this.hasPendingChanges() || !sensorAvailable}
+        ?disabled=${!this.hasPendingChanges() || !this.dataAvailable}
       >
         ${localize('common.save')}
       </ha-button>

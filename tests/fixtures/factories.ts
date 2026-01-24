@@ -11,6 +11,9 @@ import type {
 } from '../../src/types';
 import { ProfileField, TransportType, EncodingType } from '../../src/types';
 import { ScheduleView } from '../../src/components/schedule-view';
+import { getEncoder } from '../../src/profiles/serializer';
+import { testMeals } from './data';
+import { MealPlanCard } from '../../src/main';
 
 export function createMockHass(options?: {
   sensor?: { id: string; state: string; attributes?: Record<string, unknown> };
@@ -90,10 +93,11 @@ export function createMealStateController(options?: {
   sensor?: string;
   profile?: DeviceProfile;
   hass?: HomeAssistant;
+  host?: ReactiveControllerHost;
   helper?: string;
   config?: Partial<MealPlanCardConfig>;
 }): MealStateController {
-  const host = createMockHost();
+  const host = options?.host ?? createMockHost();
   const config: MealPlanCardConfig = {
     sensor: options?.sensor ?? 'sensor.test',
     helper: options?.helper,
@@ -108,11 +112,43 @@ export function createMealStateController(options?: {
   const controller = new MealStateController(
     host,
     options?.profile ?? profiles[0],
-    options?.hass ?? createMockHass(),
+    () => options?.hass ?? createMockHass(),
     config,
   );
 
   return controller;
+}
+
+export function encodeMealData(meals: FeedingTime | FeedingTime[]): string {
+  const profile = getTestProfile(); // Get your test profile
+  const encoder = getEncoder(profile);
+
+  const mealList = Array.isArray(meals) ? meals : [meals];
+  return encoder.encode(mealList);
+}
+
+export async function createScheduleViewWithMeals(
+  meals: FeedingTime[] = [],
+  sensorId: string = 'sensor.test',
+): Promise<ScheduleView> {
+  const base64Data =
+    meals.length > 0
+      ? encodeMealData(meals)
+      : encodeMealData(testMeals.breakfast);
+
+  const hass = createMockHassWithSensor(sensorId, base64Data);
+  const controller = createMealStateController({ hass });
+
+  return createScheduleViewFixture(controller, {
+    hass,
+  }) as Promise<ScheduleView>;
+}
+
+export function createMockHassWithCallService() {
+  return {
+    ...createMockHass(),
+    callService: vi.fn(),
+  };
 }
 
 export function getTestProfile(): DeviceProfile {
@@ -170,10 +206,11 @@ export const createCardEditorFixture = (): Promise<HTMLElement> =>
 export const createMealPlanCardFixture = (
   config: MealPlanCardConfig,
   hass: HomeAssistant,
-): Promise<HTMLElement> =>
-  fixture<HTMLElement>(
+): Promise<MealPlanCard> => {
+  return fixture<MealPlanCard>(
     html`<mealplan-card .config=${config} .hass=${hass}></mealplan-card>`,
   );
+};
 
 export const createMealCardFixture = (
   meal: FeedingTime & { _idx?: number },
