@@ -18,7 +18,6 @@ export const log = {
     console.error(`[mealplan-card] ${message}`, ...args);
   },
 };
-
 enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -26,5 +25,9 @@ enum LogLevel {
   ERROR = 3,
 }
 
-// Set to INFO by default (only shows info, warn, error - hides debug)
-const LOG_LEVEL = LogLevel.INFO;
+// Check localStorage for debug flag, or use DEV mode
+const debugMode =
+  typeof window !== 'undefined' &&
+  localStorage.getItem('mealplan-debug') === 'true';
+const LOG_LEVEL =
+  import.meta.env.DEV || debugMode ? LogLevel.DEBUG : LogLevel.INFO;

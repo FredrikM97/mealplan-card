@@ -1,6 +1,6 @@
 export const VERSION = {
-  release: '555',
-  buildTime: '17:55:10',
+  release: 'dev',
+  buildTime: '17:59:20',
   buildDate: '2026-01-24',
 };
 
