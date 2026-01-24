@@ -1,7 +1,7 @@
 export const log = {
   debug: (message: string, ...args: unknown[]) => {
     if (LOG_LEVEL <= LogLevel.DEBUG) {
-      log.debug(`[mealplan-card] ${message}`, ...args);
+      console.debug(`[mealplan-card] ${message}`, ...args);
     }
   },
   info: (message: string, ...args: unknown[]) => {
