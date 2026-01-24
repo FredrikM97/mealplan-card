@@ -25,7 +25,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "types": ["vitest"],
+    "types": ["vite/client", "vitest"],
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,

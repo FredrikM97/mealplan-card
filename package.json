@@ -5,6 +5,7 @@
   "description": "MealPlan Card for Home Assistant",
   "type": "module",
   "scripts": {
+    "dev": "vite",
     "test": "vitest run --coverage --reporter=verbose",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",

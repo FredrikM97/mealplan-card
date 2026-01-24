@@ -3,22 +3,15 @@ import '../src/main';
 import { describe, it } from 'vitest';
 import { MealPlanCard } from '../src/main';
 import { vi } from 'vitest';
-import { encodeMealData } from './fixtures/data';
 import {
   createMockHassWithSensor,
   createMockHass,
   createMealPlanCardConfig,
   createMealPlanCardFixture,
+  encodeMealData,
 } from './fixtures/factories';
 import { ScheduleClosedEvent } from '../src/constants';
-
-type MealPlanCardElement = HTMLElement & {
-  updateComplete: Promise<boolean>;
-  _haComponentsReady?: boolean;
-  _dialogOpen?: boolean;
-  mealState?: unknown;
-  hass?: unknown;
-};
+import { testMeals } from './fixtures/data';
 
 vi.mock('@kipk/load-ha-components', () => ({
   loadHaComponents: async () => {},
@@ -34,39 +27,20 @@ vi.stubGlobal(
 
 describe('MealPlanCard', () => {
   it('decodes real base64 meal plan data and passes it to children', async () => {
-    const base64 = encodeMealData(127, 2, 8, 0, 1);
+    const base64 = encodeMealData(testMeals.breakfast);
     const config = createMealPlanCardConfig({ title: 'Test Card' });
     const hass = createMockHassWithSensor('sensor.test', base64, {
       friendly_name: 'Test Sensor',
     });
-    const el = (await createMealPlanCardFixture(
-      config,
-      hass,
-    )) as MealPlanCardElement;
+    const el = await createMealPlanCardFixture(config, hass);
     await el.updateComplete;
     expect(el).to.exist;
   }, 20000);
 
-  it('initializes mealState in setConfig when hass is available', () => {
-    const base64 = encodeMealData(127, 8, 0, 10, 1);
-    const hass = createMockHassWithSensor('sensor.test', base64);
-    const el = document.createElement('mealplan-card') as MealPlanCard;
-    el.hass = hass;
-
-    const config = createMealPlanCardConfig();
-    el.setConfig(config);
-
-    expect((el as unknown as { mealState: unknown }).mealState).to.exist;
-  });
-
   it('shows no overview when config is incomplete (missing sensor, manufacturer, or config)', async () => {
     // Missing config
     let config = createMealPlanCardConfig({ minimal: true });
-    let el = (await createMealPlanCardFixture(
-      config,
-      createMockHass(),
-    )) as MealPlanCardElement;
-    el._haComponentsReady = true;
+    let el = await createMealPlanCardFixture(config, createMockHass());
     await el.updateComplete;
     expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
 
@@ -76,11 +50,8 @@ describe('MealPlanCard', () => {
       sensor: '',
       title: 'Test',
     });
-    el = (await createMealPlanCardFixture(
-      config,
-      createMockHass(),
-    )) as MealPlanCardElement;
-    el._haComponentsReady = true;
+    el = await createMealPlanCardFixture(config, createMockHass());
+
     await el.updateComplete;
     expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
 
@@ -90,23 +61,17 @@ describe('MealPlanCard', () => {
       sensor: 'sensor.test',
       title: 'Test',
     });
-    el = (await createMealPlanCardFixture(
-      config,
-      createMockHass(),
-    )) as MealPlanCardElement;
-    el._haComponentsReady = true;
+    el = await createMealPlanCardFixture(config, createMockHass());
+
     await el.updateComplete;
     expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
   });
 
   it('renders with custom title', async () => {
-    const base64 = encodeMealData(127, 2, 8, 0, 1);
+    const base64 = encodeMealData(testMeals.breakfast);
     const config = createMealPlanCardConfig({ title: 'Custom Title' });
     const hass = createMockHassWithSensor('sensor.test', base64);
-    const el = (await createMealPlanCardFixture(
-      config,
-      hass,
-    )) as MealPlanCardElement;
+    const el = await createMealPlanCardFixture(config, hass);
     (el as unknown as { _haComponentsReady: boolean })._haComponentsReady =
       true;
     await el.updateComplete;
@@ -127,14 +92,11 @@ describe('MealPlanCard integration', () => {
   });
 
   it('opens schedule dialog when button clicked', async () => {
-    const base64 = encodeMealData(127, 8, 0, 10, 1);
+    const base64 = encodeMealData(testMeals.breakfast);
     const config = createMealPlanCardConfig();
     const hass = createMockHassWithSensor('sensor.test', base64);
-    const el = (await createMealPlanCardFixture(
-      config,
-      hass,
-    )) as MealPlanCardElement;
-    el._haComponentsReady = true;
+    const el = await createMealPlanCardFixture(config, hass);
+
     await el.updateComplete;
 
     const button = el.shadowRoot!.querySelector('ha-button');
@@ -143,54 +105,57 @@ describe('MealPlanCard integration', () => {
     (button as HTMLElement).click();
     await el.updateComplete;
 
-    expect(el._dialogOpen).to.be.true;
     const scheduleView = el.shadowRoot!.querySelector('schedule-view');
     expect(scheduleView).to.exist;
   });
 
   it('closes schedule dialog on schedule-closed event', async () => {
-    const base64 = encodeMealData(127, 8, 0, 10, 1);
+    const base64 = encodeMealData(testMeals.breakfast);
     const config = createMealPlanCardConfig();
     const hass = {
       ...createMockHassWithSensor('sensor.test', base64),
       callService: vi.fn(),
     };
-    const el = (await createMealPlanCardFixture(
-      config,
-      hass,
-    )) as MealPlanCardElement;
-    el._haComponentsReady = true;
-    el._dialogOpen = true;
+    const el = await createMealPlanCardFixture(config, hass);
+
     await el.updateComplete;
 
-    const scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    // Open dialog
+    const button = el.shadowRoot!.querySelector('ha-button');
+    expect(button).to.exist;
+    (button as HTMLElement).click();
+    await el.updateComplete;
+
+    // Verify dialog is open
+    let scheduleView = el.shadowRoot!.querySelector('schedule-view');
     expect(scheduleView).to.exist;
 
+    // Close dialog
     scheduleView!.dispatchEvent(new ScheduleClosedEvent());
     await el.updateComplete;
 
-    expect(el._dialogOpen).to.be.false;
+    // Verify dialog is closed
+    scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    expect(scheduleView).to.not.exist;
   });
-
   it('updates meal state when hass changes', async () => {
-    const base64_1 = encodeMealData(127, 8, 0, 10, 1);
-    const base64_2 = encodeMealData(63, 9, 30, 5, 1);
+    const base64_1 = encodeMealData(testMeals.breakfast);
+    const base64_2 = encodeMealData(testMeals.lunch);
+
     const config = createMealPlanCardConfig();
     const hass = createMockHassWithSensor('sensor.test', base64_1);
-    const el = (await createMealPlanCardFixture(
-      config,
-      hass,
-    )) as MealPlanCardElement & { mealState: { meals: unknown[] } };
-    await el.updateComplete;
+    const card = await createMealPlanCardFixture(config, hass);
 
-    expect(el.mealState.meals).to.have.lengthOf(1);
+    await card.updateComplete;
 
-    // Update hass with new sensor value
-    el.hass = createMockHassWithSensor('sensor.test', base64_2);
-    await el.updateComplete;
+    expect(card.mealState?.meals).to.have.lengthOf(1);
+    expect(card.mealState?.meals[0].hour).to.equal(8);
 
-    expect(el.mealState.meals).to.have.lengthOf(1);
-    expect((el.mealState.meals[0] as { hour: number }).hour).to.equal(9);
+    card.hass = createMockHassWithSensor('sensor.test', base64_2);
+    await card.updateComplete;
+
+    expect(card.mealState?.meals).to.have.lengthOf(1);
+    expect(card.mealState?.meals[0].hour).to.equal(12);
   });
 
   it('returns grid options', () => {

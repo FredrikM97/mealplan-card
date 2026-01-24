@@ -64,14 +64,44 @@ export enum Day {
   Sunday = 6,
 }
 
-export interface MealPlanCardConfig {
-  sensor: string;
+export interface CardConfig {
   title: string;
-  helper?: string;
   portions?: number;
   manufacturer?: string;
   model?: string;
   transport_type: TransportType;
+}
+
+/**
+ * Sensor-based config - reads/writes from Home Assistant sensor entity
+ */
+export interface SensorConfig extends CardConfig {
+  transport_type: TransportType.SENSOR;
+  sensor: string;
+  helper?: string;
+}
+
+/**
+ * MQTT-based config - reads from MQTT sensor, publishes to MQTT topic
+ */
+export interface MqttConfig extends CardConfig {
+  transport_type: TransportType.MQTT;
+  sensor: string;
+  helper?: string;
+  deviceName?: string;
+}
+
+export type MealPlanCardConfig = SensorConfig | MqttConfig;
+
+export function isValidCardConfig(
+  config: MealPlanCardConfig | undefined | null,
+): config is MealPlanCardConfig {
+  return (
+    config !== undefined &&
+    config !== null &&
+    'sensor' in config &&
+    !!config.sensor
+  );
 }
 
 export enum ProfileField {
@@ -86,9 +116,25 @@ export enum ProfileField {
 }
 
 export enum TransportType {
-  SENSOR = 'sensor', // Write via sensor.set_value (default)
-  MQTT = 'mqtt', // Write via mqtt.publish
+  SENSOR = 'sensor',
+  MQTT = 'mqtt',
 }
+
+/**
+ * Storage/transport adapter interface for decoupled read/write
+ */
+export interface StorageAdapter {
+  /**
+   * Read meal plan data
+   */
+  read(): Promise<string | null>;
+  /**
+   * Write meal plan data
+   */
+  write(data: string): Promise<void>;
+}
+
+export type HasGetter = () => HomeAssistant;
 
 /**
  * Device profile with manufacturer, models, and encoding configuration
