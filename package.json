@@ -9,8 +9,7 @@
     "test": "vitest run --coverage --reporter=verbose",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "build": "npm run version:update && vite build",
-    "version:update": "node scripts/update-version.js",
+    "build": "vite build",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint . && prettier --check .",
     "lint:fix": "npx tsc --noEmit && eslint --fix . && prettier --write ."

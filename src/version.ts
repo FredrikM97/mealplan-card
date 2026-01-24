@@ -1,10 +1,11 @@
 export const VERSION = {
   release: 'dev',
-  buildTime: '17:59:20',
-  buildDate: '2026-01-24',
 };
 
 export function getVersionString(): string {
+  const now = new Date();
+  const buildDate = now.toISOString().split('T')[0];
+  const buildTime = now.toTimeString().split(' ')[0];
   const prefix = VERSION.release === 'dev' ? '' : 'v';
-  return `${prefix}${VERSION.release} (${VERSION.buildDate} ${VERSION.buildTime})`;
+  return `${prefix}${VERSION.release} (${buildDate} ${buildTime})`;
 }

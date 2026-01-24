@@ -17,6 +17,7 @@ export class MealPlanCard extends LitElement {
   @property({ type: Object }) config!: MealPlanCardConfig;
   @state() public mealState?: MealStateController;
   @state() private _dialogOpen = false;
+  private static configEditing = false;
 
   static get styles() {
     return css`
@@ -53,6 +54,11 @@ export class MealPlanCard extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
+    log.info(`MealPlan Card ${getVersionString()}`);
+
+    // Clear config editing flag when card reconnects
+    MealPlanCard.configEditing = false;
+
     await setLanguage(this.hass?.language);
 
     // Initialize meal state controller (hass is now available)
@@ -75,16 +81,15 @@ export class MealPlanCard extends LitElement {
 
     if (changedProps.has('hass') && this.mealState) {
       setLanguage(this.hass?.language);
-
-      this.mealState.updateFromHass().catch((error) => {
-        log.error('[MealPlanCard] Failed to update from hass:', error);
-      });
+      if (MealPlanCard.configEditing === false) {
+        this.mealState.updateFromHass().catch((error) => {
+          log.error('[MealPlanCard] Failed to update from hass:', error);
+        });
+      }
     }
   }
 
   render() {
-    log.info(`MealPlan Card ${getVersionString()}`);
-
     return html`
       <ha-card header="${this.config.title}">
         ${this.renderContent()} ${this.renderScheduleDialog()}
@@ -138,6 +143,8 @@ export class MealPlanCard extends LitElement {
   }
 
   static getConfigForm(): ReturnType<typeof generateConfigFormSchema> {
+    // Set flag when config editor opens
+    MealPlanCard.configEditing = true;
     return generateConfigFormSchema();
   }
 
