@@ -7,7 +7,6 @@ import { TransportType } from '../src/types';
 import {
   createMockHass,
   createMockHost,
-  getTestProfile,
   createMockHassWithSensor,
   encodeMealData,
   createMealStateController,
@@ -17,7 +16,6 @@ import {
 describe('MealStateController', () => {
   let mockHost: ReactiveControllerHost & EventTarget;
   let controller: MealStateController;
-  const profile = getTestProfile();
 
   beforeEach(() => {
     mockHost = createMockHost();
