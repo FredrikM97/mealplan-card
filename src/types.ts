@@ -134,6 +134,8 @@ export interface StorageAdapter {
   write(data: string): Promise<void>;
 }
 
+export type HasGetter = () => HomeAssistant;
+
 /**
  * Device profile with manufacturer, models, and encoding configuration
  */

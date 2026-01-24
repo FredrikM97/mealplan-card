@@ -4,8 +4,8 @@
  */
 
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
-import { FeedingTime, DeviceProfile, HomeAssistant } from './types';
-import type { MealPlanCardConfig, StorageAdapter } from './types';
+import { FeedingTime, DeviceProfile } from './types';
+import type { HasGetter, MealPlanCardConfig, StorageAdapter } from './types';
 import { createStorageAdapter } from './adapters/storage-adapter';
 import { getEncoder, EncoderBase } from './profiles/serializer';
 import { log } from './logger';
@@ -15,7 +15,7 @@ export class MealStateController implements ReactiveController {
   private _meals: FeedingTime[] = [];
   private subscribers = new Set<() => void>();
 
-  hass: () => HomeAssistant;
+  hass: HasGetter;
   profile: DeviceProfile;
   config: MealPlanCardConfig;
   private encoder: EncoderBase;
@@ -34,7 +34,7 @@ export class MealStateController implements ReactiveController {
   constructor(
     private host: ReactiveControllerHost,
     profile: DeviceProfile,
-    hass: () => HomeAssistant,
+    hass: HasGetter,
     config: MealPlanCardConfig,
   ) {
     this.host.addController(this);
@@ -45,7 +45,7 @@ export class MealStateController implements ReactiveController {
     this.adapter = createStorageAdapter(hass, config);
 
     // Load initial data after construction
-    if (this.hass) {
+    if (this.hass()) {
       this.updateFromHass().catch((error) => {
         log.error('Failed to load initial data:', error);
       });
@@ -94,14 +94,6 @@ export class MealStateController implements ReactiveController {
       // Only update if meals have actually changed
       if (!areMealsEqual(decodedMeals, this.meals)) {
         this.meals = newMeals;
-        // Log source of update
-        const source =
-          (sensorValue && 'sensor') || (helperValue && 'helper') || 'none';
-        log.debug('Meals updated from HA', {
-          source,
-          count: newMeals.length,
-          meals: newMeals,
-        });
       } else {
         log.debug('Skipping update - meals unchanged', this.meals);
       }
@@ -115,7 +107,6 @@ export class MealStateController implements ReactiveController {
     const encoded = this.encoder.encode(meals);
     await this.adapter.write(encoded);
     this.meals = [...meals];
-    await this.writeValue(this.encoder.encode(meals));
   }
 
   public async isDataAvailable(): Promise<boolean> {

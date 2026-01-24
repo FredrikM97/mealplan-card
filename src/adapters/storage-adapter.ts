@@ -3,6 +3,7 @@ import {
   HomeAssistant,
   TransportType,
   MealPlanCardConfig,
+  HasGetter,
 } from '../types';
 
 /**
@@ -24,9 +25,9 @@ function isValidState(value: unknown): value is string {
 }
 
 abstract class HassAdapterImpl {
-  protected getHass: () => HomeAssistant;
+  protected getHass: HasGetter;
 
-  constructor(hass: () => HomeAssistant) {
+  constructor(hass: HasGetter) {
     if (typeof hass !== 'function') {
       throw new Error('hass must be a function');
     }
@@ -40,7 +41,7 @@ abstract class HassAdapterImpl {
  */
 export class SensorAdapter extends HassAdapterImpl implements StorageAdapter {
   constructor(
-    hass: () => HomeAssistant,
+    hass: HasGetter,
     private sensorId: string,
     private helperId: string,
   ) {
@@ -88,7 +89,7 @@ export class SensorAdapter extends HassAdapterImpl implements StorageAdapter {
 export class MqttAdapter extends HassAdapterImpl implements StorageAdapter {
   private deviceName: string;
   constructor(
-    hass: () => HomeAssistant,
+    hass: HasGetter,
     private sensorId: string,
     private helperId?: string,
   ) {
@@ -128,7 +129,7 @@ export class MqttAdapter extends HassAdapterImpl implements StorageAdapter {
  * Create storage adapter based on config
  */
 export function createStorageAdapter(
-  hass: () => HomeAssistant,
+  hass: HasGetter,
   config: MealPlanCardConfig,
 ): StorageAdapter {
   const transportType = config.transport_type as TransportType;
