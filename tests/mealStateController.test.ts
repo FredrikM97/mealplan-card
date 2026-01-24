@@ -280,7 +280,7 @@ describe('MealStateController', () => {
         'mqtt',
         'publish',
         expect.objectContaining({
-          topic: 'zigbee2mqtt/feeder/set',
+          topic: 'zigbee2mqtt/feeder_kitchen/set',
           payload: expect.any(String),
         }),
       );

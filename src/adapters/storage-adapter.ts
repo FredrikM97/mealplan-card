@@ -86,13 +86,19 @@ export class SensorAdapter extends HassAdapterImpl implements StorageAdapter {
  * Reads from MQTT sensor entity state, publishes to MQTT topic
  */
 export class MqttAdapter extends HassAdapterImpl implements StorageAdapter {
+  private deviceName: string;
   constructor(
     hass: () => HomeAssistant,
-    private deviceName: string,
     private sensorId: string,
     private helperId?: string,
   ) {
     super(hass);
+    this.deviceName = this.sensorId.split('.')[1] || '';
+    if (!this.deviceName) {
+      throw new Error(
+        `Invalid sensor entity ID for MQTT: ${this.sensorId}. Expected format: sensor.device_name`,
+      );
+    }
   }
 
   async read(): Promise<string | null> {
@@ -133,8 +139,7 @@ export function createStorageAdapter(
     case TransportType.SENSOR:
       return new SensorAdapter(hass, sensor, helper);
     case TransportType.MQTT: {
-      const mqttDeviceName = sensor.split('.')[1]?.split('_')[0] || '';
-      return new MqttAdapter(hass, mqttDeviceName, sensor, helper);
+      return new MqttAdapter(hass, sensor, helper);
     }
     default:
       throw new Error(`Unknown transport type: ${transportType}`);
