@@ -14,10 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # Build
+      # Extract version from tag
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      # Build with version
       - name: Build the file
         run: |
           npm install
+          npm run version:update -- ${{ steps.version.outputs.version }}
           npm run build
 
       # Upload build file to the releas as an asset.

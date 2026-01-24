@@ -9,6 +9,7 @@ import { generateConfigFormSchema } from './config-form';
 import './components/overview';
 import './components/schedule-view';
 import { log } from './logger';
+import { getVersionString } from './version';
 
 @customElement('mealplan-card')
 export class MealPlanCard extends LitElement {
@@ -82,6 +83,8 @@ export class MealPlanCard extends LitElement {
   }
 
   render() {
+    log.info(`MealPlan Card ${getVersionString()}`);
+
     return html`
       <ha-card header="${this.config.title}">
         ${this.renderContent()} ${this.renderScheduleDialog()}
