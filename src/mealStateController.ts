@@ -8,6 +8,7 @@ import { FeedingTime, DeviceProfile, HomeAssistant } from './types';
 import type { MealPlanCardConfig, StorageAdapter } from './types';
 import { createStorageAdapter } from './adapters/storage-adapter';
 import { getEncoder, EncoderBase } from './profiles/serializer';
+import { log } from './logger';
 import { areMealsEqual } from './utils';
 
 export class MealStateController implements ReactiveController {
@@ -26,6 +27,7 @@ export class MealStateController implements ReactiveController {
 
   set meals(value: FeedingTime[]) {
     this._meals = value;
+    log.debug('Notify subscribers of meals set to:', value);
     this.notifySubscribers();
   }
 
@@ -45,14 +47,11 @@ export class MealStateController implements ReactiveController {
     // Load initial data after construction
     if (this.hass) {
       this.updateFromHass().catch((error) => {
-        console.error(
-          '[MealStateController] Failed to load initial data:',
-          error,
-        );
+        log.error('Failed to load initial data:', error);
       });
     } else {
-      console.warn(
-        '[MealStateController] Initialized without hass object. Data loading will be skipped.',
+      log.warn(
+        'Initialized without hass object. Data loading will be skipped.',
       );
     }
   }
@@ -95,10 +94,16 @@ export class MealStateController implements ReactiveController {
       // Only update if meals have actually changed
       if (!areMealsEqual(decodedMeals, this.meals)) {
         this.meals = newMeals;
+        // Log source of update
+        const source =
+          (sensorValue && 'sensor') || (helperValue && 'helper') || 'none';
+        log.debug('Meals updated from HA', {
+          source,
+          count: newMeals.length,
+          meals: newMeals,
+        });
       } else {
-        console.debug(
-          '[MealStateController] Skipping update - meals unchanged',
-        );
+        log.debug('Skipping update - meals unchanged', this.meals);
       }
     }
   }
@@ -110,6 +115,7 @@ export class MealStateController implements ReactiveController {
     const encoded = this.encoder.encode(meals);
     await this.adapter.write(encoded);
     this.meals = [...meals];
+    await this.writeValue(this.encoder.encode(meals));
   }
 
   public async isDataAvailable(): Promise<boolean> {
