@@ -10,6 +10,7 @@ import type {
   HomeAssistant,
 } from '../../src/types';
 import { ProfileField, TransportType, EncodingType } from '../../src/types';
+import { ScheduleView } from '../../src/components/schedule-view';
 
 export function createMockHass(options?: {
   sensor?: { id: string; state: string; attributes?: Record<string, unknown> };
@@ -85,16 +86,13 @@ export function createMockProfile(
   };
 }
 
-export function createMealStateController(
-  meals: FeedingTime[] = [],
-  options?: {
-    sensor?: string;
-    profile?: DeviceProfile;
-    hass?: HomeAssistant;
-    helper?: string;
-    config?: Partial<MealPlanCardConfig>;
-  },
-): MealStateController {
+export function createMealStateController(options?: {
+  sensor?: string;
+  profile?: DeviceProfile;
+  hass?: HomeAssistant;
+  helper?: string;
+  config?: Partial<MealPlanCardConfig>;
+}): MealStateController {
   const host = createMockHost();
   const config: MealPlanCardConfig = {
     sensor: options?.sensor ?? 'sensor.test',
@@ -103,19 +101,16 @@ export function createMealStateController(
     title: 'Test Card',
     portions: 6,
     transport_type: TransportType.SENSOR,
-    ...options?.config,
-  };
+    ...(options?.config as Partial<MealPlanCardConfig>),
+  } as MealPlanCardConfig;
 
+  console.log('Creating MealStateController with config:', config);
   const controller = new MealStateController(
     host,
     options?.profile ?? profiles[0],
     options?.hass ?? createMockHass(),
     config,
   );
-
-  if (meals.length > 0) {
-    controller.meals = meals;
-  }
 
   return controller;
 }
@@ -195,22 +190,23 @@ export const createMealCardFixture = (
   `);
 };
 
-export const createScheduleViewFixture = (
-  mealState: MealStateController,
+export const createScheduleViewFixture = async (
+  controller: MealStateController,
   options?: {
     hass?: HomeAssistant;
     profile?: DeviceProfile;
     meals?: FeedingTime[];
   },
-): Promise<HTMLElement> =>
-  fixture(html`
+): Promise<ScheduleView> => {
+  const el = await fixture<ScheduleView>(html`
     <schedule-view
-      .mealState=${mealState}
+      .mealState=${controller}
       .hass=${options?.hass ?? {}}
       .profile=${options?.profile}
-      .meals=${options?.meals}
     ></schedule-view>
   `);
+  return el;
+};
 
 export const createEditDialogFixture = (
   options: { open?: boolean; profile?: DeviceProfile; meal?: FeedingTime } = {},

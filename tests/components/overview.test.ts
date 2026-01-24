@@ -12,10 +12,11 @@ import { createMealStateController } from '../fixtures/factories';
 describe('Overview Component', () => {
   describe('Component Rendering', () => {
     it('displays all overview chips with meal data', async () => {
-      const mealState = createMealStateController([testMeals.breakfast]);
+      const controller = createMealStateController();
+      controller.meals = [testMeals.breakfast];
 
       const component = await fixture<HTMLElement>(
-        html`<meal-overview .mealState=${mealState}></meal-overview>`,
+        html`<meal-overview .mealState=${controller}></meal-overview>`,
       );
 
       await (component as unknown as { updateComplete: Promise<boolean> })
@@ -29,12 +30,12 @@ describe('Overview Component', () => {
     });
 
     it('multiplies meal portions by configured portion multiplier', async () => {
-      const mealState = createMealStateController([testMeals.breakfast]);
-
+      const controller = createMealStateController();
+      controller.meals = [testMeals.breakfast];
       // 10g meal × 3 portions = 30g total
       const component = await fixture<HTMLElement>(
         html`<meal-overview
-          .meals=${mealState.meals}
+          .meals=${controller.meals}
           .portions=${3}
         ></meal-overview>`,
       );
