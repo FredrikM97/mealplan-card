@@ -106,11 +106,16 @@ export class ScheduleView extends LitElement {
       this.draftMeals.map((m, i) => (i === index ? meal : m)),
     );
   }
-
+  public getMeals(): FeedingTime[] {
+    return this.draftMeals;
+  }
+  public getEditMeals(): EditMealState | null {
+    return this.editMeal;
+  }
   /**
    * Unified handler for meal actions from meal-card
    */
-  handleMealAction(
+  public handleMealAction(
     action: 'update' | 'delete' | 'edit',
     index: number,
     meal: FeedingTime,
@@ -128,28 +133,28 @@ export class ScheduleView extends LitElement {
   /**
    * Add new meal to draft
    */
-  private addMeal(meal: FeedingTime): void {
+  public addMeal(meal: FeedingTime): void {
     this.draftMeals = this.sortMealsByTime([...this.draftMeals, meal]);
   }
 
-  private handleOpenAdd() {
+  public handleOpenAdd() {
     this.heading = localize('common.add_meal');
     this.editMeal = {
       meal: { hour: 12, minute: 0, portion: 1, days: 127, enabled: 1 },
     } satisfies EditMealState;
   }
 
-  private async handleCancel() {
+  public async handleCancel() {
     this.resetDraft();
     this.dispatchEvent(new ScheduleClosedEvent());
   }
 
-  private async handleSave() {
+  public async handleSave() {
     await this.mealState.saveMeals(this.draftMeals);
     this.dispatchEvent(new ScheduleClosedEvent());
   }
 
-  private handleEditSave(e: CustomEvent<EditMealState>) {
+  public handleEditSave(e: CustomEvent<EditMealState>) {
     const { meal, index } = e.detail;
 
     if (index !== undefined && index >= 0) {
