@@ -10,6 +10,7 @@ import { localize } from '../locales/localize';
 import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
 import { SaveEvent } from '../constants';
 import { formatTime, hasProfileField } from '../utils';
+import { log } from '../logger';
 
 /**
  * Validate that hour and minute are valid time values
@@ -153,11 +154,11 @@ export class MealEditDialog extends LitElement {
 
   private validate(entry: Partial<FeedingTime>): boolean {
     if (!isValidTime(entry.hour, entry.minute)) {
-      console.warn('Invalid time:', entry.hour, entry.minute);
+      log.warn('Invalid time:', entry.hour, entry.minute);
       return false;
     }
     if (!entry.portion || entry.portion < 1) {
-      console.warn('Invalid portion:', entry.portion);
+      log.warn('Invalid portion:', entry.portion);
       return false;
     }
     return true;

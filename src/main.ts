@@ -8,6 +8,7 @@ import { getProfileWithTransformer } from './profiles/profiles';
 import { generateConfigFormSchema } from './config-form';
 import './components/overview';
 import './components/schedule-view';
+import { log } from './logger';
 
 @customElement('mealplan-card')
 export class MealPlanCard extends LitElement {
@@ -75,7 +76,7 @@ export class MealPlanCard extends LitElement {
       setLanguage(this.hass?.language);
 
       this.mealState.updateFromHass().catch((error) => {
-        console.error('[MealPlanCard] Failed to update from hass:', error);
+        log.error('[MealPlanCard] Failed to update from hass:', error);
       });
     }
   }

@@ -1,15 +1,30 @@
-const makeLogger = (prefix: string) => {
-  const withPrefix =
-    (fn: (...args: unknown[]) => void) =>
-    (...args: unknown[]) =>
-      fn(prefix, ...args);
-
-  return {
-    debug: withPrefix(console.debug),
-    info: withPrefix(console.info),
-    warn: withPrefix(console.warn),
-    error: withPrefix(console.error),
-  } as const;
+export const log = {
+  debug: (message: string, ...args: unknown[]) => {
+    if (LOG_LEVEL <= LogLevel.DEBUG) {
+      log.debug(`[mealplan-card] ${message}`, ...args);
+    }
+  },
+  info: (message: string, ...args: unknown[]) => {
+    if (LOG_LEVEL <= LogLevel.INFO) {
+      console.info(`[mealplan-card] ${message}`, ...args);
+    }
+  },
+  warn: (message: string, ...args: unknown[]) => {
+    if (LOG_LEVEL <= LogLevel.WARN) {
+      console.warn(`[mealplan-card] ${message}`, ...args);
+    }
+  },
+  error: (message: string, ...args: unknown[]) => {
+    console.error(`[mealplan-card] ${message}`, ...args);
+  },
 };
 
-export const log = makeLogger('[MealPlanCard]');
+enum LogLevel {
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
+}
+
+// Set to INFO by default (only shows info, warn, error - hides debug)
+const LOG_LEVEL = LogLevel.INFO;

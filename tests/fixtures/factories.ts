@@ -14,6 +14,7 @@ import { ScheduleView } from '../../src/components/schedule-view';
 import { getEncoder } from '../../src/profiles/serializer';
 import { testMeals } from './data';
 import { MealPlanCard } from '../../src/main';
+import { log } from '../../src/logger';
 
 export function createMockHass(options?: {
   sensor?: { id: string; state: string; attributes?: Record<string, unknown> };
@@ -108,7 +109,7 @@ export function createMealStateController(options?: {
     ...(options?.config as Partial<MealPlanCardConfig>),
   } as MealPlanCardConfig;
 
-  console.log('Creating MealStateController with config:', config);
+  log.info('Creating MealStateController with config:', config);
   const controller = new MealStateController(
     host,
     options?.profile ?? profiles[0],

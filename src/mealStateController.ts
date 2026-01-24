@@ -115,14 +115,14 @@ export class MealStateController implements ReactiveController {
       const available = value !== null && value !== undefined;
 
       if (!available) {
-        console.warn(
+        log.warn(
           '[MealStateController] Data not available - adapter returned empty value',
         );
       }
 
       return available;
     } catch (error) {
-      console.warn(
+      log.warn(
         '[MealStateController] Failed to read data from adapter:',
         error,
       );
