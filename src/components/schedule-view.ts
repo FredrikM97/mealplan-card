@@ -38,7 +38,7 @@ export class ScheduleView extends LitElement {
 
     // Subscribe to meals changes from MealStateController
     this.unsubscribe = this.mealState.subscribe(() => {
-      this.resetDraft();
+      this.syncMealsWithController();
     });
   }
 
@@ -97,7 +97,7 @@ export class ScheduleView extends LitElement {
   /**
    * Reset draft to match controller's saved meals
    */
-  private resetDraft(): void {
+  private syncMealsWithController(): void {
     this.draftMeals = this.sortMealsByTime([...this.mealState.meals]);
   }
 
@@ -145,7 +145,7 @@ export class ScheduleView extends LitElement {
   }
 
   public async handleCancel() {
-    this.resetDraft();
+    this.syncMealsWithController();
     this.dispatchEvent(new ScheduleClosedEvent());
   }
 
