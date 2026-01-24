@@ -12,6 +12,7 @@ import {
   TransportType,
 } from './types';
 import { getEncoder, EncoderBase } from './profiles/serializer';
+import { log } from './logger';
 import { areMealsEqual } from './utils';
 
 export class MealStateController implements ReactiveController {
@@ -25,6 +26,7 @@ export class MealStateController implements ReactiveController {
 
   set meals(value: FeedingTime[]) {
     this._meals = value;
+    log.debug('Notify subscribers of meals set to:', value);
     this.notifySubscribers();
   }
 
@@ -55,14 +57,11 @@ export class MealStateController implements ReactiveController {
     // Load initial data after construction
     if (this.hass) {
       this.updateFromHass().catch((error) => {
-        console.error(
-          '[MealStateController] Failed to load initial data:',
-          error,
-        );
+        log.error('Failed to load initial data:', error);
       });
     } else {
-      console.warn(
-        '[MealStateController] Initialized without hass object. Data loading will be skipped.',
+      log.warn(
+        'Initialized without hass object. Data loading will be skipped.',
       );
     }
   }
@@ -89,12 +88,13 @@ export class MealStateController implements ReactiveController {
    * Check if entity state is valid (not empty, unknown, or unavailable)
    */
   private isValidState(value: unknown): value is string {
-    return (
+    const valid =
       typeof value === 'string' &&
-      value.trim() !== '' &&
       value !== 'unknown' &&
-      value !== 'unavailable'
-    );
+      value !== 'unavailable' &&
+      value.trim() !== '';
+
+    return valid;
   }
 
   /**
@@ -103,7 +103,18 @@ export class MealStateController implements ReactiveController {
   private getEntityValue(entityId: string): string | null {
     const state = this.hass.states?.[entityId];
     const value = state?.state;
-    return this.isValidState(value) ? value : null;
+
+    const valid = this.isValidState(value);
+    if (!valid) {
+      log.debug(
+        'Ignoring invalid state value:',
+        value,
+        'for entity:',
+        entityId,
+      );
+      return null;
+    }
+    return value;
   }
 
   /**
@@ -113,9 +124,16 @@ export class MealStateController implements ReactiveController {
     entityId: string | undefined,
     value: string,
   ): Promise<void> {
-    if (!entityId) return;
+    if (!entityId) {
+      log.debug('No entity ID provided for setting value.');
+      return;
+    }
     const domain = entityId.split('.')[0];
-    if (!domain) return;
+    if (!domain) {
+      log.debug('Domain could not be determined from entity ID:', entityId);
+      return;
+    }
+    log.debug('Setting entity', entityId, 'to value:', value);
     await this.hass.callService(domain, 'set_value', {
       entity_id: entityId,
       value,
@@ -147,10 +165,16 @@ export class MealStateController implements ReactiveController {
       // Only update if meals have actually changed
       if (!areMealsEqual(decodedMeals, this.meals)) {
         this.meals = newMeals;
+        // Log source of update
+        const source =
+          (sensorValue && 'sensor') || (helperValue && 'helper') || 'none';
+        log.debug('Meals updated from HA', {
+          source,
+          count: newMeals.length,
+          meals: newMeals,
+        });
       } else {
-        console.debug(
-          '[MealStateController] Skipping update - meals unchanged',
-        );
+        log.debug('Skipping update - meals unchanged', this.meals);
       }
     }
   }
@@ -159,8 +183,9 @@ export class MealStateController implements ReactiveController {
    * Save meals to sensor and update local state
    */
   async saveMeals(meals: FeedingTime[]): Promise<void> {
-    await this.writeValue(this.encoder.encode(meals));
+    log.debug('Saving meals:', meals);
     this.meals = [...meals];
+    await this.writeValue(this.encoder.encode(meals));
   }
 
   /**
@@ -183,6 +208,7 @@ export class MealStateController implements ReactiveController {
     const parts = this.config.sensor.split('.');
     const deviceName = parts[1]?.split('_')[0] || parts[1];
     const topic = `zigbee2mqtt/${deviceName}/set`;
+    log.debug('Publishing MQTT to topic', topic, 'with value:', value);
     await this.hass.callService('mqtt', 'publish', {
       topic,
       payload: value,
