@@ -54,7 +54,12 @@
     "helper_label": "Helper Entity (Optional)",
     "helper_helper": "This input_text helper acts as a backup storage for your meal plan schedule. When the sensor is unavailable, the card will restore the schedule from this helper to prevent data loss.",
     "transport_label": "Transport Type",
-    "transport_helper": "How to write data: Sensor (via set_value service) or MQTT (publish to zigbee2mqtt topic)"
+    "transport_helper": "How to write data: Sensor (via set_value service) or MQTT (publish to zigbee2mqtt topic)",
+    "read_action_label": "Read Action",
+    "write_action_label": "Write Action",
+    "dp_code_label": "Data Point Code",
+    "device_id_label": "Device ID",
+    "incomplete_configuration": "Incomplete Configuration"
   },
   "overview": {
     "schedules": "Schedules",

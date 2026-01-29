@@ -91,18 +91,15 @@ export interface MqttConfig extends CardConfig {
   deviceName?: string;
 }
 
-export type MealPlanCardConfig = SensorConfig | MqttConfig;
-
-export function isValidCardConfig(
-  config: MealPlanCardConfig | undefined | null,
-): config is MealPlanCardConfig {
-  return (
-    config !== undefined &&
-    config !== null &&
-    'sensor' in config &&
-    !!config.sensor
-  );
+export interface ServiceConfig extends CardConfig {
+  transport_type: TransportType.SERVICE;
+  device_id: string;
+  read_action: string;
+  write_action: string;
+  dp_code: string;
 }
+
+export type MealPlanCardConfig = SensorConfig | MqttConfig | ServiceConfig;
 
 export enum ProfileField {
   TIME = 'time',
@@ -118,6 +115,7 @@ export enum ProfileField {
 export enum TransportType {
   SENSOR = 'sensor',
   MQTT = 'mqtt',
+  SERVICE = 'service',
 }
 
 /**
@@ -162,6 +160,18 @@ export interface DeviceProfile {
  * Home Assistant instance
  */
 export interface HomeAssistant {
+  callWS<T>(request: {
+    type: 'call_service';
+    domain: string;
+    service: string;
+    service_data: Record<string, unknown>;
+    target?: {
+      entity_id?: string | string[];
+      device_id?: string | string[];
+      area_id?: string | string[];
+    };
+    return_response: boolean;
+  }): Promise<T>;
   states: Record<
     string,
     { state: string; attributes: Record<string, unknown> }
@@ -170,8 +180,13 @@ export interface HomeAssistant {
     domain: string,
     service: string,
     data?: Record<string, unknown>,
-  ) => Promise<void>;
+    return_response?: boolean,
+  ) => Promise<string>;
   language: string;
+  services: Record<
+    string,
+    Record<string, { description: string; fields: Record<string, unknown> }>
+  >;
 }
 
 /**
