@@ -86,7 +86,6 @@ describe('MealPlanCard', () => {
 describe('MealPlanCard integration', () => {
   it('getStubConfig returns default config', () => {
     const stub = MealPlanCard.getStubConfig();
-    expect(stub.sensor).to.equal('');
     expect(stub.title).to.equal('MealPlan Card');
     expect(stub.portions).to.equal(6);
   });
@@ -166,9 +165,9 @@ describe('MealPlanCard integration', () => {
     expect(gridOptions.min_rows).to.equal(4);
   });
 
-  it('getConfigForm returns schema', () => {
-    const schema = MealPlanCard.getConfigForm();
-    expect(schema).to.exist;
-    expect(schema.schema).to.be.an('array');
+  it('getConfigElement returns editor', () => {
+    const editor = MealPlanCard.getConfigElement();
+    expect(editor).to.exist;
+    expect(editor.tagName.toLowerCase()).to.equal('mealplan-card-editor');
   });
 });

@@ -4,7 +4,6 @@ import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { profiles } from './profiles/profiles';
 import { localize } from './locales/localize';
-import { log } from './logger';
 
 @customElement('mealplan-card-editor')
 export class MealPlanCardEditor extends LitElement {
