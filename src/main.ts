@@ -3,13 +3,13 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { localize, setLanguage } from './locales/localize';
 import { MealStateController } from './mealStateController';
 import type { HomeAssistant, MealPlanCardConfig } from './types';
-import { TransportType, isValidCardConfig } from './types';
+import { TransportType } from './types';
 import { getProfileWithTransformer } from './profiles/profiles';
-import { generateConfigFormSchema } from './config-form';
 import './components/overview';
 import './components/schedule-view';
 import { log } from './logger';
 import { getVersionString } from './version';
+import './config-form.js';
 
 @customElement('mealplan-card')
 export class MealPlanCard extends LitElement {
@@ -17,7 +17,6 @@ export class MealPlanCard extends LitElement {
   @property({ type: Object }) config!: MealPlanCardConfig;
   @state() public mealState?: MealStateController;
   @state() private _dialogOpen = false;
-  private static configEditing = false;
 
   static get styles() {
     return css`
@@ -34,11 +33,7 @@ export class MealPlanCard extends LitElement {
     this.config = config;
 
     // Initialize controller if we have all prerequisites
-    if (
-      this.hass &&
-      isValidCardConfig(this.config) &&
-      this.config.manufacturer
-    ) {
+    if (this.hass && this.config.manufacturer) {
       const profile = getProfileWithTransformer(this.config.manufacturer);
 
       if (profile) {
@@ -54,15 +49,11 @@ export class MealPlanCard extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    log.info(`MealPlan Card ${getVersionString()}`);
-
-    // Clear config editing flag when card reconnects
-    MealPlanCard.configEditing = false;
 
     await setLanguage(this.hass?.language);
 
     // Initialize meal state controller (hass is now available)
-    if (isValidCardConfig(this.config) && this.config.manufacturer) {
+    if (this.config.manufacturer) {
       const profile = getProfileWithTransformer(this.config.manufacturer);
 
       if (profile) {
@@ -81,11 +72,9 @@ export class MealPlanCard extends LitElement {
 
     if (changedProps.has('hass') && this.mealState) {
       setLanguage(this.hass?.language);
-      if (MealPlanCard.configEditing === false) {
-        this.mealState.updateFromHass().catch((error) => {
-          log.error('[MealPlanCard] Failed to update from hass:', error);
-        });
-      }
+      this.mealState.updateFromHass().catch((error) => {
+        log.error('[MealPlanCard] Failed to update from hass:', error);
+      });
     }
   }
 
@@ -142,20 +131,17 @@ export class MealPlanCard extends LitElement {
     `;
   }
 
-  static getConfigForm(): ReturnType<typeof generateConfigFormSchema> {
-    // Set flag when config editor opens
-    MealPlanCard.configEditing = true;
-    return generateConfigFormSchema();
+  //static getConfigForm(): ReturnType<typeof generateConfigFormSchema> {
+  //  return generateConfigFormSchema();
+  ///}
+  static getConfigElement() {
+    return document.createElement('mealplan-card-editor');
   }
 
   static getStubConfig(): MealPlanCardConfig {
     return {
       title: 'MealPlan Card',
       portions: 6,
-      manufacturer: '',
-      model: '',
-      sensor: '',
-      helper: '',
       transport_type: TransportType.SENSOR,
     } as MealPlanCardConfig;
   }
@@ -188,3 +174,5 @@ window.customCards.push({
   preview: false,
   description: 'Mealplan card to decode/encode base64 meal_plan',
 });
+
+log.info(`MealPlan Card ${getVersionString()}`);

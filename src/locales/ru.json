@@ -54,7 +54,12 @@
     "helper_label": "Сущность помощника (не обязательно)",
     "helper_helper": "Этот input_text помощник Работает как экстренное хранилище данных вашего плана. Когда  сенсор не доступен, карточка будет брать данные из этого помощника чтобы не потерять данные.",
     "transport_label": "Тип транспорта",
-    "transport_helper": "Как записать данные: Сенсор (через set_value сервис) или MQTT (опубликовать топик в zigbee2mqtt)"
+    "transport_helper": "Как записать данные: Сенсор (через set_value сервис) или MQTT (опубликовать топик в zigbee2mqtt)",
+    "read_action_label": "Действие чтения",
+    "write_action_label": "Действие записи",
+    "dp_code_label": "Код точки данных",
+    "device_id_label": "ID устройства",
+    "incomplete_configuration": "Неполная конфигурация"
   },
   "overview": {
     "schedules": "Расписаний",

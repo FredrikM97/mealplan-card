@@ -54,7 +54,12 @@
     "helper_label": "Entidad auxiliar (opcional)",
     "helper_helper": "Este input_text actúa como copia de seguridad del horario. Si el sensor no está disponible, la tarjeta restaurará el horario desde aquí para evitar pérdida de datos.",
     "transport_label": "Tipo de transporte",
-    "transport_helper": "Cómo escribir datos: Sensor (vía servicio set_value) o MQTT (publicar en el topic zigbee2mqtt)"
+    "transport_helper": "Cómo escribir datos: Sensor (vía servicio set_value) o MQTT (publicar en el topic zigbee2mqtt)",
+    "read_action_label": "Acción de lectura",
+    "write_action_label": "Acción de escritura",
+    "dp_code_label": "Código del punto de datos",
+    "device_id_label": "ID del dispositivo",
+    "incomplete_configuration": "Configuración incompleta"
   },
   "overview": {
     "schedules": "Horarios",
