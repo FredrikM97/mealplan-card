@@ -1,23 +1,25 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule: { interval: 'weekly' }
-    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+      day-of-month: 1
     groups:
       build-tools:
-        patterns: ['vite*', '@vitejs/*', 'typescript', '@types/*', 'terser']
+        patterns:
+          - vite*
+          - '@vitejs/*'
+          - typescript
       test-tools:
-        patterns: ['vitest*', '@vitest/*', '*test*', '@open-wc/*', 'jsdom']
-      minor-and-patch:
-        update-types: ['minor', 'patch']
+        patterns:
+          - vitest*
+          - '@vitest/*'
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-patch']
 
-  - package-ecosystem: 'github-actions'
-    directory: '/'
-    schedule: { interval: 'weekly' }
-    open-pull-requests-limit: 3
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
