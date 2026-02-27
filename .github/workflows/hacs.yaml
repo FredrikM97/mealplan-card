@@ -11,11 +11,14 @@ on:
 permissions: {}
 
 jobs:
-  validate-hacs:
-    if: github.repository_owner == 'FredrikM97'
-    runs-on: 'ubuntu-latest'
+  hacs:
+    name: "HACS Validation"
+    runs-on: "ubuntu-latest"
     steps:
-      - name: HACS validation
-        uses: 'hacs/action@main'
+      - name: "Checkout the repository"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd 
+
+      - name: "Run HACS validation"
+        uses: hacs/action@d556e736723344f83838d08488c983a15381059a
         with:
-          category: 'plugin'
+          category: "plugin"
