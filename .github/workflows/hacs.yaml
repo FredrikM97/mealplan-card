@@ -12,13 +12,13 @@ permissions: {}
 
 jobs:
   hacs:
-    name: "HACS Validation"
-    runs-on: "ubuntu-latest"
+    name: 'HACS Validation'
+    runs-on: 'ubuntu-latest'
     steps:
-      - name: "Checkout the repository"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd 
+      - name: 'Checkout the repository'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      - name: "Run HACS validation"
+      - name: 'Run HACS validation'
         uses: hacs/action@d556e736723344f83838d08488c983a15381059a
         with:
-          category: "plugin"
+          category: 'plugin'
