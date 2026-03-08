@@ -200,20 +200,26 @@ export class ScheduleView extends LitElement {
         ></meal-edit-dialog>
       </div>
       <ha-dialog-footer slot="footer">
-      <ha-button slot="secondaryAction" appearance="plain" @click=${this.closeEditForm}>
-        ${localize('common.back')}
-      </ha-button>
-      <ha-button
-        slot="primaryAction"
-        @click=${() => {
-          const dialog =
-            this.shadowRoot?.querySelector<MealEditDialog>('meal-edit-dialog');
-          dialog?.handleSave();
-        }}
-      >
-        ${localize('common.save')}
-      </ha-button>
-    </ha-dialog-footer>
+        <ha-button
+          slot="secondaryAction"
+          appearance="plain"
+          @click=${this.closeEditForm}
+        >
+          ${localize('common.back')}
+        </ha-button>
+        <ha-button
+          slot="primaryAction"
+          @click=${() => {
+            const dialog =
+              this.shadowRoot?.querySelector<MealEditDialog>(
+                'meal-edit-dialog',
+              );
+            dialog?.handleSave();
+          }}
+        >
+          ${localize('common.save')}
+        </ha-button>
+      </ha-dialog-footer>
     `;
   }
 
@@ -241,7 +247,11 @@ export class ScheduleView extends LitElement {
     if (!hasProfileField(this.mealState.profile, ProfileField.ADD)) return '';
 
     return html`
-      <ha-button slot="secondaryAction" appearance="plain" @click=${this.handleOpenAdd}>
+      <ha-button
+        slot="secondaryAction"
+        appearance="plain"
+        @click=${this.handleOpenAdd}
+      >
         ${localize('common.add_meal')}
       </ha-button>
     `;
@@ -278,7 +288,11 @@ export class ScheduleView extends LitElement {
       </div>
       <ha-dialog-footer slot="footer">
         ${this.renderAddButton()}
-        <ha-button slot="secondaryAction" appearance="plain" @click=${this.handleCancel}>
+        <ha-button
+          slot="secondaryAction"
+          appearance="plain"
+          @click=${this.handleCancel}
+        >
           ${localize('common.cancel')}
         </ha-button>
         <ha-button
