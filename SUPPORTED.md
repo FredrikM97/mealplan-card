@@ -22,3 +22,4 @@
   - Models: C1
 - **Wuipet**
   - Models: du4l-wc-01
+- **Pixi**

@@ -146,6 +146,13 @@ const baseProfiles: DeviceProfile[] = [
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
+  {
+    manufacturer: 'Pixi',
+    models: [],
+    encodingType: EncodingType.BASE64,
+    encodingTemplate: TEMPLATE_FULL,
+    fields: FIELDS_FULL,
+  },
 ];
 
 // Export base profiles directly - transformers will be added lazily when needed
