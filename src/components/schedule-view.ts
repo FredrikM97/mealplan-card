@@ -199,12 +199,12 @@ export class ScheduleView extends LitElement {
           @cancel=${this.closeEditForm}
         ></meal-edit-dialog>
       </div>
-      <ha-button slot="secondaryAction" @click=${this.closeEditForm}>
+      <ha-dialog-footer slot="footer">
+      <ha-button slot="secondaryAction" appearance="plain" @click=${this.closeEditForm}>
         ${localize('common.back')}
       </ha-button>
       <ha-button
         slot="primaryAction"
-        class="ha-primary"
         @click=${() => {
           const dialog =
             this.shadowRoot?.querySelector<MealEditDialog>('meal-edit-dialog');
@@ -213,6 +213,7 @@ export class ScheduleView extends LitElement {
       >
         ${localize('common.save')}
       </ha-button>
+    </ha-dialog-footer>
     `;
   }
 
@@ -240,7 +241,7 @@ export class ScheduleView extends LitElement {
     if (!hasProfileField(this.mealState.profile, ProfileField.ADD)) return '';
 
     return html`
-      <ha-button slot="secondaryAction" @click=${this.handleOpenAdd}>
+      <ha-button slot="secondaryAction" appearance="plain" @click=${this.handleOpenAdd}>
         ${localize('common.add_meal')}
       </ha-button>
     `;
@@ -275,24 +276,25 @@ export class ScheduleView extends LitElement {
               `,
             )}
       </div>
-      ${this.renderAddButton()}
-      <ha-button slot="secondaryAction" @click=${this.handleCancel}>
-        ${localize('common.cancel')}
-      </ha-button>
-      <ha-button
-        slot="primaryAction"
-        class="ha-primary"
-        @click=${this.handleSave}
-        ?disabled=${!this.hasPendingChanges() || !this.dataAvailable}
-      >
-        ${localize('common.save')}
-      </ha-button>
+      <ha-dialog-footer slot="footer">
+        ${this.renderAddButton()}
+        <ha-button slot="secondaryAction" appearance="plain" @click=${this.handleCancel}>
+          ${localize('common.cancel')}
+        </ha-button>
+        <ha-button
+          slot="primaryAction"
+          @click=${this.handleSave}
+          ?disabled=${!this.hasPendingChanges() || !this.dataAvailable}
+        >
+          ${localize('common.save')}
+        </ha-button>
+      </ha-dialog-footer>
     `;
   }
 
   render() {
     return html`
-      <ha-dialog open scrimClickAction heading=${this.heading}>
+      <ha-dialog open header-title=${this.heading}>
         <meal-message-display></meal-message-display>
         ${this.renderCardView()} ${this.renderMealForm()}
       </ha-dialog>
