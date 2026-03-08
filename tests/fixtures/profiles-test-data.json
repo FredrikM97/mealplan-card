@@ -139,7 +139,7 @@
     ]
   },
   {
-    "manufacturer": "Pixi ",
+    "manufacturer": "Pixi",
     "encoded": "PwgAAQF/CgABAX8MAAEAfw4AAQF+EAABAX8SAAEBfxQAAQB/FgABAQ==",
     "decoded": [
       { "days": 126, "hour": 8, "minute": 0, "portion": 1, "enabled": 1 },
