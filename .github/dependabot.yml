@@ -5,19 +5,30 @@ updates:
     schedule:
       interval: monthly
       day-of-month: 1
+
     groups:
-      build-tools:
+      typescript:
         patterns:
-          - vite*
-          - '@vitejs/*'
           - typescript
-      test-tools:
+          - ts-node
+          - tslib
+          - '@types/*'
+
+      other-deps:
         patterns:
-          - vitest*
-          - '@vitest/*'
+          - '*'
+        exclude-patterns:
+          - typescript
+          - ts-node
+          - tslib
+          - '@types/*'
+
     ignore:
       - dependency-name: '*'
-        update-types: ['version-update:semver-patch']
+        update-types:
+          - version-update:semver-patch
+
+    open-pull-requests-limit: 5
 
   - package-ecosystem: github-actions
     directory: /
