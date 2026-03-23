@@ -153,6 +153,13 @@ const baseProfiles: DeviceProfile[] = [
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
+  {
+    manufacturer: 'Rojeco',
+    models: ['2L Pet Feeder'],
+    encodingType: EncodingType.BASE64,
+    encodingTemplate: TEMPLATE_FULL,
+    fields: FIELDS_FULL,
+  },
 ];
 
 // Export base profiles directly - transformers will be added lazily when needed
