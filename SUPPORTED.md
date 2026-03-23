@@ -23,3 +23,5 @@
 - **Wuipet**
   - Models: du4l-wc-01
 - **Pixi**
+- **Rojeco**
+  - Models: 2LPetFeeder
