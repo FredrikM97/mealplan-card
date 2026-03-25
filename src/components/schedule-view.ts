@@ -65,7 +65,6 @@ export class ScheduleView extends LitElement {
   static styles = css`
     .schedule-cards {
       display: block;
-      max-height: 330px;
       overflow-y: auto;
       padding: 8px 0;
     }
@@ -86,16 +85,6 @@ export class ScheduleView extends LitElement {
     }
     .empty-state-subtitle {
       font-size: 0.9em;
-    }
-    ha-dialog {
-      --mdc-dialog-min-width: min(480px, 90vw);
-      --mdc-dialog-max-width: 480px;
-    }
-    @media (max-width: 768px) {
-      ha-dialog {
-        --mdc-dialog-min-width: 95vw;
-        --mdc-dialog-max-width: 95vw;
-      }
     }
   `;
 
