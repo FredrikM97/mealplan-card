@@ -127,6 +127,10 @@ export interface StorageAdapter {
    */
   read(): Promise<string | null>;
   /**
+   * Determine whether backing data is available for this transport
+   */
+  isDataAvailable(): Promise<boolean>;
+  /**
    * Write meal plan data
    */
   write(data: string): Promise<void>;
