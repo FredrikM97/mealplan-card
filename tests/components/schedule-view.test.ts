@@ -101,6 +101,21 @@ describe('ScheduleView Component', () => {
     expect(scheduleView.getMeals().length).to.equal(2);
   });
 
+  it('emits schedule-closed when dialog emits closed', async () => {
+    const controller = createMealStateController();
+    const el = (await createScheduleViewFixture(controller)) as ScheduleView;
+
+    let eventFired = false;
+    el.addEventListener('schedule-closed', () => {
+      eventFired = true;
+    });
+
+    const dialog = el.shadowRoot?.querySelector('ha-dialog');
+    dialog?.dispatchEvent(new CustomEvent('closed'));
+
+    expect(eventFired).to.be.true;
+  });
+
   it('handles edit save for new meal', async () => {
     const scheduleView = await createScheduleViewWithMeals([
       testMeals.breakfast,

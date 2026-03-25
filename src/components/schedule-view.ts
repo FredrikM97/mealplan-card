@@ -148,6 +148,10 @@ export class ScheduleView extends LitElement {
     this.dispatchEvent(new ScheduleClosedEvent());
   }
 
+  private handleDialogClosed() {
+    this.dispatchEvent(new ScheduleClosedEvent());
+  }
+
   public handleEditSave(e: CustomEvent<EditMealState>) {
     const { meal, index } = e.detail;
 
@@ -297,7 +301,11 @@ export class ScheduleView extends LitElement {
 
   render() {
     return html`
-      <ha-dialog open header-title=${this.heading}>
+      <ha-dialog
+        open
+        header-title=${this.heading}
+        @closed=${this.handleDialogClosed}
+      >
         <meal-message-display></meal-message-display>
         ${this.renderCardView()} ${this.renderMealForm()}
       </ha-dialog>
