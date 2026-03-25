@@ -22,7 +22,7 @@ function getEntityValue(hass: HomeAssistant, entityId: string): string | null {
 function isValidState(value: unknown): value is string {
   return (
     typeof value === 'string' &&
-    value.trim() !== '' &&
+    (value === '' || value.trim() !== '') &&
     value !== 'unknown' &&
     value !== 'unavailable'
   );
@@ -69,6 +69,11 @@ export class SensorAdapter extends HassAdapterImpl implements StorageAdapter {
     if (this.helperId) {
       await this.setEntityValue(hass, this.helperId, data);
     }
+  }
+
+  async isDataAvailable(): Promise<boolean> {
+    const value = await this.read();
+    return value !== undefined;
   }
 
   private async setEntityValue(
@@ -126,6 +131,11 @@ export class MqttAdapter extends HassAdapterImpl implements StorageAdapter {
       topic,
       payload: data,
     });
+  }
+
+  async isDataAvailable(): Promise<boolean> {
+    const value = await this.read();
+    return value !== null && value !== undefined;
   }
 }
 
@@ -185,6 +195,11 @@ export class ServiceAdapter extends HassAdapterImpl implements StorageAdapter {
       dp_code: this.dpCode,
       data: data,
     });
+  }
+
+  async isDataAvailable(): Promise<boolean> {
+    const value = await this.read();
+    return value !== null && value !== undefined;
   }
 }
 

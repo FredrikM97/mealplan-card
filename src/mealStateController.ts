@@ -111,8 +111,7 @@ export class MealStateController implements ReactiveController {
 
   public async isDataAvailable(): Promise<boolean> {
     try {
-      const value = await this.adapter.read();
-      const available = value !== null && value !== undefined;
+      const available = await this.adapter.isDataAvailable();
 
       if (!available) {
         log.warn(

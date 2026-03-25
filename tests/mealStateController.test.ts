@@ -79,6 +79,13 @@ describe('MealStateController', () => {
     expect(controller.meals).toEqual([]);
   });
 
+  it('treats empty sensor state as available', async () => {
+    const hass = createMockHassWithSensor('sensor.test', '');
+    controller = createMealStateController({ hass });
+
+    await expect(controller.isDataAvailable()).resolves.toBe(true);
+  });
+
   it('syncs helper when saving meals', async () => {
     const meals = [testMeals.breakfast];
     const hass = {
