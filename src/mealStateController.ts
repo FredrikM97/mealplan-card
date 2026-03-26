@@ -7,7 +7,6 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { FeedingTime, DeviceProfile } from './types';
 import type { HasGetter, MealPlanCardConfig, StorageAdapter } from './types';
 import { createStorageAdapter } from './adapters/storage-adapter';
-import { getEncoder, EncoderBase } from './profiles/serializer';
 import { log } from './logger';
 import { areMealsEqual } from './utils';
 
@@ -18,7 +17,6 @@ export class MealStateController implements ReactiveController {
   hass: HasGetter;
   profile: DeviceProfile;
   config: MealPlanCardConfig;
-  private encoder: EncoderBase;
   private adapter: StorageAdapter;
 
   get meals(): FeedingTime[] {
@@ -41,8 +39,7 @@ export class MealStateController implements ReactiveController {
     this.profile = profile;
     this.hass = hass;
     this.config = config;
-    this.encoder = getEncoder(profile);
-    this.adapter = createStorageAdapter(hass, config);
+    this.adapter = createStorageAdapter(hass, config, profile);
 
     // Load initial data after construction
     if (this.hass()) {
@@ -79,15 +76,10 @@ export class MealStateController implements ReactiveController {
   }
 
   /**
-   * Update from Home Assistant - decode from storage adapter
+   * Update from Home Assistant - read and decode from storage adapter
    */
   async updateFromHass(allowUpdate: boolean = true): Promise<void> {
-    const value = await this.adapter.read();
-    let decodedMeals: FeedingTime[] | null = null;
-
-    if (value) {
-      decodedMeals = this.encoder.decode(value);
-    }
+    const decodedMeals = await this.adapter.read();
 
     if (allowUpdate) {
       const newMeals = decodedMeals ? [...decodedMeals] : [];
@@ -104,8 +96,7 @@ export class MealStateController implements ReactiveController {
    * Save meals to storage via adapter, then update local state
    */
   async saveMeals(meals: FeedingTime[]): Promise<void> {
-    const encoded = this.encoder.encode(meals);
-    await this.adapter.write(encoded);
+    await this.adapter.write(meals);
     this.meals = [...meals];
   }
 

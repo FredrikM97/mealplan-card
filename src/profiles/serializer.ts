@@ -268,10 +268,112 @@ class DictEncoder extends EncoderBase {
   }
 }
 
-const ENCODERS = {
+export class HomeAssistantEncoder extends EncoderBase {
+  private static readonly HA_DAYS = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+  ];
+
+  private haDaysToMask(days: string[]): number {
+    let mask = 0;
+    for (const day of days) {
+      const index = HomeAssistantEncoder.HA_DAYS.indexOf(day.toLowerCase());
+      if (index !== -1) {
+        mask |= 1 << index;
+      }
+    }
+    return mask;
+  }
+
+  private maskToHaDays(mask: number): string[] {
+    const days: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      if (mask & (1 << i)) {
+        const dayName = HomeAssistantEncoder.HA_DAYS[i];
+        if (dayName !== undefined) {
+          days.push(dayName);
+        }
+      }
+    }
+    return days;
+  }
+
+  encode(data: FeedingTime[]): string {
+    const output = data.map((entry) => {
+      const result: Record<string, unknown> = {
+        days: this.maskToHaDays(entry.days ?? 0),
+      };
+
+      if (typeof entry.hour === 'number' && typeof entry.minute === 'number') {
+        result.time = `${entry.hour.toString().padStart(2, '0')}:${entry.minute.toString().padStart(2, '0')}`;
+      }
+
+      if (typeof entry.portion === 'number') {
+        result.portion = entry.portion;
+      }
+
+      if (typeof entry.enabled === 'number') {
+        result.enabled = entry.enabled !== 0;
+      }
+
+      return result;
+    });
+    return JSON.stringify(output);
+  }
+
+  decode(data: string): FeedingTime[] {
+    if (!data || data === 'unknown') return [];
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(data);
+    } catch {
+      throw new Error('Invalid JSON data for HOME_ASSISTANT encoding');
+    }
+
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.map((entry) => {
+      const meal = entry as Record<string, unknown>;
+      let hour: number | undefined;
+      let minute: number | undefined;
+
+      if (typeof meal.time === 'string') {
+        const match = meal.time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+        if (match) {
+          hour = Number(match[1]);
+          minute = Number(match[2]);
+        }
+      }
+
+      const daysList: string[] = Array.isArray(meal.days)
+        ? meal.days.filter((d): d is string => typeof d === 'string')
+        : [];
+
+      return {
+        hour,
+        minute,
+        portion: typeof meal.portion === 'number' ? meal.portion : undefined,
+        enabled:
+          typeof meal.enabled === 'boolean' ? Number(meal.enabled) : undefined,
+        days: this.haDaysToMask(daysList),
+      } as FeedingTime;
+    });
+  }
+}
+
+type EncoderCtor = new (profile: DeviceProfile) => EncoderBase;
+
+const ENCODERS: Record<EncodingType, EncoderCtor> = {
   [EncodingType.BASE64]: Base64Encoder,
   [EncodingType.HEX]: TemplateBasedEncoder,
   [EncodingType.DICT]: DictEncoder,
+  [EncodingType.HOME_ASSISTANT]: HomeAssistantEncoder,
 };
 
 export function getEncoder(profile: DeviceProfile) {
