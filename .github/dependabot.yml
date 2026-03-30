@@ -11,7 +11,7 @@ updates:
     groups:
       all-dependencies:
         patterns:
-          - "*"
+          - '*'
 
     open-pull-requests-limit: 1
 
@@ -24,6 +24,6 @@ updates:
     groups:
       all-actions:
         patterns:
-          - "*"
+          - '*'
 
     open-pull-requests-limit: 1
