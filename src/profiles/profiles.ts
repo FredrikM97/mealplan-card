@@ -160,6 +160,13 @@ const baseProfiles: DeviceProfile[] = [
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
+  {
+    manufacturer: 'WellToBe',
+    models: ['WB S36D'],
+    encodingType: EncodingType.BASE64,
+    encodingTemplate: TEMPLATE_NO_DAYS,
+    fields: FIELDS_MINIMAL,
+  },
 ];
 
 // Export base profiles directly - transformers will be added lazily when needed

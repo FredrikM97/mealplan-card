@@ -163,5 +163,17 @@
       { "days": 127, "hour": 18, "minute": 0, "portion": 1, "enabled": 1 },
       { "days": 127, "hour": 21, "minute": 0, "portion": 1, "enabled": 1 }
     ]
+  },
+  {
+    "manufacturer": "WellToBe",
+    "encoded": "BwABAQsAAQEPAAEBEwABARMeAQAXAAEA",
+    "decoded": [
+      { "hour": 7, "minute": 0, "portion": 1, "enabled": 1 },
+      { "hour": 11, "minute": 0, "portion": 1, "enabled": 1 },
+      { "hour": 15, "minute": 0, "portion": 1, "enabled": 1 },
+      { "hour": 19, "minute": 0, "portion": 1, "enabled": 1 },
+      { "hour": 19, "minute": 30, "portion": 1, "enabled": 0 },
+      { "hour": 23, "minute": 0, "portion": 1, "enabled": 0 }
+    ]
   }
 ]
