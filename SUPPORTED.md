@@ -25,3 +25,5 @@
 - **Pixi**
 - **Rojeco**
   - Models: 2LPetFeeder
+- **WellToBe**
+  - Models: WBS36D
