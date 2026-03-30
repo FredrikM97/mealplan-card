@@ -1,5 +1,7 @@
 version: 2
+
 updates:
+  # All npm dependencies in a single PR
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -7,30 +9,21 @@ updates:
       day-of-month: 1
 
     groups:
-      typescript:
+      all-dependencies:
         patterns:
-          - typescript
-          - ts-node
-          - tslib
-          - '@types/*'
+          - "*"
 
-      other-deps:
-        patterns:
-          - '*'
-        exclude-patterns:
-          - typescript
-          - ts-node
-          - tslib
-          - '@types/*'
+    open-pull-requests-limit: 1
 
-    ignore:
-      - dependency-name: '*'
-        update-types:
-          - version-update:semver-patch
-
-    open-pull-requests-limit: 5
-
+  # All GitHub Actions in a single PR
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+
+    groups:
+      all-actions:
+        patterns:
+          - "*"
+
+    open-pull-requests-limit: 1
