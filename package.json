@@ -10,6 +10,7 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "build": "vite build",
+    "supported": "node scripts/generate-manufacturer-list.mjs",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint . && prettier --check .",
     "lint:fix": "npx tsc --noEmit && eslint --fix . && prettier --write ."
