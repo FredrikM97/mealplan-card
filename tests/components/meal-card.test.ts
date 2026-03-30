@@ -3,8 +3,13 @@ import { describe, it } from 'vitest';
 import '../../src/components/meal-card';
 import type { MealCard } from '../../src/components/meal-card';
 import type { MealActionHandler } from '../../src/types';
+import { ProfileField } from '../../src/types';
 import { testMeals } from '../fixtures/data';
-import { createMealCardFixture, getTestProfile } from '../fixtures/factories';
+import {
+  createMealCardFixture,
+  createMockProfile,
+  getTestProfile,
+} from '../fixtures/factories';
 
 describe('MealCard Component', () => {
   describe('Rendering', () => {
@@ -256,6 +261,64 @@ describe('MealCard Component', () => {
 
       expect(daysContainer).to.exist;
       expect(daySelector).to.exist;
+    });
+
+    it('shows edit and delete buttons when profile includes EDIT and DELETE', async () => {
+      const profileWithEditDelete = createMockProfile({
+        fields: [
+          ProfileField.TIME,
+          ProfileField.PORTION,
+          ProfileField.DAYS,
+          ProfileField.ENABLED,
+          ProfileField.EDIT,
+          ProfileField.DELETE,
+        ],
+      });
+
+      const card = (await createMealCardFixture(
+        { ...testMeals.breakfast, _idx: 0 },
+        { profile: profileWithEditDelete, expanded: true },
+      )) as MealCard;
+
+      await card.updateComplete;
+
+      const editButton = card.shadowRoot?.querySelector(
+        '.meal-card-actions-section ha-button:not(.delete-button)',
+      );
+      const deleteButton = card.shadowRoot?.querySelector(
+        '.meal-card-actions-section .delete-button',
+      );
+
+      expect(editButton).to.exist;
+      expect(deleteButton).to.exist;
+    });
+
+    it('hides edit and delete buttons when profile lacks EDIT and DELETE', async () => {
+      const profileWithoutEditDelete = createMockProfile({
+        fields: [
+          ProfileField.TIME,
+          ProfileField.PORTION,
+          ProfileField.DAYS,
+          ProfileField.ENABLED,
+        ],
+      });
+
+      const card = (await createMealCardFixture(
+        { ...testMeals.breakfast, _idx: 0 },
+        { profile: profileWithoutEditDelete, expanded: true },
+      )) as MealCard;
+
+      await card.updateComplete;
+
+      const editButton = card.shadowRoot?.querySelector(
+        '.meal-card-actions-section ha-button:not(.delete-button)',
+      );
+      const deleteButton = card.shadowRoot?.querySelector(
+        '.meal-card-actions-section .delete-button',
+      );
+
+      expect(editButton).to.not.exist;
+      expect(deleteButton).to.not.exist;
     });
   });
 });
