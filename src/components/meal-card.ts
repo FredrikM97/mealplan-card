@@ -209,7 +209,11 @@ export class MealCard extends LitElement {
 
   private renderDetails() {
     return html`
-      <div class="meal-card-details">${this.renderActionButtons()}</div>
+      <div class="meal-card-details">
+        <div class="meal-card-actions-section">
+          ${this.renderEditButton()} ${this.renderDeleteButton()}
+        </div>
+      </div>
     `;
   }
 
@@ -245,35 +249,40 @@ export class MealCard extends LitElement {
     `;
   }
 
-  private renderActionButtons() {
+  private renderEditButton() {
+    if (!hasProfileField(this.profile, ProfileField.EDIT)) return '';
+
+    return html`
+      <ha-button
+        @click=${() => {
+          if (this.onMealAction) {
+            this.onMealAction('edit', this.index, this.meal);
+          }
+        }}
+      >
+        <ha-icon icon="mdi:pencil" slot="icon"></ha-icon>
+        ${localize('meal_card.edit_meal')}
+      </ha-button>
+    `;
+  }
+
+  private renderDeleteButton() {
     if (!hasProfileField(this.profile, ProfileField.DELETE)) return '';
 
     return html`
-      <div class="meal-card-actions-section">
-        <ha-button
-          @click=${() => {
+      <ha-button
+        class="delete-button"
+        @click=${() => {
+          if (confirm(localize('meal_card.confirm_delete'))) {
             if (this.onMealAction) {
-              this.onMealAction('edit', this.index, this.meal);
+              this.onMealAction('delete', this.index, this.meal);
             }
-          }}
-        >
-          <ha-icon icon="mdi:pencil" slot="icon"></ha-icon>
-          ${localize('meal_card.edit_meal')}
-        </ha-button>
-        <ha-button
-          class="delete-button"
-          @click=${() => {
-            if (confirm(localize('meal_card.confirm_delete'))) {
-              if (this.onMealAction) {
-                this.onMealAction('delete', this.index, this.meal);
-              }
-            }
-          }}
-        >
-          <ha-icon icon="mdi:delete" slot="icon"></ha-icon>
-          ${localize('common.delete')}
-        </ha-button>
-      </div>
+          }
+        }}
+      >
+        <ha-icon icon="mdi:delete" slot="icon"></ha-icon>
+        ${localize('common.delete')}
+      </ha-button>
     `;
   }
 }
