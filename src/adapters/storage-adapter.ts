@@ -17,12 +17,6 @@ import { getEncoder } from '../profiles/serializer';
 /**
  * Shared utility functions for entity state validation and retrieval
  */
-function getEntityValue(hass: HomeAssistant, entityId: string): string | null {
-  const state = hass.states?.[entityId];
-  const value = state?.state;
-  return isValidState(value) ? value : null;
-}
-
 function isValidState(value: unknown): value is string {
   return (
     typeof value === 'string' &&
@@ -30,6 +24,22 @@ function isValidState(value: unknown): value is string {
     value !== 'unknown' &&
     value !== 'unavailable'
   );
+}
+
+function getFirstValidEntityValue(
+  hass: HomeAssistant,
+  ...entityIds: Array<string | undefined>
+): string | null {
+  for (const entityId of entityIds) {
+    if (!entityId) continue;
+
+    const value = hass.states?.[entityId]?.state;
+    if (isValidState(value)) {
+      return value;
+    }
+  }
+
+  return null;
 }
 
 abstract class HassAdapterImpl implements StorageAdapter {
@@ -77,11 +87,7 @@ export class SensorAdapter extends HassAdapterImpl implements StorageAdapter {
 
   protected async readRaw(): Promise<string | null> {
     const hass = this.getHass();
-    const sensorValue = getEntityValue(hass, this.sensorId);
-    const helperValue = getEntityValue(hass, this.helperId || '');
-    if (sensorValue) return sensorValue;
-
-    return helperValue;
+    return getFirstValidEntityValue(hass, this.sensorId, this.helperId);
   }
 
   async write(meals: FeedingTime[]): Promise<void> {
@@ -135,15 +141,7 @@ export class MqttAdapter extends HassAdapterImpl implements StorageAdapter {
 
   protected async readRaw(): Promise<string | null> {
     const hass = this.getHass();
-    const sensorValue = getEntityValue(hass, this.sensorId);
-    if (sensorValue) return sensorValue;
-
-    // Fall back to helper if sensor empty
-    if (this.helperId) {
-      return getEntityValue(hass, this.helperId);
-    }
-
-    return null;
+    return getFirstValidEntityValue(hass, this.sensorId, this.helperId);
   }
 
   async write(meals: FeedingTime[]): Promise<void> {

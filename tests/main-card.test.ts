@@ -1,3 +1,4 @@
+import { waitUntil } from '@open-wc/testing';
 import { expect } from 'vitest';
 import '../src/main';
 import { describe, it } from 'vitest';
@@ -145,13 +146,13 @@ describe('MealPlanCard integration', () => {
     const hass = createMockHassWithSensor('sensor.test', base64_1);
     const card = await createMealPlanCardFixture(config, hass);
 
-    await card.updateComplete;
+    await waitUntil(() => card.mealState?.meals[0]?.hour === 8);
 
     expect(card.mealState?.meals).to.have.lengthOf(1);
     expect(card.mealState?.meals[0].hour).to.equal(8);
 
     card.hass = createMockHassWithSensor('sensor.test', base64_2);
-    await card.updateComplete;
+    await waitUntil(() => card.mealState?.meals[0]?.hour === 12);
 
     expect(card.mealState?.meals).to.have.lengthOf(1);
     expect(card.mealState?.meals[0].hour).to.equal(12);
