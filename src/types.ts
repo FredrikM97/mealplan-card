@@ -91,15 +91,14 @@ export interface MqttConfig extends CardConfig {
   deviceName?: string;
 }
 
-export interface ServiceConfig extends CardConfig {
-  transport_type: TransportType.SERVICE;
+export interface TuyaServiceConfig extends CardConfig {
+  transport_type: TransportType.TUYA_SERVICE;
   device_id: string;
   read_action: string;
   write_action: string;
-  dp_code: string;
 }
 
-export type MealPlanCardConfig = SensorConfig | MqttConfig | ServiceConfig;
+export type MealPlanCardConfig = SensorConfig | MqttConfig | TuyaServiceConfig;
 
 export enum ProfileField {
   TIME = 'time',
@@ -115,7 +114,7 @@ export enum ProfileField {
 export enum TransportType {
   SENSOR = 'sensor',
   MQTT = 'mqtt',
-  SERVICE = 'service',
+  TUYA_SERVICE = 'tuya_service',
 }
 
 /**
@@ -123,17 +122,18 @@ export enum TransportType {
  */
 export interface StorageAdapter {
   /**
-   * Read meal plan data
+   * Read and decode meal plan data
+   * Returns decoded FeedingTime array or null if no data available
    */
-  read(): Promise<string | null>;
+  read(): Promise<FeedingTime[] | null>;
   /**
    * Determine whether backing data is available for this transport
    */
   isDataAvailable(): Promise<boolean>;
   /**
-   * Write meal plan data
+   * Encode and write meal plan data
    */
-  write(data: string): Promise<void>;
+  write(meals: FeedingTime[]): Promise<void>;
 }
 
 export type HasGetter = () => HomeAssistant;
@@ -227,4 +227,5 @@ export enum EncodingType {
   BASE64 = 'base64',
   HEX = 'hex',
   DICT = 'dict',
+  HOME_ASSISTANT = 'home_assistant',
 }

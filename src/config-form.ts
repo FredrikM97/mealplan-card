@@ -14,6 +14,23 @@ export class MealPlanCardEditor extends LitElement {
     this._config = config;
   }
 
+  private _getAvailableServices() {
+    const services: Array<{ value: string; label: string }> = [];
+    if (!this.hass?.services) return services;
+
+    for (const [domain, domainServices] of Object.entries(this.hass.services)) {
+      for (const service of Object.keys(domainServices)) {
+        const serviceId = `${domain}.${service}`;
+        services.push({
+          value: serviceId,
+          label: serviceId,
+        });
+      }
+    }
+
+    return services.sort((a, b) => a.label.localeCompare(b.label));
+  }
+
   private _computeSchema() {
     if (!this._config) return [];
 
@@ -59,7 +76,7 @@ export class MealPlanCardEditor extends LitElement {
             options: [
               { value: TransportType.SENSOR, label: 'Sensor (default)' },
               { value: TransportType.MQTT, label: 'MQTT' },
-              { value: TransportType.SERVICE, label: 'Service' },
+              { value: TransportType.TUYA_SERVICE, label: 'Tuya Service' },
             ],
             mode: 'dropdown',
           },
@@ -107,17 +124,10 @@ export class MealPlanCardEditor extends LitElement {
         ],
       });
     }
-    if (this._config.transport_type === TransportType.SERVICE) {
+    if (this._config.transport_type === TransportType.TUYA_SERVICE) {
       schema.push({
         type: 'grid',
         schema: [
-          {
-            name: 'dp_code',
-            required: true,
-            selector: {
-              text: { placeholder: 'e.g., meal_plan' },
-            },
-          },
           {
             name: 'device_id',
             required: true,
@@ -129,14 +139,20 @@ export class MealPlanCardEditor extends LitElement {
             name: 'read_action',
             required: true,
             selector: {
-              text: { placeholder: 'e.g., tuya.get_data' },
+              select: {
+                options: this._getAvailableServices(),
+                mode: 'search',
+              },
             },
           },
           {
             name: 'write_action',
             required: true,
             selector: {
-              text: { placeholder: 'e.g., tuya.set_data' },
+              select: {
+                options: this._getAvailableServices(),
+                mode: 'search',
+              },
             },
           },
         ],
@@ -222,8 +238,6 @@ export class MealPlanCardEditor extends LitElement {
         return localize('config.write_action_label');
       case 'read_action':
         return localize('config.read_action_label');
-      case 'dp_code':
-        return localize('config.dp_code_label');
       case 'device_id':
         return localize('config.device_id_label');
       case 'incomplete_configuration':
