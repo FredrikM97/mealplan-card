@@ -9,6 +9,7 @@
     "test": "vitest run --coverage --reporter=verbose",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
+    "version:update": "node scripts/update-version.js",
     "build": "vite build",
     "supported": "node scripts/generate-manufacturer-list.mjs > SUPPORTED.md",
     "clean": "rm -rf dist",
