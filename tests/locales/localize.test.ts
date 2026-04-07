@@ -22,7 +22,7 @@ describe('localize', () => {
 
   it('localize supports nested paths', () => {
     expect(localize('config.sensor_label')).toBe('Meal Plan Sensor');
-    expect(localize('schedule_view.manage_schedules')).toBe('Manage Schedules');
+    expect(localize('schedule_view.manage_schedules')).toBe('Manage');
     expect(localize('main.configuration_required')).toBe(
       'Configuration required',
     );
@@ -31,7 +31,7 @@ describe('localize', () => {
   it('localize works with Swedish nested paths', () => {
     setLanguage('sv');
     expect(localize('config.sensor_label')).toBe('Meal Plan-sensor');
-    expect(localize('schedule_view.manage_schedules')).toBe('Hantera scheman');
+    expect(localize('schedule_view.manage_schedules')).toBe('Hantera');
     expect(localize('main.configuration_required')).toBe('Konfiguration krävs');
     // Reset to English
     setLanguage('en');
@@ -40,9 +40,7 @@ describe('localize', () => {
   it('localize works with Spanish nested paths', () => {
     setLanguage('es');
     expect(localize('common.back')).toBe('Atrás');
-    expect(localize('schedule_view.manage_schedules')).toBe(
-      'Gestionar horarios',
-    );
+    expect(localize('schedule_view.manage_schedules')).toBe('Gestionar');
     expect(localize('overview.avg_week')).toBe('Media/semana');
     expect(localize('main.configuration_required')).toBe(
       'Se requiere configuración',

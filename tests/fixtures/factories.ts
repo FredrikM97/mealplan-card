@@ -9,7 +9,12 @@ import type {
   MealPlanCardConfig,
   HomeAssistant,
 } from '../../src/types';
-import { ProfileField, TransportType, EncodingType } from '../../src/types';
+import {
+  ProfileField,
+  TransportType,
+  EncodingType,
+  OverviewField,
+} from '../../src/types';
 import { ScheduleView } from '../../src/components/schedule-view';
 import { getEncoder } from '../../src/profiles/serializer';
 import { testMeals } from './data';
@@ -191,6 +196,12 @@ export function createMealPlanCardConfig(
     manufacturer: overrides?.manufacturer ?? profile.manufacturer,
     model: overrides?.model ?? '',
     helper: overrides?.helper ?? '',
+    overview_fields: [
+      OverviewField.SCHEDULES,
+      OverviewField.ACTIVE,
+      OverviewField.TODAY,
+      OverviewField.AVG_WEEK,
+    ],
     transport_type: TransportType.SENSOR,
     ...(overrides?.portions !== undefined && { portions: overrides.portions }),
   };

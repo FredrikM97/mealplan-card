@@ -5,18 +5,22 @@ import {
   getTodaysFoodGrams,
   getWeeklyAveragePortion,
 } from '../../src/components/overview';
-import type { FeedingTime } from '../../src/types';
+import { OverviewField, type FeedingTime } from '../../src/types';
 import { testMeals, daySpecificMeals } from '../fixtures/data';
-import { createMealStateController } from '../fixtures/factories';
 
 describe('Overview Component', () => {
   describe('Component Rendering', () => {
     it('displays all overview chips with meal data', async () => {
-      const controller = createMealStateController();
-      controller.meals = [testMeals.breakfast];
-
       const component = await fixture<HTMLElement>(
-        html`<meal-overview .mealState=${controller}></meal-overview>`,
+        html`<meal-overview
+          .meals=${[testMeals.breakfast]}
+          .overviewFields=${[
+            OverviewField.SCHEDULES,
+            OverviewField.ACTIVE,
+            OverviewField.TODAY,
+            OverviewField.AVG_WEEK,
+          ]}
+        ></meal-overview>`,
       );
 
       await (component as unknown as { updateComplete: Promise<boolean> })
@@ -30,13 +34,12 @@ describe('Overview Component', () => {
     });
 
     it('multiplies meal portions by configured portion multiplier', async () => {
-      const controller = createMealStateController();
-      controller.meals = [testMeals.breakfast];
       // 10g meal × 3 portions = 30g total
       const component = await fixture<HTMLElement>(
         html`<meal-overview
-          .meals=${controller.meals}
+          .meals=${[testMeals.breakfast]}
           .portions=${3}
+          .overviewFields=${[OverviewField.TODAY]}
         ></meal-overview>`,
       );
 
