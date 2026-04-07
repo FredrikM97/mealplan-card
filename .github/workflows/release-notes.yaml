@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Update release draft
-        uses: release-drafter/release-drafter@v6
+        uses: release-drafter/release-drafter@v7
         with:
           config-name: release-drafter.yml
         env:
