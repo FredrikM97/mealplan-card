@@ -27,12 +27,12 @@
     ]
   },
   "main": {
-    "manage_schedules": "Manage Schedules",
+    "manage_schedules": "Manage",
     "configuration_required": "Configuration required",
     "configuration_instructions": "Please configure a sensor and manufacturer in the card settings."
   },
   "schedule_view": {
-    "manage_schedules": "Manage Schedules",
+    "manage_schedules": "Manage",
     "edit_feeding_time": "Edit Feeding Time",
     "no_meals_scheduled": "No meals scheduled",
     "click_add_meal_to_get_started": "Click 'Add Meal' below to create your first feeding schedule",
@@ -51,6 +51,8 @@
     "manufacturer_label": "Feeder Profile",
     "manufacturer_helper": "Select your feeder manufacturer and model",
     "title_label": "Title",
+    "overview_fields_label": "Overview chips",
+    "overview_fields_helper": "Select which chips to show in the overview row",
     "helper_label": "Helper Entity (Optional)",
     "helper_helper": "This input_text helper acts as a backup storage for your meal plan schedule. When the sensor is unavailable, the card will restore the schedule from this helper to prevent data loss.",
     "transport_label": "Transport Type",

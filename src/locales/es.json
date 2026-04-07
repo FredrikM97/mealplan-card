@@ -27,12 +27,12 @@
     ]
   },
   "main": {
-    "manage_schedules": "Gestionar horarios",
+    "manage_schedules": "Gestionar",
     "configuration_required": "Se requiere configuración",
     "configuration_instructions": "Configura un sensor y el fabricante en los ajustes de la tarjeta."
   },
   "schedule_view": {
-    "manage_schedules": "Gestionar horarios",
+    "manage_schedules": "Gestionar",
     "edit_feeding_time": "Editar hora de comida",
     "no_meals_scheduled": "No hay comidas programadas",
     "click_add_meal_to_get_started": "Pulsa 'Añadir comida' abajo para crear tu primer horario",
@@ -51,6 +51,8 @@
     "manufacturer_label": "Perfil del comedero",
     "manufacturer_helper": "Selecciona el fabricante y modelo de tu comedero",
     "title_label": "Título",
+    "overview_fields_label": "Chips del resumen",
+    "overview_fields_helper": "Selecciona qué chips mostrar en la fila de resumen",
     "helper_label": "Entidad auxiliar (opcional)",
     "helper_helper": "Este input_text actúa como copia de seguridad del horario. Si el sensor no está disponible, la tarjeta restaurará el horario desde aquí para evitar pérdida de datos.",
     "transport_label": "Tipo de transporte",

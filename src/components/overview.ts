@@ -3,9 +3,9 @@
  * Self-contained LitElement component
  */
 
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { FeedingTime } from '../types';
+import { OverviewField, type FeedingTime } from '../types';
 import { localize } from '../locales/localize';
 import { isMealEnabled } from '../utils';
 
@@ -49,6 +49,41 @@ export function getTodaysFoodGrams(
 export class MealOverview extends LitElement {
   @property({ type: Array }) meals: FeedingTime[] = [];
   @property({ type: Number }) portions = 6;
+  @property({ type: Array }) overviewFields: OverviewField[] = [];
+
+  private renderChip(
+    field: OverviewField,
+    data: { enabledMeals: FeedingTime[]; totalToday: number; avg: number },
+  ) {
+    switch (field) {
+      case OverviewField.SCHEDULES:
+        return html`<ha-chip class="overview-schedules">
+          <ha-icon icon="mdi:calendar-clock"></ha-icon>
+          ${localize('overview.schedules')}:
+          <span style="white-space:nowrap;">${this.meals.length}</span>
+        </ha-chip>`;
+      case OverviewField.ACTIVE:
+        return html`<ha-chip class="overview-active">
+          <ha-icon icon="mdi:check-circle-outline"></ha-icon>
+          ${localize('overview.active')}:
+          <span style="white-space:nowrap;">${data.enabledMeals.length}</span>
+        </ha-chip>`;
+      case OverviewField.TODAY:
+        return html`<ha-chip class="overview-grams">
+          <ha-icon icon="mdi:food-drumstick"></ha-icon>
+          ${localize('overview.today')}:
+          <span style="white-space:nowrap;">${data.totalToday}g</span>
+        </ha-chip>`;
+      case OverviewField.AVG_WEEK:
+        return html`<ha-chip class="overview-average">
+          <ha-icon icon="mdi:scale-balance"></ha-icon>
+          ${localize('overview.avg_week')}:
+          <span style="white-space:nowrap;">${data.avg.toFixed(1)}g</span>
+        </ha-chip>`;
+      default:
+        return nothing;
+    }
+  }
 
   static styles = css`
     .overview-row {
@@ -74,29 +109,13 @@ export class MealOverview extends LitElement {
     const today = new Date().getDay();
     const totalToday = getTodaysFoodGrams(enabledMeals, today) * this.portions;
     const avg = getWeeklyAveragePortion(enabledMeals) * this.portions;
+    const orderedFields = this.overviewFields;
 
     return html`
       <div class="overview-row">
-        <ha-chip class="overview-schedules">
-          <ha-icon icon="mdi:calendar-clock"></ha-icon>
-          ${localize('overview.schedules')}:
-          <span style="white-space:nowrap;">${this.meals.length}</span>
-        </ha-chip>
-        <ha-chip class="overview-active">
-          <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-          ${localize('overview.active')}:
-          <span style="white-space:nowrap;">${enabledMeals.length}</span>
-        </ha-chip>
-        <ha-chip class="overview-grams">
-          <ha-icon icon="mdi:food-drumstick"></ha-icon>
-          ${localize('overview.today')}:
-          <span style="white-space:nowrap;">${totalToday}g</span>
-        </ha-chip>
-        <ha-chip class="overview-average">
-          <ha-icon icon="mdi:scale-balance"></ha-icon>
-          ${localize('overview.avg_week')}:
-          <span style="white-space:nowrap;">${avg.toFixed(1)}g</span>
-        </ha-chip>
+        ${orderedFields.map((field) =>
+          this.renderChip(field, { enabledMeals, totalToday, avg }),
+        )}
       </div>
     `;
   }

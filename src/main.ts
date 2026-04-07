@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { localize, setLanguage } from './locales/localize';
 import { MealStateController } from './mealStateController';
 import type { HomeAssistant, MealPlanCardConfig } from './types';
-import { TransportType } from './types';
+import { OverviewField, TransportType } from './types';
 import { getProfileWithTransformer } from './profiles/profiles';
 import './components/overview';
 import './components/schedule-view';
@@ -95,6 +95,7 @@ export class MealPlanCard extends LitElement {
       <meal-overview
         .meals=${this.mealState.meals}
         .portions=${this.config?.portions}
+        .overviewFields=${this.config.overview_fields}
       ></meal-overview>
       <div class="card-actions">
         <ha-button @click=${() => (this._dialogOpen = true)}>
@@ -142,6 +143,12 @@ export class MealPlanCard extends LitElement {
     return {
       title: 'MealPlan Card',
       portions: 6,
+      overview_fields: [
+        OverviewField.SCHEDULES,
+        OverviewField.ACTIVE,
+        OverviewField.TODAY,
+        OverviewField.AVG_WEEK,
+      ],
       transport_type: TransportType.SENSOR,
     } as MealPlanCardConfig;
   }

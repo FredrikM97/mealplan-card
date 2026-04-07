@@ -1,4 +1,9 @@
-import { HomeAssistant, MealPlanCardConfig, TransportType } from './types';
+import {
+  HomeAssistant,
+  MealPlanCardConfig,
+  OverviewField,
+  TransportType,
+} from './types';
 import { property } from 'lit/decorators/property.js';
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
@@ -50,6 +55,33 @@ export class MealPlanCardEditor extends LitElement {
                 max: 10,
                 mode: 'box',
                 unit_of_measurement: 'g',
+              },
+            },
+          },
+          {
+            name: 'overview_fields',
+            selector: {
+              select: {
+                multiple: true,
+                mode: 'dropdown',
+                options: [
+                  {
+                    value: OverviewField.SCHEDULES,
+                    label: localize('overview.schedules'),
+                  },
+                  {
+                    value: OverviewField.ACTIVE,
+                    label: localize('overview.active'),
+                  },
+                  {
+                    value: OverviewField.TODAY,
+                    label: localize('overview.today'),
+                  },
+                  {
+                    value: OverviewField.AVG_WEEK,
+                    label: localize('overview.avg_week'),
+                  },
+                ],
               },
             },
           },
@@ -232,6 +264,8 @@ export class MealPlanCardEditor extends LitElement {
         return localize('config.portion_label');
       case 'helper':
         return localize('config.helper_label');
+      case 'overview_fields':
+        return localize('config.overview_fields_label');
       case 'transport_type':
         return localize('config.transport_label');
       case 'write_action':
@@ -256,6 +290,8 @@ export class MealPlanCardEditor extends LitElement {
         return localize('config.helper_helper');
       case 'portions':
         return localize('config.portion_helper');
+      case 'overview_fields':
+        return localize('config.overview_fields_helper');
       case 'transport_type':
         return localize('config.transport_helper');
       default:

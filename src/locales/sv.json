@@ -27,12 +27,12 @@
     ]
   },
   "main": {
-    "manage_schedules": "Hantera scheman",
+    "manage_schedules": "Hantera",
     "configuration_required": "Konfiguration krävs",
     "configuration_instructions": "Vänligen konfigurera en sensor och tillverkare i kortets inställningar."
   },
   "schedule_view": {
-    "manage_schedules": "Hantera scheman",
+    "manage_schedules": "Hantera",
     "edit_feeding_time": "Redigera matningstid",
     "no_meals_scheduled": "Inga måltider schemalagda",
     "click_add_meal_to_get_started": "Klicka på 'Lägg till måltid' nedan för att skapa ditt första matningsschema",
@@ -51,6 +51,8 @@
     "manufacturer_label": "Matarprofil",
     "manufacturer_helper": "Välj din tillverkares modell",
     "title_label": "Titel",
+    "overview_fields_label": "Översiktschips",
+    "overview_fields_helper": "Välj vilka chips som ska visas i översikten",
     "helper_label": "Hjälparentitet (valfritt)",
     "helper_helper": "Denna input_text fungerar som backup för ditt schema. När sensorn är otillgänglig återställer kortet schemat från hjälparen för att undvika dataförlust.",
     "transport_label": "Transporttyp",

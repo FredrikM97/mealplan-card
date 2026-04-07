@@ -67,6 +67,7 @@ export enum Day {
 export interface CardConfig {
   title: string;
   portions?: number;
+  overview_fields?: OverviewField[];
   manufacturer?: string;
   model?: string;
   transport_type: TransportType;
@@ -109,6 +110,13 @@ export enum ProfileField {
   EDIT = 'edit',
   DELETE = 'delete',
   ADD = 'add',
+}
+
+export enum OverviewField {
+  SCHEDULES = 'schedules',
+  ACTIVE = 'active',
+  TODAY = 'today',
+  AVG_WEEK = 'avg_week',
 }
 
 export enum TransportType {
