@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   update_release_draft:
+    if: github.repository_owner == 'FredrikM97'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
