@@ -12,6 +12,7 @@ permissions: {}
 
 jobs:
   hacs:
+    if: github.repository_owner == 'FredrikM97'
     name: 'HACS Validation'
     runs-on: 'ubuntu-latest'
     steps:
