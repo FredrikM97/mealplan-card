@@ -15,16 +15,24 @@
     "add_meal": "Lägg till måltid"
   },
   "days": {
-    "short": ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"],
-    "full": [
-      "Måndag",
-      "Tisdag",
-      "Onsdag",
-      "Torsdag",
-      "Fredag",
-      "Lördag",
-      "Söndag"
-    ]
+    "short": {
+      "monday": "M",
+      "tuesday": "T",
+      "wednesday": "O",
+      "thursday": "T",
+      "friday": "F",
+      "saturday": "L",
+      "sunday": "S"
+    },
+    "full": {
+      "monday": "Måndag",
+      "tuesday": "Tisdag",
+      "wednesday": "Onsdag",
+      "thursday": "Torsdag",
+      "friday": "Fredag",
+      "saturday": "Lördag",
+      "sunday": "Söndag"
+    }
   },
   "main": {
     "manage_schedules": "Hantera",

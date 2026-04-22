@@ -1,4 +1,5 @@
 import { html, css } from 'lit';
+import { localize } from '../locales/localize';
 
 const daySelectorStyles = css`
   .days-row {
@@ -54,17 +55,22 @@ const daySelectorStyles = css`
 export function renderDaySelector({
   days = 0,
   editable = false,
-  dayLabels,
   onDaysChanged,
 }: {
   days: number;
   editable: boolean;
-  dayLabels?: string[];
   onDaysChanged?: (newDays: number) => void;
 }): import('lit').TemplateResult {
-  const defaultLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const labels =
-    dayLabels && dayLabels.length === 7 ? dayLabels : defaultLabels;
+  const dayNames = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+  ];
+  const labels = dayNames.map((day) => localize(`days.short.${day}`));
 
   const handleClick = (i: number) => {
     if (!editable || !onDaysChanged) return;

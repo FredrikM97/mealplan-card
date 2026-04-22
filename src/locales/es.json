@@ -15,16 +15,24 @@
     "add_meal": "Añadir comida"
   },
   "days": {
-    "short": ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
-    "full": [
-      "Lunes",
-      "Martes",
-      "Miércoles",
-      "Jueves",
-      "Viernes",
-      "Sábado",
-      "Domingo"
-    ]
+    "short": {
+      "monday": "L",
+      "tuesday": "M",
+      "wednesday": "M",
+      "thursday": "J",
+      "friday": "V",
+      "saturday": "S",
+      "sunday": "D"
+    },
+    "full": {
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado",
+      "sunday": "Domingo"
+    }
   },
   "main": {
     "manage_schedules": "Gestionar",

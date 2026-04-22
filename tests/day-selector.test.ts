@@ -5,7 +5,6 @@ import { renderDaySelector } from '../src/components/day-selector';
 const renderSelector = (options: {
   days: number;
   editable: boolean;
-  dayLabels?: string[];
   onDaysChanged?: (days: number) => void;
 }) => {
   const container = document.createElement('div');
@@ -34,25 +33,6 @@ describe('DaySelector', () => {
     it('renders 7 cells with default labels', () => {
       const container = renderSelector({ days: 0, editable: false });
       expect(getCells(container).length).toBe(7);
-      expect(getLabels(container)).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S']);
-    });
-
-    it('uses custom labels when valid', () => {
-      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const container = renderSelector({
-        days: 0,
-        editable: false,
-        dayLabels: labels,
-      });
-      expect(getLabels(container)).toEqual(labels);
-    });
-
-    it('falls back to defaults for invalid labels', () => {
-      const container = renderSelector({
-        days: 0,
-        editable: false,
-        dayLabels: ['X', 'Y'],
-      });
       expect(getLabels(container)).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S']);
     });
   });
