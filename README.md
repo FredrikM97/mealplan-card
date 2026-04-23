@@ -1,39 +1,40 @@
-# MealPlanCard
+<img width="1983" height="793" alt="image" src="https://github.com/user-attachments/assets/a2086563-923b-46e7-ab36-0e37dadb77c9" />
+
+---
 
 [![Home Assistant][ha-versions-shield]][homeassistant]
-[![GitHub Release][releases-shield]][releases]
+[![Release][releases-shield]][releases]
+[![Docs][wiki-shield]][wiki]
+
+[![Tests][build-shield]][build]
+[![Coverage][codecov-shield]][codecov]
 [![License][license-shield]](LICENSE.md)
-![Downloads][downloads-shield]
-[![Build Status][build-shield]][build]
-[![Code Coverage][codecov-shield]][codecov]
-[![Documentation Status][wiki-shield]][wiki]
-[![Open in Dev Containers][devcontainer-shield]][devcontainer]
+[![Downloads][downloads-shield]][releases]
+[![Dev Container][devcontainer-shield]][devcontainer]
 
 ## About
 
-A HACS card for Home Assistant to monitor and control your pet feeder using a meal_plan base64 format. This card is designed for Tuya Mealplan data, but can work for other feeders if they use a compatible meal_plan/schedule entity. Support both hex and base64 data. This integration work best with [Tuya-local](https://github.com/make-all/tuya-local)
+A Home Assistant plugin to manage and monitor pet feeders using a `meal_plan` structure. Support Home assistant tuya, local-tuya and services.
 
-For a complete list of supported manufacturers and models, see [SUPPORTED.md](SUPPORTED.md).
+It is primarily designed for Tuya-based feeders, but may also work with other devices that expose a compatible schedule entity. Best used alongside [Tuya Local](https://github.com/make-all/tuya-local) for local control.
 
-If your device is missing from the list feel free to open an issue with related info and it will be added.
-
-<img width="430" src="https://github.com/user-attachments/assets/13882cf0-ca0e-4768-89e9-fcbc15d50aef" ce/>
-
-[![Add to HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=mealplan-card&categoryplugin)
+For supported devices and models, see [SUPPORTED.md](SUPPORTED.md).
 
 ## Features
 
-- See next scheduled feeding and total food for today
-- Add, edit, and delete feeding times with or without day selection
-- Supports meal_plan data with days and without days
-- Card configuration and meal plan persist over Home Assistant restarts and reloads
-- Light and dark mode
+- See next scheduled feeding and total food for today  
+- Add, edit, and delete feeding times with or without day selection  
+- Supports meal_plan data with and without days  
+- Configuration and schedule persist over Home Assistant restarts  
+- Light and dark mode support  
 
 ## How it works
 
-The card expects a base64 string (example: 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA=='). This string is decoded and allows edits in two supported formats:
+The card expects a base64 string (example: `fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==`).
 
-**With days:**
+This string is decoded into editable schedules.
+
+### With days
 
 ```json
 [
@@ -44,31 +45,40 @@ The card expects a base64 string (example: 'fwQAAQB/CQACAX8PAAEBfxUAAgEIEgABAA==
   { "time": "18:00", "days": 8, "portion": 1, "enabled": false }
 ]
 ```
+# Enjoy the integration?
 
-When the user makes changes and presses save on the schedule view, the config is updated and sent to the Tuya cloud. The implementation reduces the delay for actions compared to Smart Life and allows seamless integration with Home Assistant for Tuya feeders with a meal_plan configuration.
+Star ⭐ the repository to help others discover the integration.
 
-## Installation
+[![Sponsor FredrikM97][github-sponsor-shield]][github-sponsor] [![Static Badge][buymeacoffee-shield]][buymeacoffee]
 
-1. Click the **Add to HACS** button above, or manually add this repository as a custom repository in HACS (category: Lovelace).
-2. Find "Mealplan Card" in HACS under Frontend and install it.
-3. Search for Mealplan Pet Feeder in the card selector view.
-   **After update ensure to hard refresh page/clean cache**
 
-## Support
 
-For issues, feature requests, or contributions, please open an issue or pull request on [GitHub](https://github.com/FredrikM97/mealplan-card).
 
-[build-shield]: https://github.com/FredrikM97/mealplan-card/actions/workflows/test.yaml/badge.svg
+
+[build-shield]: https://img.shields.io/github/actions/workflow/status/FredrikM97/mealplan-card/test.yaml?style=for-the-badge&label=Tests
 [build]: https://github.com/FredrikM97/mealplan-card/actions
-[codecov-shield]: https://codecov.io/gh/FredrikM97/mealplan-card/branch/dev/graph/badge.svg
+
+[codecov-shield]: https://img.shields.io/codecov/c/github/FredrikM97/mealplan-card?style=for-the-badge&label=Coverage
 [codecov]: https://codecov.io/gh/FredrikM97/mealplan-card
-[license-shield]: https://img.shields.io/github/license/FredrikM97/mealplan-card.svg
-[devcontainer-shield]: https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode
+
+[license-shield]: https://img.shields.io/github/license/FredrikM97/mealplan-card.svg?style=for-the-badge
+
+[downloads-shield]: https://img.shields.io/github/downloads/FredrikM97/mealplan-card/total.svg?style=for-the-badge
+
+[devcontainer-shield]: https://img.shields.io/badge/Dev%20Container-Open-007ACC?style=for-the-badge&logo=visualstudiocode
 [devcontainer]: https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/FredrikM97/mealplan-card
-[ha-versions-shield]: https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/FredrikM97/mealplan-card/main/hacs.json&label=homeassistant&query=$.homeassistant&color=blue&logo=homeassistant
-[releases-shield]: https://img.shields.io/github/release/FredrikM97/mealplan-card.svg
+
+[ha-versions-shield]: https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/FredrikM97/mealplan-card/main/hacs.json&label=Home%20Assistant&query=$.homeassistant&color=41BDF5&style=for-the-badge&logo=homeassistant
+
+[releases-shield]: https://img.shields.io/github/release/FredrikM97/mealplan-card.svg?style=for-the-badge&color=41BDF5
 [releases]: https://github.com/FredrikM97/mealplan-card/releases
-[wiki-shield]: https://img.shields.io/badge/docs-wiki-blue.svg
+
+[wiki-shield]: https://img.shields.io/badge/Docs-Wiki-41BDF5?style=for-the-badge
 [wiki]: https://github.com/FredrikM97/mealplan-card/wiki
+
 [homeassistant]: https://my.home-assistant.io/redirect/hacs_repository/?owner=FredrikM97&repository=mealplan-card&category=plugin
-[downloads-shield]: https://img.shields.io/github/downloads/FredrikM97/mealplan-card/total.svg
+[github-sponsor-shield]: https://img.shields.io/badge/Sponsor-FredrikM97-EA4AAA?style=for-the-badge&logo=githubsponsors
+[github-sponsor]: https://github.com/sponsors/FredrikM97
+
+[buymeacoffee-shield]: https://img.shields.io/badge/Donate-Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee
+[buymeacoffee]: https://www.buymeacoffee.com/FredrikM97
