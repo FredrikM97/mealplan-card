@@ -1,0 +1,80 @@
+{
+  "common": {
+    "back": "Zpět",
+    "cancel": "Zrušit",
+    "save": "Uložit",
+    "delete": "Smazat",
+    "close": "Zavřít",
+    "portion": "Porce",
+    "time": "Čas",
+    "days": "Dny",
+    "enabled": "Povoleno",
+    "disabled": "Zakázáno",
+    "every_day": "Každý den",
+    "no_days": "Žádné dny",
+    "add_meal": "Přidat krmení"
+  },
+  "days": {
+    "short": {
+      "monday": "P",
+      "tuesday": "Ú",
+      "wednesday": "S",
+      "thursday": "Č",
+      "friday": "P",
+      "saturday": "S",
+      "sunday": "N"
+    },
+    "full": {
+      "monday": "Pondělí",
+      "tuesday": "Úterý",
+      "wednesday": "Středa",
+      "thursday": "Čtvrtek",
+      "friday": "Pátek",
+      "saturday": "Sobota",
+      "sunday": "Neděle"
+    }
+  },
+  "main": {
+    "manage_schedules": "Spravovat",
+    "configuration_required": "Vyžadována konfigurace",
+    "configuration_instructions": "Prosím, nakonfigurujte senzor a výrobce v nastavení karty."
+  },
+  "schedule_view": {
+    "manage_schedules": "Spravovat",
+    "edit_feeding_time": "Upravit čas krmení",
+    "no_meals_scheduled": "Nejsou naplánována žádná krmení",
+    "click_add_meal_to_get_started": "Klikněte na „Přidat krmení“ níže pro vytvoření prvního plánu krmení",
+    "sensor_unavailable": "Entita nedostupná",
+    "sensor_unavailable_message": "Vybraný senzor není dostupný. Změny nelze uložit, dokud nebude zařízení přístupné."
+  },
+  "meal_card": {
+    "edit_meal": "Upravit krmení",
+    "confirm_delete": "Opravdu chcete toto krmení smazat?"
+  },
+  "config": {
+    "portion_label": "Velikost porce",
+    "portion_helper": "Gramů na porci",
+    "sensor_label": "Meal Plan senzor",
+    "sensor_helper": "Vyberte senzor nebo textovou entitu obsahující 'meal plan'data",
+    "manufacturer_label": "Profil krmítka",
+    "manufacturer_helper": "Vyberte výrobce a model vašeho krmítka",
+    "title_label": "Název",
+    "overview_fields_label": "Přehledové odznaky",
+    "overview_fields_helper": "Vyberte, které odznaky se mají zobrazit v přehledovém řádku",
+    "helper_label": "Pomocná entita (volitelné)",
+    "helper_helper": "Tento input_text slouží jako záložní úložiště. Pokud je senzor nedostupný, karta obnoví plán z tohoto pomocníka.",
+    "transport_label": "Typ přenosu",
+    "transport_helper": "Způsob zápisu dat: Senzor (služba set_value) nebo MQTT (publikování do zigbee2mqtt)",
+    "read_action_label": "Akce čtení",
+    "write_action_label": "Akce zápisu",
+    "dp_code_label": "Kód datového bodu (DP Code)",
+    "device_id_label": "ID zařízení",
+    "incomplete_configuration": "Neúplná konfigurace"
+  },
+  "overview": {
+    "schedules": "Plány",
+    "active": "Aktivní",
+    "today": "Dnes",
+    "avg_week": "Prům./Týden"
+  }
+}
