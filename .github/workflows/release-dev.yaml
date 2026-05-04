@@ -1,0 +1,68 @@
+name: Dev Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.repository_owner == 'FredrikM97'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes
+        id: check
+        run: |
+          CURRENT_SHA=$(git rev-parse --short HEAD)
+          LAST_NOTES=$(gh release view dev --json body -q '.body' 2>/dev/null || echo "")
+
+          if echo "$LAST_NOTES" | grep -q "**Commit**: $CURRENT_SHA"; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Extract version (dev)
+        if: steps.check.outputs.has_changes == 'true'
+        id: version
+        run: echo "version=dev-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        
+      - name: Move dev tag to latest commit
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          git tag -f dev
+          git push -f origin dev
+
+      - name: Build
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          npm install
+          npm run version:update -- ${{ steps.version.outputs.version }}
+          npm run build
+
+      - name: Create / update dev release
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          LAST_STABLE_TAG=$(gh release list --exclude-pre-releases --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName // ""')
+          COMMIT_COUNT=$([ -n "$LAST_STABLE_TAG" ] && git rev-list --count $LAST_STABLE_TAG..HEAD || echo "N/A")
+
+          NOTES="⚠️ Development Build - Automated weekly release from main branch."$'\n\n'"**Build**: $(date -u '+%Y-%m-%d %H:%M UTC')"$'\n'"**Commit**: $(git rev-parse --short HEAD)"$'\n'"**Changes**: $COMMIT_COUNT commits since last stable release"
+
+          if ! gh release view dev >/dev/null 2>&1; then
+            gh release create dev --title "Dev Release" --notes "$NOTES" --prerelease
+          fi
+
+          gh release upload dev "dist/mealplan-card.js" --clobber
+          gh release edit dev --notes "$NOTES"
+        env:
+          GH_TOKEN: ${{ github.token }}
