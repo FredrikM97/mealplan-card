@@ -88,19 +88,6 @@ export class MealPlanCardEditor extends LitElement {
         ],
       },
       {
-        name: 'manufacturer',
-        required: true,
-        selector: {
-          select: {
-            options: profiles.map(({ manufacturer }) => ({
-              value: manufacturer,
-              label: manufacturer,
-            })),
-            mode: 'dropdown',
-          },
-        },
-      },
-      {
         name: 'transport_type',
         required: true,
         selector: {
@@ -115,6 +102,22 @@ export class MealPlanCardEditor extends LitElement {
         },
       },
     ];
+
+    if (this._config.transport_type !== TransportType.TUYA_SERVICE) {
+      schema.push({
+        name: 'manufacturer',
+        required: true,
+        selector: {
+          select: {
+            options: profiles.map(({ manufacturer }) => ({
+              value: manufacturer,
+              label: manufacturer,
+            })),
+            mode: 'dropdown',
+          },
+        },
+      });
+    }
 
     if (this._config.transport_type === TransportType.SENSOR) {
       schema.push({

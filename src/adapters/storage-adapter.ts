@@ -200,7 +200,7 @@ export class TuyaServiceAdapter
         },
       );
 
-      const data = response.response.data;
+      const data = response.response.meal_plan;
       const raw = typeof data === 'string' ? data : JSON.stringify(data);
       return raw;
     } catch (error) {
@@ -222,7 +222,7 @@ export class TuyaServiceAdapter
 
     await hass.callService(domain, service, {
       device_id: this.deviceId,
-      data: haPayload,
+      meal_plan: haPayload,
     });
   }
 }
