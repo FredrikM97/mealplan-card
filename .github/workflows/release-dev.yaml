@@ -36,7 +36,7 @@ jobs:
         if: steps.check.outputs.has_changes == 'true'
         id: version
         run: echo "version=dev-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-        
+
       - name: Move dev tag to latest commit
         if: steps.check.outputs.has_changes == 'true'
         run: |
