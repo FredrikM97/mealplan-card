@@ -209,6 +209,11 @@ export class TuyaServiceAdapter
     }
   }
 
+  async isDataAvailable(): Promise<boolean> {
+    // Tuya service transport fetches state on demand and does not depend on an entity state.
+    return true;
+  }
+
   async write(meals: FeedingTime[]): Promise<void> {
     const encoded = this.encoder.encode(meals);
 
