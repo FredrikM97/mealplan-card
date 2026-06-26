@@ -167,6 +167,13 @@ const baseProfiles: DeviceProfile[] = [
     encodingTemplate: TEMPLATE_NO_DAYS,
     fields: FIELDS_MINIMAL,
   },
+  {
+    manufacturer: 'Kalado',
+    models: ['KPF01'],
+    encodingType: EncodingType.BASE64,
+    encodingTemplate: TEMPLATE_FULL,
+    fields: FIELDS_FULL,
+  },
 ];
 
 // Export base profiles directly - transformers will be added lazily when needed

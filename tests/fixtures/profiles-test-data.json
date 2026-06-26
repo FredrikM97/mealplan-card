@@ -175,5 +175,15 @@
       { "hour": 19, "minute": 30, "portion": 1, "enabled": 0 },
       { "hour": 23, "minute": 0, "portion": 1, "enabled": 0 }
     ]
+  },
+  {
+    "manufacturer": "Kalado",
+    "encoded": "fwIAAQB/Bw8CAX8OAAEBfxMPAgE=",
+    "decoded": [
+      { "days": 127, "portion": 1, "hour": 2, "minute": 0, "enabled": 0 },
+      { "days": 127, "portion": 2, "hour": 7, "minute": 15, "enabled": 1 },
+      { "days": 127, "portion": 1, "hour": 14, "minute": 0, "enabled": 1 },
+      { "days": 127, "portion": 2, "hour": 19, "minute": 15, "enabled": 1 }
+    ]
   }
 ]
