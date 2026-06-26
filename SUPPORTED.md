@@ -27,3 +27,5 @@
   - Models: 2LPetFeeder
 - **WellToBe**
   - Models: WBS36D
+- **Kalado**
+  - Models: KPF01
