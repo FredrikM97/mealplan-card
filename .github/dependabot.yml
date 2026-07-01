@@ -1,31 +1,23 @@
-
-version: 2
-
 updates:
   # NPM dependencies: keep non-breaking updates together
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: monthly
-
     groups:
       minor-and-patch-updates:
+        patterns:
+          - "*"
         update-types:
           - minor
           - patch
-        patterns:
-          - '*'
 
-  # GitHub Actions: keep non-breaking updates together
+  # GitHub Actions: group all updates into a single PR
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
-
     groups:
-      minor-and-patch-updates:
-        update-types:
-          - minor
-          - patch
+      all-ci-updates:
         patterns:
-          - '*'
+          - "*"
