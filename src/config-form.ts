@@ -239,11 +239,13 @@ export class MealPlanCardEditor extends LitElement {
     const isValid = this._allRequiredFieldsFilled();
 
     return html`
-      ${!isValid
-        ? html`<ha-alert alert-type="warning">
-            ${localize('config.incomplete_configuration')}
-          </ha-alert>`
-        : ''}
+      ${
+        !isValid
+          ? html`<ha-alert alert-type="warning">
+              ${localize('config.incomplete_configuration')}
+            </ha-alert>`
+          : ''
+      }
       <ha-form
         .hass=${this.hass}
         .data=${this._config}
