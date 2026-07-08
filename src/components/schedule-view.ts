@@ -166,6 +166,16 @@ export class ScheduleView extends LitElement {
     this.closeEditForm();
   }
 
+  private async handleDeleteFromEdit() {
+    if (this.editMeal?.index === undefined) return;
+    const updatedMeals = this.draftMeals.filter(
+      (_, i) => i !== this.editMeal!.index,
+    );
+    this.draftMeals = updatedMeals;
+    await this.mealState.saveMeals(updatedMeals);
+    this.closeEditForm();
+  }
+
   private closeEditForm() {
     this.heading = localize('schedule_view.manage_schedules');
     this.editMeal = null;
@@ -182,37 +192,15 @@ export class ScheduleView extends LitElement {
     if (this.editMeal === null) return '';
 
     return html`
-      <div>
-        <meal-edit-dialog
-          .meal=${this.editMeal.meal}
-          .index=${this.editMeal.index}
-          .profile=${this.mealState.profile}
-          .open=${true}
-          @save=${this.handleEditSave}
-          @cancel=${this.closeEditForm}
-        ></meal-edit-dialog>
-      </div>
-      <ha-dialog-footer slot="footer">
-        <ha-button
-          slot="secondaryAction"
-          appearance="plain"
-          @click=${this.closeEditForm}
-        >
-          ${localize('common.back')}
-        </ha-button>
-        <ha-button
-          slot="primaryAction"
-          @click=${() => {
-            const dialog =
-              this.shadowRoot?.querySelector<MealEditDialog>(
-                'meal-edit-dialog',
-              );
-            dialog?.handleSave();
-          }}
-        >
-          ${localize('common.save')}
-        </ha-button>
-      </ha-dialog-footer>
+      <meal-edit-dialog
+        .meal=${this.editMeal.meal}
+        .index=${this.editMeal.index}
+        .profile=${this.mealState.profile}
+        .open=${true}
+        .onDelete=${() => this.handleDeleteFromEdit()}
+        @save=${this.handleEditSave}
+        @cancel=${this.closeEditForm}
+      ></meal-edit-dialog>
     `;
   }
 
@@ -265,19 +253,21 @@ export class ScheduleView extends LitElement {
         ?hidden=${this.dataAvailable}
       ></message-banner>
       <div class="schedule-cards">
-        ${this.draftMeals.length === 0
-          ? this.renderEmptyState()
-          : this.draftMeals.map(
-              (meal, index) => html`
-                <meal-card
-                  .meal=${meal}
-                  .index=${index}
-                  .profile=${this.mealState.profile}
-                  .onMealAction=${this.handleMealAction.bind(this)}
-                >
-                </meal-card>
-              `,
-            )}
+        ${
+          this.draftMeals.length === 0
+            ? this.renderEmptyState()
+            : this.draftMeals.map(
+                (meal, index) => html`
+                  <meal-card
+                    .meal=${meal}
+                    .index=${index}
+                    .profile=${this.mealState.profile}
+                    .onMealAction=${this.handleMealAction.bind(this)}
+                  >
+                  </meal-card>
+                `,
+              )
+        }
       </div>
       <ha-dialog-footer slot="footer">
         ${this.renderAddButton()}

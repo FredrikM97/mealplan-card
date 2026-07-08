@@ -11,7 +11,6 @@ export class MealCard extends LitElement {
   @property({ type: Object }) meal!: FeedingTime;
   @property({ type: Number }) index: number = 0;
   @property({ type: Object }) profile!: DeviceProfile;
-  @property({ type: Boolean }) expanded = false;
   @property({ attribute: false }) onMealAction?: MealActionHandler;
 
   static styles = css`
@@ -84,9 +83,6 @@ export class MealCard extends LitElement {
       ha-switch {
         order: 2;
       }
-      .meal-card-expand-icon {
-        order: 3;
-      }
       .meal-card-days {
         order: 10;
         width: 100%;
@@ -97,72 +93,11 @@ export class MealCard extends LitElement {
         row-gap: 2px;
       }
     }
-    .meal-card-expand-icon {
-      transition: transform 0.2s;
-      margin-left: 4px;
-      --mdc-icon-size: 24px;
-      color: var(--primary-color);
-      cursor: pointer;
-    }
-    .meal-card-expand-icon:hover {
-      color: var(--primary-color-dark, var(--primary-color));
-    }
-    .meal-card-expand-icon.expanded {
-      transform: rotate(180deg);
-    }
-    .meal-card-details {
-      padding: 0 10px 8px 10px;
-      border-top: 1px solid var(--divider-color, #e0e0e0);
-      background: var(--secondary-background-color, #f5f5f5);
-    }
-    .meal-card-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 0;
-    }
-    .meal-card-label {
-      font-weight: 500;
-      color: var(--secondary-text-color);
-      font-size: 0.85em;
-    }
-    .meal-card-value {
-      font-size: 0.9em;
-    }
-    .meal-card-actions-section {
-      margin-top: 8px;
-      padding-top: 8px;
-      display: flex;
-      gap: 8px;
-    }
-    .meal-card-actions-section ha-button {
-      flex: 1;
-      --ha-button-height: 32px;
-    }
-    .meal-card-actions-section .delete-button {
-      --mdc-theme-primary: var(--error-color, #db4437);
-    }
   `;
 
-  private toggleExpand() {
-    const wasExpanded = this.expanded;
-    this.expanded = !this.expanded;
-
-    if (this.expanded && !wasExpanded) {
-      // Collapse all sibling cards
-      const parent = this.parentElement;
-      if (parent) {
-        parent.querySelectorAll<MealCard>('meal-card').forEach((card) => {
-          if (card !== this && card.expanded) {
-            card.expanded = false;
-          }
-        });
-      }
-
-      // Scroll card into view after expanding
-      this.updateComplete.then(() => {
-        this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      });
+  private handleClick() {
+    if (this.onMealAction && hasProfileField(this.profile, ProfileField.EDIT)) {
+      this.onMealAction('edit', this.index, this.meal);
     }
   }
 
@@ -189,7 +124,7 @@ export class MealCard extends LitElement {
 
     return html`
       <div class="meal-card">
-        <div class="meal-card-header" @click=${this.toggleExpand}>
+        <div class="meal-card-header" @click=${this.handleClick}>
           <div class="meal-card-number">${this.index + 1}</div>
           <div class="meal-card-summary">
             <div class="meal-card-time">${time}</div>
@@ -197,21 +132,6 @@ export class MealCard extends LitElement {
           </div>
           <div class="meal-card-days">${this.renderDaysInline()}</div>
           ${this.renderEnabledToggle()}
-          <ha-icon
-            class="meal-card-expand-icon ${this.expanded ? 'expanded' : ''}"
-            icon="mdi:chevron-down"
-          ></ha-icon>
-        </div>
-        ${this.expanded ? this.renderDetails() : ''}
-      </div>
-    `;
-  }
-
-  private renderDetails() {
-    return html`
-      <div class="meal-card-details">
-        <div class="meal-card-actions-section">
-          ${this.renderEditButton()} ${this.renderDeleteButton()}
         </div>
       </div>
     `;
@@ -242,47 +162,12 @@ export class MealCard extends LitElement {
         @click=${(e: Event) => {
           e.stopPropagation();
         }}
-        title="${this.meal.enabled
-          ? localize('common.enabled')
-          : localize('common.disabled')}"
+        title="${
+          this.meal.enabled
+            ? localize('common.enabled')
+            : localize('common.disabled')
+        }"
       ></ha-switch>
-    `;
-  }
-
-  private renderEditButton() {
-    if (!hasProfileField(this.profile, ProfileField.EDIT)) return '';
-
-    return html`
-      <ha-button
-        @click=${() => {
-          if (this.onMealAction) {
-            this.onMealAction('edit', this.index, this.meal);
-          }
-        }}
-      >
-        <ha-icon icon="mdi:pencil" slot="icon"></ha-icon>
-        ${localize('meal_card.edit_meal')}
-      </ha-button>
-    `;
-  }
-
-  private renderDeleteButton() {
-    if (!hasProfileField(this.profile, ProfileField.DELETE)) return '';
-
-    return html`
-      <ha-button
-        class="delete-button"
-        @click=${() => {
-          if (confirm(localize('meal_card.confirm_delete'))) {
-            if (this.onMealAction) {
-              this.onMealAction('delete', this.index, this.meal);
-            }
-          }
-        }}
-      >
-        <ha-icon icon="mdi:delete" slot="icon"></ha-icon>
-        ${localize('common.delete')}
-      </ha-button>
     `;
   }
 }

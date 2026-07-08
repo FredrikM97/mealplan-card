@@ -44,6 +44,16 @@ export class SaveEvent extends CustomEvent<EditMealState> {
   }
 }
 
+export class DeleteEvent extends CustomEvent<{ index: number }> {
+  constructor(index: number) {
+    super(EVENT_DELETE_MEAL, {
+      detail: { index },
+      bubbles: true,
+      composed: true,
+    });
+  }
+}
+
 export class ScheduleClosedEvent extends CustomEvent<void> {
   constructor() {
     super(EVENT_SCHEDULE_CLOSED, {

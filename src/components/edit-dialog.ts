@@ -8,7 +8,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { renderDaySelector } from './day-selector';
 import { localize } from '../locales/localize';
 import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
-import { SaveEvent } from '../constants';
+import { SaveEvent, DeleteEvent } from '../constants';
 import { formatTime, hasProfileField } from '../utils';
 import { log } from '../logger';
 
@@ -49,6 +49,7 @@ export class MealEditDialog extends LitElement {
   @property({ type: Number }) index?: number;
   @property({ type: Object }) profile?: DeviceProfile;
   @property({ type: Boolean }) open = false;
+  @property({ attribute: false }) onDelete?: () => void;
 
   @state() private formData: Partial<FeedingTime> = {};
 
@@ -112,6 +113,16 @@ export class MealEditDialog extends LitElement {
       align-items: center;
       justify-content: center;
     }
+    .edit-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 0 0 0;
+      width: 100%;
+      box-sizing: border-box;
+      border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+      margin-top: 16px;
+    }
   `;
 
   updated(changedProperties: PropertyValues) {
@@ -150,6 +161,38 @@ export class MealEditDialog extends LitElement {
     this.dispatchEvent(
       new SaveEvent({ meal: this.formData as FeedingTime, index: this.index }),
     );
+  }
+
+  private handleDelete() {
+    if (this.onDelete) {
+      this.onDelete();
+    } else {
+      this.dispatchEvent(new DeleteEvent(this.index ?? -1));
+    }
+  }
+
+  private renderFooter() {
+    const isExisting = this.index !== undefined && this.index >= 0;
+    const canDelete =
+      isExisting && hasProfileField(this.profile, ProfileField.DELETE);
+
+    return html`
+      <div class="edit-footer">
+        ${
+          canDelete
+            ? html`
+                <ha-button @click=${this.handleDelete}>
+                  <ha-icon icon="mdi:delete" slot="icon"></ha-icon>
+                  ${localize('common.delete')}
+                </ha-button>
+              `
+            : html`<span></span>`
+        }
+        <ha-button @click=${this.handleSave}>
+          ${localize('common.save')}
+        </ha-button>
+      </div>
+    `;
   }
 
   private validate(entry: Partial<FeedingTime>): boolean {
@@ -214,20 +257,23 @@ export class MealEditDialog extends LitElement {
     }
 
     return html`
-      <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
-        ${this.renderDaysField()}
-        <div class="edit-form-group">
-          <label for="edit-time">${localize('common.time')}</label>
-          <input
-            id="edit-time"
-            class="edit-time"
-            type="time"
-            .value=${formatHourMinute(this.formData.hour, this.formData.minute)}
-            @input=${this.handleTimeInput}
-          />
-        </div>
-        ${this.renderPortionRow()} ${this.renderPredefinedTimes()}
-      </form>
+      <div>
+        <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
+          ${this.renderDaysField()}
+          <div class="edit-form-group">
+            <label for="edit-time">${localize('common.time')}</label>
+            <input
+              id="edit-time"
+              class="edit-time"
+              type="time"
+              .value=${formatHourMinute(this.formData.hour, this.formData.minute)}
+              @input=${this.handleTimeInput}
+            />
+          </div>
+          ${this.renderPortionRow()} ${this.renderPredefinedTimes()}
+        </form>
+        ${this.renderFooter()}
+      </div>
     `;
   }
 }

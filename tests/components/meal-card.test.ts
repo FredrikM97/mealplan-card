@@ -49,151 +49,98 @@ describe('MealCard Component', () => {
   });
 
   describe('Expand/Collapse Behavior', () => {
-    it('expands to show details when toggled', async () => {
+    it('clicking meal card triggers edit action when EDIT field is present', async () => {
       const card = (await createMealCardFixture({
         ...testMeals.breakfast,
         _idx: 0,
       })) as MealCard;
 
-      // Initially collapsed
-      expect(card['expanded']).to.be.false;
-
-      // Expand the card
-      card['toggleExpand']();
       await card.updateComplete;
 
-      // Now expanded with details visible
-      expect(card['expanded']).to.be.true;
-      expect(card.shadowRoot?.querySelector('.meal-card-details')).to.exist;
+      let editTriggered = false;
+      let actionReceived = '';
+      const onMealAction: MealActionHandler = (action) => {
+        if (action === 'edit') {
+          editTriggered = true;
+          actionReceived = action;
+        }
+      };
+      card['onMealAction'] = onMealAction;
+
+      const header = card.shadowRoot?.querySelector('.meal-card-header');
+      expect(header).to.exist;
+      (header as HTMLElement).click();
+      await card.updateComplete;
+
+      expect(editTriggered).to.be.true;
+      expect(actionReceived).to.equal('edit');
     });
 
-    it('collapses other cards when one is expanded (accordion pattern)', async () => {
-      const profile = getTestProfile();
-      const container = await fixture(html`
-        <div>
-          <meal-card
-            .meal=${{ ...testMeals.breakfast, _idx: 0 }}
-            .profile=${profile}
-          ></meal-card>
-          <meal-card
-            .meal=${{ ...testMeals.lunch, _idx: 1 }}
-            .profile=${profile}
-          ></meal-card>
-        </div>
-      `);
+    it('clicking meal card does not trigger edit if EDIT field is not in profile', async () => {
+      const profileWithoutEdit = createMockProfile({
+        fields: [
+          ProfileField.TIME,
+          ProfileField.PORTION,
+          ProfileField.DAYS,
+          ProfileField.ENABLED,
+        ],
+      });
 
-      const [firstCard, secondCard] = container.querySelectorAll(
-        'meal-card',
-      ) as NodeListOf<MealCard>;
+      const card = (await createMealCardFixture(
+        { ...testMeals.breakfast, _idx: 0 },
+        { profile: profileWithoutEdit },
+      )) as MealCard;
 
-      // Expand first card
-      firstCard['toggleExpand']();
-      await firstCard.updateComplete;
-      expect(firstCard['expanded']).to.be.true;
+      await card.updateComplete;
 
-      // Expand second card - should auto-collapse the first
-      secondCard['toggleExpand']();
-      await secondCard.updateComplete;
+      let editTriggered = false;
+      const onMealAction: MealActionHandler = (action) => {
+        if (action === 'edit') {
+          editTriggered = true;
+        }
+      };
+      card['onMealAction'] = onMealAction;
 
-      expect(secondCard['expanded']).to.be.true;
-      expect(firstCard['expanded']).to.be.false;
+      const header = card.shadowRoot?.querySelector('.meal-card-header');
+      (header as HTMLElement).click();
+      await card.updateComplete;
+
+      expect(editTriggered).to.be.false;
     });
   });
 
   describe('Event Dispatching', () => {
-    it('emits edit-meal event with meal data when edit is triggered', async () => {
-      const card = (await createMealCardFixture(
-        { ...testMeals.breakfast, _idx: 0 },
-        { expanded: true },
-      )) as MealCard;
+    it('emits edit action when meal card is clicked', async () => {
+      const card = (await createMealCardFixture({
+        ...testMeals.breakfast,
+        _idx: 0,
+      })) as MealCard;
 
       await card.updateComplete;
 
       let eventReceived = false;
       let receivedMeal: MealCard['meal'] | null = null;
-      const onMealAction: MealActionHandler = (action, _index, meal) => {
+      let receivedIndex: number | null = null;
+      const onMealAction: MealActionHandler = (action, index, meal) => {
         if (action === 'edit') {
           eventReceived = true;
+          receivedIndex = index;
           receivedMeal = meal;
         }
       };
       card['onMealAction'] = onMealAction;
 
-      const editButton = card.shadowRoot?.querySelector('ha-button');
-      expect(editButton).to.exist;
-      (editButton as HTMLElement).click();
+      const header = card.shadowRoot?.querySelector('.meal-card-header');
+      expect(header).to.exist;
+      (header as HTMLElement).click();
       await card.updateComplete;
 
       expect(eventReceived).to.be.true;
+      expect(receivedIndex).to.equal(0);
       expect(receivedMeal).to.deep.equal(card.meal);
     });
 
-    it('emits delete-meal event with meal data when delete is triggered', async () => {
-      const card = (await createMealCardFixture(
-        { ...testMeals.lunch, _idx: 1 },
-        { expanded: true },
-      )) as MealCard;
-
-      await card.updateComplete;
-
-      // Mock confirm to return true
-      const originalConfirm = window.confirm;
-      window.confirm = () => true;
-
-      let eventReceived = false;
-      let receivedMeal: MealCard['meal'] | null = null;
-      const onMealAction: MealActionHandler = (action, _index, meal) => {
-        if (action === 'delete') {
-          eventReceived = true;
-          receivedMeal = meal;
-        }
-      };
-      card['onMealAction'] = onMealAction;
-
-      const deleteButton = card.shadowRoot?.querySelector('.delete-button');
-      expect(deleteButton).to.exist;
-      (deleteButton as HTMLElement).click();
-      await card.updateComplete;
-
-      expect(eventReceived).to.be.true;
-      expect(receivedMeal).to.deep.equal(card.meal);
-
-      // Restore confirm
-      window.confirm = originalConfirm;
-    });
-
-    it('does not delete when confirm is cancelled', async () => {
-      const card = (await createMealCardFixture(
-        { ...testMeals.lunch, _idx: 1 },
-        { expanded: true },
-      )) as MealCard;
-
-      await card.updateComplete;
-
-      // Mock confirm to return false
-      const originalConfirm = window.confirm;
-      window.confirm = () => false;
-
-      let eventReceived = false;
-      const onMealAction: MealActionHandler = (action) => {
-        if (action === 'delete') {
-          eventReceived = true;
-        }
-      };
-      card['onMealAction'] = onMealAction;
-
-      const deleteButton = card.shadowRoot?.querySelector('.delete-button');
-      expect(deleteButton).to.exist;
-      (deleteButton as HTMLElement).click();
-      await card.updateComplete;
-
-      expect(eventReceived).to.be.false;
-
-      // Restore confirm
-      window.confirm = originalConfirm;
-    });
-
-    it('emits meal-changed event when enabled toggle is changed', async () => {
+    it('emits update action when enabled toggle is changed', async () => {
       const card = (await createMealCardFixture({
         ...testMeals.dinner,
         _idx: 0,
@@ -202,11 +149,16 @@ describe('MealCard Component', () => {
       await card.updateComplete;
 
       let eventReceived = false;
-      card.addEventListener('meal-changed', () => {
-        eventReceived = true;
-      });
+      let actionReceived = '';
+      const onMealAction: MealActionHandler = (action) => {
+        if (action === 'update') {
+          eventReceived = true;
+          actionReceived = action;
+        }
+      };
+      card['onMealAction'] = onMealAction;
 
-      // Simulate toggle change only if toggle exists
+      // Simulate toggle change
       const toggle = card.shadowRoot?.querySelector(
         'ha-switch',
       ) as HTMLInputElement | null;
@@ -214,13 +166,8 @@ describe('MealCard Component', () => {
         toggle.checked = false;
         toggle.dispatchEvent(new Event('change', { bubbles: true }));
         await card.updateComplete;
-        // Accept either true or false for eventReceived, depending on implementation
-        expect([true, false]).to.include(eventReceived);
-        // Accept either 0 or 1 for enabled, depending on implementation
-        expect([0, 1]).to.include(card.meal.enabled);
-      } else {
-        // If toggle does not exist, test passes (no-op)
-        expect(toggle).to.exist;
+        expect(eventReceived).to.be.true;
+        expect(actionReceived).to.equal('update');
       }
     });
   });
@@ -242,17 +189,14 @@ describe('MealCard Component', () => {
     });
 
     it('shows day selector in header when profile includes DAYS field', async () => {
-      const card = (await createMealCardFixture(
-        {
-          hour: 21,
-          minute: 30,
-          portion: 5,
-          days: 0b0111110,
-          enabled: 1,
-          _idx: 0,
-        },
-        { expanded: false },
-      )) as MealCard;
+      const card = (await createMealCardFixture({
+        hour: 21,
+        minute: 30,
+        portion: 5,
+        days: 0b0111110,
+        enabled: 1,
+        _idx: 0,
+      })) as MealCard;
 
       await card.updateComplete;
 
@@ -263,38 +207,41 @@ describe('MealCard Component', () => {
       expect(daySelector).to.exist;
     });
 
-    it('shows edit and delete buttons when profile includes EDIT and DELETE', async () => {
-      const profileWithEditDelete = createMockProfile({
+    it('triggers edit action when profile includes EDIT and card is clicked', async () => {
+      const profileWithEdit = createMockProfile({
         fields: [
           ProfileField.TIME,
           ProfileField.PORTION,
           ProfileField.DAYS,
           ProfileField.ENABLED,
           ProfileField.EDIT,
-          ProfileField.DELETE,
         ],
       });
 
       const card = (await createMealCardFixture(
         { ...testMeals.breakfast, _idx: 0 },
-        { profile: profileWithEditDelete, expanded: true },
+        { profile: profileWithEdit },
       )) as MealCard;
 
       await card.updateComplete;
 
-      const editButton = card.shadowRoot?.querySelector(
-        '.meal-card-actions-section ha-button:not(.delete-button)',
-      );
-      const deleteButton = card.shadowRoot?.querySelector(
-        '.meal-card-actions-section .delete-button',
-      );
+      let editTriggered = false;
+      const onMealAction: MealActionHandler = (action) => {
+        if (action === 'edit') {
+          editTriggered = true;
+        }
+      };
+      card['onMealAction'] = onMealAction;
 
-      expect(editButton).to.exist;
-      expect(deleteButton).to.exist;
+      const header = card.shadowRoot?.querySelector('.meal-card-header');
+      (header as HTMLElement).click();
+      await card.updateComplete;
+
+      expect(editTriggered).to.be.true;
     });
 
-    it('hides edit and delete buttons when profile lacks EDIT and DELETE', async () => {
-      const profileWithoutEditDelete = createMockProfile({
+    it('does not trigger edit action when profile lacks EDIT field', async () => {
+      const profileWithoutEdit = createMockProfile({
         fields: [
           ProfileField.TIME,
           ProfileField.PORTION,
@@ -305,20 +252,24 @@ describe('MealCard Component', () => {
 
       const card = (await createMealCardFixture(
         { ...testMeals.breakfast, _idx: 0 },
-        { profile: profileWithoutEditDelete, expanded: true },
+        { profile: profileWithoutEdit },
       )) as MealCard;
 
       await card.updateComplete;
 
-      const editButton = card.shadowRoot?.querySelector(
-        '.meal-card-actions-section ha-button:not(.delete-button)',
-      );
-      const deleteButton = card.shadowRoot?.querySelector(
-        '.meal-card-actions-section .delete-button',
-      );
+      let editTriggered = false;
+      const onMealAction: MealActionHandler = (action) => {
+        if (action === 'edit') {
+          editTriggered = true;
+        }
+      };
+      card['onMealAction'] = onMealAction;
 
-      expect(editButton).to.not.exist;
-      expect(deleteButton).to.not.exist;
+      const header = card.shadowRoot?.querySelector('.meal-card-header');
+      (header as HTMLElement).click();
+      await card.updateComplete;
+
+      expect(editTriggered).to.be.false;
     });
   });
 });
