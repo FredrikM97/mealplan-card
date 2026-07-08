@@ -8,7 +8,7 @@ updates:
     groups:
       minor-and-patch-updates:
         patterns:
-          - "*"
+          - '*'
         update-types:
           - minor
           - patch
@@ -20,7 +20,7 @@ updates:
     groups:
       ci-all-updates:
         patterns:
-          - "*"
+          - '*'
         update-types:
           - minor
           - patch

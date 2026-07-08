@@ -242,9 +242,11 @@ export class MealCard extends LitElement {
         @click=${(e: Event) => {
           e.stopPropagation();
         }}
-        title="${this.meal.enabled
-          ? localize('common.enabled')
-          : localize('common.disabled')}"
+        title="${
+          this.meal.enabled
+            ? localize('common.enabled')
+            : localize('common.disabled')
+        }"
       ></ha-switch>
     `;
   }

@@ -1,3 +1,15 @@
 #!/bin/sh
+set -eu
+
+before_status="$(git status --porcelain)"
+
 npm run lint:fix
 node scripts/generate-manufacturer-list.mjs > SUPPORTED.md
+
+after_status="$(git status --porcelain)"
+
+if [ "$before_status" != "$after_status" ]; then
+	echo "pre-commit: files were modified by automatic fixes or generated content."
+	echo "pre-commit: review changes, stage them, and run commit again."
+	exit 1
+fi
