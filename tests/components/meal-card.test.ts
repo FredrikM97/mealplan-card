@@ -1,4 +1,4 @@
-import { expect, fixture, html } from '@open-wc/testing';
+import { expect } from '@open-wc/testing';
 import { describe, it } from 'vitest';
 import '../../src/components/meal-card';
 import type { MealCard } from '../../src/components/meal-card';
@@ -8,7 +8,6 @@ import { testMeals } from '../fixtures/data';
 import {
   createMealCardFixture,
   createMockProfile,
-  getTestProfile,
 } from '../fixtures/factories';
 
 describe('MealCard Component', () => {

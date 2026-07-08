@@ -11,6 +11,7 @@ import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
 import { SaveEvent, DeleteEvent } from '../constants';
 import { formatTime, hasProfileField } from '../utils';
 import { log } from '../logger';
+import type { DialogAction } from './dialog-shell';
 
 /**
  * Validate that hour and minute are valid time values
@@ -48,8 +49,7 @@ export class MealEditDialog extends LitElement {
   @property({ type: Object }) meal?: FeedingTime;
   @property({ type: Number }) index?: number;
   @property({ type: Object }) profile?: DeviceProfile;
-  @property({ type: Boolean }) open = false;
-  @property({ attribute: false }) onDelete?: () => void;
+  @property({ type: Boolean }) open = true;
 
   @state() private formData: Partial<FeedingTime> = {};
 
@@ -113,22 +113,27 @@ export class MealEditDialog extends LitElement {
       align-items: center;
       justify-content: center;
     }
-    .edit-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 24px 0 0 0;
-      width: 100%;
-      box-sizing: border-box;
-      border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-      margin-top: 16px;
-    }
   `;
 
   updated(changedProperties: PropertyValues) {
     if (changedProperties.has('meal') && this.meal) {
       this.formData = { ...this.meal };
     }
+  }
+
+  public show(options: {
+    meal: FeedingTime;
+    profile?: DeviceProfile;
+    index?: number;
+  }): void {
+    this.meal = options.meal;
+    this.profile = options.profile;
+    this.index = options.index;
+    this.open = true;
+  }
+
+  public hide(): void {
+    this.open = false;
   }
 
   private handleUpdate(update: Partial<FeedingTime>) {
@@ -159,40 +164,68 @@ export class MealEditDialog extends LitElement {
     }
 
     this.dispatchEvent(
-      new SaveEvent({ meal: this.formData as FeedingTime, index: this.index }),
+      new SaveEvent({
+        meal: this.formData as FeedingTime,
+        index: this.index,
+      }),
     );
   }
 
-  private handleDelete() {
-    if (this.onDelete) {
-      this.onDelete();
-    } else {
-      this.dispatchEvent(new DeleteEvent(this.index ?? -1));
+  public handleFooterAction(id: string): void {
+    switch (id) {
+      case 'save':
+        this.handleSave();
+        break;
+      case 'cancel':
+        this.dispatchEvent(
+          new CustomEvent('cancel', {
+            detail: undefined,
+            bubbles: true,
+            composed: true,
+          }),
+        );
+        break;
+      case 'delete':
+        this.dispatchEvent(new DeleteEvent(this.index ?? -1));
+        break;
+      default:
+        break;
     }
   }
 
-  private renderFooter() {
-    const isExisting = this.index !== undefined && this.index >= 0;
-    const canDelete =
-      isExisting && hasProfileField(this.profile, ProfileField.DELETE);
+  public getFooterActions(): DialogAction[] {
+    return this.buildFooterActions();
+  }
 
-    return html`
-      <div class="edit-footer">
-        ${
-          canDelete
-            ? html`
-                <ha-button @click=${this.handleDelete}>
-                  <ha-icon icon="mdi:delete" slot="icon"></ha-icon>
-                  ${localize('common.delete')}
-                </ha-button>
-              `
-            : html`<span></span>`
-        }
-        <ha-button @click=${this.handleSave}>
-          ${localize('common.save')}
-        </ha-button>
-      </div>
-    `;
+  private buildFooterActions(): DialogAction[] {
+    const actions: DialogAction[] = [];
+    const canDelete =
+      this.index !== undefined &&
+      this.index >= 0 &&
+      hasProfileField(this.profile, ProfileField.DELETE);
+
+    if (canDelete) {
+      actions.push({
+        id: 'delete',
+        label: localize('common.delete'),
+        slot: 'secondaryAction',
+        icon: 'mdi:delete',
+      });
+    }
+
+    actions.push({
+      id: 'cancel',
+      label: localize('common.cancel'),
+      slot: 'secondaryAction',
+    });
+
+    actions.push({
+      id: 'save',
+      label: localize('common.save'),
+      slot: 'primaryAction',
+    });
+
+    return actions;
   }
 
   private validate(entry: Partial<FeedingTime>): boolean {
@@ -272,7 +305,6 @@ export class MealEditDialog extends LitElement {
           </div>
           ${this.renderPortionRow()} ${this.renderPredefinedTimes()}
         </form>
-        ${this.renderFooter()}
       </div>
     `;
   }

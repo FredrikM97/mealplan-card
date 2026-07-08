@@ -110,8 +110,8 @@ describe('ScheduleView Component', () => {
       eventFired = true;
     });
 
-    const dialog = el.shadowRoot?.querySelector('ha-dialog');
-    dialog?.dispatchEvent(new CustomEvent('closed'));
+    const dialogShell = el.shadowRoot?.querySelector('meal-dialog-shell');
+    dialogShell?.dispatchEvent(new CustomEvent('closed'));
 
     expect(eventFired).to.be.true;
   });

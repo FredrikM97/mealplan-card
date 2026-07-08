@@ -4,7 +4,7 @@
  */
 
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, state, query } from 'lit/decorators.js';
 import { localize } from '../locales/localize';
 import type { FeedingTime, EditMealState, HomeAssistant } from '../types';
 import { ProfileField } from '../types';
@@ -12,7 +12,8 @@ import { MealStateController } from '../mealStateController';
 import { hasProfileField, timeToMinutes, areMealsEqual } from '../utils';
 import { ScheduleClosedEvent } from '../constants';
 import './edit-dialog';
-import type { MealEditDialog } from './edit-dialog';
+import './dialog-shell';
+import type { DialogAction, MealDialogShell } from './dialog-shell';
 import './meal-card';
 import './message-banner';
 
@@ -24,6 +25,7 @@ import './message-banner';
 export class ScheduleView extends LitElement {
   @property({ type: Object }) mealState!: MealStateController;
   @property({ type: Object }) hass!: HomeAssistant;
+  @query('meal-dialog-shell') private dialogShell?: MealDialogShell;
 
   @state() private draftMeals: FeedingTime[] = [];
   @state() private editMeal: EditMealState | null = null;
@@ -121,6 +123,7 @@ export class ScheduleView extends LitElement {
     } else if (action === 'edit') {
       this.heading = localize('schedule_view.edit_feeding_time');
       this.editMeal = { meal, index };
+      this.dialogShell?.show({ headerTitle: this.heading });
     }
   }
 
@@ -136,16 +139,23 @@ export class ScheduleView extends LitElement {
     this.editMeal = {
       meal: { hour: 12, minute: 0, portion: 1, days: 127, enabled: 1 },
     } satisfies EditMealState;
+    this.dialogShell?.show({ headerTitle: this.heading });
   }
 
   public async handleCancel() {
+    this.dialogShell?.hide();
     this.syncMealsWithController();
     this.dispatchEvent(new ScheduleClosedEvent());
   }
 
   public async handleSave() {
+    this.dialogShell?.hide();
     await this.mealState.saveMeals(this.draftMeals);
     this.dispatchEvent(new ScheduleClosedEvent());
+  }
+
+  private handleEditCancel() {
+    this.closeEditForm();
   }
 
   private handleDialogClosed() {
@@ -179,6 +189,42 @@ export class ScheduleView extends LitElement {
   private closeEditForm() {
     this.heading = localize('schedule_view.manage_schedules');
     this.editMeal = null;
+    this.dialogShell?.setHeaderTitle(this.heading);
+  }
+
+  private getFooterActions(): DialogAction[] {
+    const actions: DialogAction[] = [];
+
+    if (hasProfileField(this.mealState.profile, ProfileField.ADD)) {
+      actions.push({
+        id: 'add-meal',
+        label: localize('common.add_meal'),
+        slot: 'secondaryAction',
+        onClick: () => this.handleOpenAdd(),
+      });
+    }
+
+    actions.push(
+      {
+        id: 'cancel',
+        label: localize('common.cancel'),
+        slot: 'secondaryAction',
+        onClick: () => {
+          void this.handleCancel();
+        },
+      },
+      {
+        id: 'save',
+        label: localize('common.save'),
+        slot: 'primaryAction',
+        disabled: !this.hasPendingChanges() || !this.dataAvailable,
+        onClick: () => {
+          void this.handleSave();
+        },
+      },
+    );
+
+    return actions;
   }
 
   private hasPendingChanges(): boolean {
@@ -196,10 +242,9 @@ export class ScheduleView extends LitElement {
         .meal=${this.editMeal.meal}
         .index=${this.editMeal.index}
         .profile=${this.mealState.profile}
-        .open=${true}
-        .onDelete=${() => this.handleDeleteFromEdit()}
         @save=${this.handleEditSave}
-        @cancel=${this.closeEditForm}
+        @cancel=${this.handleEditCancel}
+        @delete-meal=${this.handleDeleteFromEdit}
       ></meal-edit-dialog>
     `;
   }
@@ -218,23 +263,6 @@ export class ScheduleView extends LitElement {
           ${localize('schedule_view.click_add_meal_to_get_started')}
         </div>
       </div>
-    `;
-  }
-
-  /**
-   * Render Add Meal button if profile allows it
-   */
-  private renderAddButton() {
-    if (!hasProfileField(this.mealState.profile, ProfileField.ADD)) return '';
-
-    return html`
-      <ha-button
-        slot="secondaryAction"
-        appearance="plain"
-        @click=${this.handleOpenAdd}
-      >
-        ${localize('common.add_meal')}
-      </ha-button>
     `;
   }
 
@@ -269,36 +297,19 @@ export class ScheduleView extends LitElement {
               )
         }
       </div>
-      <ha-dialog-footer slot="footer">
-        ${this.renderAddButton()}
-        <ha-button
-          slot="secondaryAction"
-          appearance="plain"
-          @click=${this.handleCancel}
-        >
-          ${localize('common.cancel')}
-        </ha-button>
-        <ha-button
-          slot="primaryAction"
-          @click=${this.handleSave}
-          ?disabled=${!this.hasPendingChanges() || !this.dataAvailable}
-        >
-          ${localize('common.save')}
-        </ha-button>
-      </ha-dialog-footer>
     `;
   }
 
   render() {
     return html`
-      <ha-dialog
-        open
-        header-title=${this.heading}
+      <meal-dialog-shell
+        .headerTitle=${this.heading}
+        .actions=${this.getFooterActions()}
         @closed=${this.handleDialogClosed}
       >
         <meal-message-display></meal-message-display>
         ${this.renderCardView()} ${this.renderMealForm()}
-      </ha-dialog>
+      </meal-dialog-shell>
     `;
   }
 }
