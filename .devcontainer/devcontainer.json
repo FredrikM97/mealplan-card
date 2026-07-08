@@ -18,5 +18,5 @@
   "mounts": [
     "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/node/.ssh,readonly"
   ],
-  "postCreateCommand": "npm install && cp .devcontainer/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
+  "postCreateCommand": "npm install && bash .devcontainer/setup-hooks.sh"
 }
