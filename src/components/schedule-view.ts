@@ -265,19 +265,21 @@ export class ScheduleView extends LitElement {
         ?hidden=${this.dataAvailable}
       ></message-banner>
       <div class="schedule-cards">
-        ${this.draftMeals.length === 0
-          ? this.renderEmptyState()
-          : this.draftMeals.map(
-              (meal, index) => html`
-                <meal-card
-                  .meal=${meal}
-                  .index=${index}
-                  .profile=${this.mealState.profile}
-                  .onMealAction=${this.handleMealAction.bind(this)}
-                >
-                </meal-card>
-              `,
-            )}
+        ${
+          this.draftMeals.length === 0
+            ? this.renderEmptyState()
+            : this.draftMeals.map(
+                (meal, index) => html`
+                  <meal-card
+                    .meal=${meal}
+                    .index=${index}
+                    .profile=${this.mealState.profile}
+                    .onMealAction=${this.handleMealAction.bind(this)}
+                  >
+                  </meal-card>
+                `,
+              )
+        }
       </div>
       <ha-dialog-footer slot="footer">
         ${this.renderAddButton()}
