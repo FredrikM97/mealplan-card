@@ -142,6 +142,19 @@ describe('MealEditDialog', () => {
     expect(saveSpy.mock.calls[0][0].detail.index).to.equal(el.index);
   });
 
+  it('does not render footer action buttons', async () => {
+    const footer = el.shadowRoot?.querySelector('ha-dialog-footer');
+    const buttons = el.shadowRoot?.querySelectorAll('ha-button') ?? [];
+    const actionLabels = Array.from(buttons).map((btn) =>
+      btn.textContent?.trim(),
+    );
+
+    expect(footer).to.not.exist;
+    expect(actionLabels).to.not.include('Cancel');
+    expect(actionLabels).to.not.include('Save');
+    expect(actionLabels).to.not.include('Delete');
+  });
+
   it('validates time input', async () => {
     el['formData'] = { hour: -1, minute: 0, portion: 1 };
 

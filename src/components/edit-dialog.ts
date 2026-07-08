@@ -8,9 +8,10 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { renderDaySelector } from './day-selector';
 import { localize } from '../locales/localize';
 import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
-import { SaveEvent } from '../constants';
+import { SaveEvent, DeleteEvent } from '../constants';
 import { formatTime, hasProfileField } from '../utils';
 import { log } from '../logger';
+import type { DialogAction } from './dialog-shell';
 
 /**
  * Validate that hour and minute are valid time values
@@ -48,7 +49,7 @@ export class MealEditDialog extends LitElement {
   @property({ type: Object }) meal?: FeedingTime;
   @property({ type: Number }) index?: number;
   @property({ type: Object }) profile?: DeviceProfile;
-  @property({ type: Boolean }) open = false;
+  @property({ type: Boolean }) open = true;
 
   @state() private formData: Partial<FeedingTime> = {};
 
@@ -120,6 +121,21 @@ export class MealEditDialog extends LitElement {
     }
   }
 
+  public show(options: {
+    meal: FeedingTime;
+    profile?: DeviceProfile;
+    index?: number;
+  }): void {
+    this.meal = options.meal;
+    this.profile = options.profile;
+    this.index = options.index;
+    this.open = true;
+  }
+
+  public hide(): void {
+    this.open = false;
+  }
+
   private handleUpdate(update: Partial<FeedingTime>) {
     this.formData = { ...this.formData, ...update };
   }
@@ -148,8 +164,68 @@ export class MealEditDialog extends LitElement {
     }
 
     this.dispatchEvent(
-      new SaveEvent({ meal: this.formData as FeedingTime, index: this.index }),
+      new SaveEvent({
+        meal: this.formData as FeedingTime,
+        index: this.index,
+      }),
     );
+  }
+
+  public handleFooterAction(id: string): void {
+    switch (id) {
+      case 'save':
+        this.handleSave();
+        break;
+      case 'cancel':
+        this.dispatchEvent(
+          new CustomEvent('cancel', {
+            detail: undefined,
+            bubbles: true,
+            composed: true,
+          }),
+        );
+        break;
+      case 'delete':
+        this.dispatchEvent(new DeleteEvent(this.index ?? -1));
+        break;
+      default:
+        break;
+    }
+  }
+
+  public getFooterActions(): DialogAction[] {
+    return this.buildFooterActions();
+  }
+
+  private buildFooterActions(): DialogAction[] {
+    const actions: DialogAction[] = [];
+    const canDelete =
+      this.index !== undefined &&
+      this.index >= 0 &&
+      hasProfileField(this.profile, ProfileField.DELETE);
+
+    if (canDelete) {
+      actions.push({
+        id: 'delete',
+        label: localize('common.delete'),
+        slot: 'secondaryAction',
+        icon: 'mdi:delete',
+      });
+    }
+
+    actions.push({
+      id: 'cancel',
+      label: localize('common.cancel'),
+      slot: 'secondaryAction',
+    });
+
+    actions.push({
+      id: 'save',
+      label: localize('common.save'),
+      slot: 'primaryAction',
+    });
+
+    return actions;
   }
 
   private validate(entry: Partial<FeedingTime>): boolean {
@@ -214,20 +290,22 @@ export class MealEditDialog extends LitElement {
     }
 
     return html`
-      <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
-        ${this.renderDaysField()}
-        <div class="edit-form-group">
-          <label for="edit-time">${localize('common.time')}</label>
-          <input
-            id="edit-time"
-            class="edit-time"
-            type="time"
-            .value=${formatHourMinute(this.formData.hour, this.formData.minute)}
-            @input=${this.handleTimeInput}
-          />
-        </div>
-        ${this.renderPortionRow()} ${this.renderPredefinedTimes()}
-      </form>
+      <div>
+        <form class="edit-form" @submit=${(e: Event) => e.preventDefault()}>
+          ${this.renderDaysField()}
+          <div class="edit-form-group">
+            <label for="edit-time">${localize('common.time')}</label>
+            <input
+              id="edit-time"
+              class="edit-time"
+              type="time"
+              .value=${formatHourMinute(this.formData.hour, this.formData.minute)}
+              @input=${this.handleTimeInput}
+            />
+          </div>
+          ${this.renderPortionRow()} ${this.renderPredefinedTimes()}
+        </form>
+      </div>
     `;
   }
 }
