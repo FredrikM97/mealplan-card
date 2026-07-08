@@ -1,14 +1,18 @@
-import en from './en.json';
-import sv from './sv.json';
-import ru from './ru.json';
-import es from './es.json';
-import cs from './cs.json';
-
 type Translation = Record<string, unknown>;
-const translations = { en, sv, ru, es, cs } satisfies Record<
-  string,
-  Translation
->;
+
+// Dynamically load all locale JSON files
+const translationModules = import.meta.glob<{ default: Translation }>(
+  './*.json',
+  { eager: true },
+);
+
+export const translations = Object.fromEntries(
+  Object.entries(translationModules).map(([path, module]) => {
+    const langCode = path.match(/\/(\w+)\.json$/)?.[1];
+    return [langCode, module.default];
+  }),
+) as Record<string, Translation>;
+
 type Language = keyof typeof translations;
 
 const defaultLang: Language = 'en';

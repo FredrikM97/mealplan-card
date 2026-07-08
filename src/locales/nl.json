@@ -1,0 +1,80 @@
+{
+  "common": {
+    "back": "Terug",
+    "cancel": "Annuleren",
+    "save": "Opslaan",
+    "delete": "Verwijderen",
+    "close": "Sluiten",
+    "portion": "Portie",
+    "time": "Tijd",
+    "days": "Dagen",
+    "enabled": "Ingeschakeld",
+    "disabled": "Uitgeschakeld",
+    "every_day": "Elke dag",
+    "no_days": "Geen dagen",
+    "add_meal": "+ Toevoegen"
+  },
+  "days": {
+    "short": {
+      "monday": "M",
+      "tuesday": "D",
+      "wednesday": "W",
+      "thursday": "D",
+      "friday": "V",
+      "saturday": "Z",
+      "sunday": "Z"
+    },
+    "full": {
+      "monday": "Maandag",
+      "tuesday": "Dinsdag",
+      "wednesday": "Woensdag",
+      "thursday": "Donderdag",
+      "friday": "Vrijdag",
+      "saturday": "Zaterdag",
+      "sunday": "Zondag"
+    }
+  },
+  "main": {
+    "manage_schedules": "Beheren",
+    "configuration_required": "Configuratie vereist",
+    "configuration_instructions": "Configureer een sensor en fabrikant in de kaartinstellingen."
+  },
+  "schedule_view": {
+    "manage_schedules": "Beheren",
+    "edit_feeding_time": "Tijd bewerken",
+    "no_meals_scheduled": "Geen tijden gepland",
+    "click_add_meal_to_get_started": "Klik op '+ Toevoegen' om het eerste voerschema aan te maken",
+    "sensor_unavailable": "Entiteit niet beschikbaar",
+    "sensor_unavailable_message": "De geselecteerde sensor is niet beschikbaar. Je kunt geen wijzigingen opslaan totdat het apparaat bereikbaar is."
+  },
+  "meal_card": {
+    "edit_meal": "Bewerken",
+    "confirm_delete": "Weet je zeker dat je deze tijd wilt verwijderen?"
+  },
+  "config": {
+    "portion_label": "Portiegrootte",
+    "portion_helper": "Gram per portie",
+    "sensor_label": "Maaltijdplan sensor",
+    "sensor_helper": "Selecteer de sensor of tekst-entiteit met de maaltijdplandata",
+    "manufacturer_label": "Voederprofiel",
+    "manufacturer_helper": "Selecteer de fabrikant en het model van de voerautomaat",
+    "title_label": "Titel",
+    "overview_fields_label": "Overzichtschips",
+    "overview_fields_helper": "Selecteer welke chips in de overzichtrij worden getoond",
+    "helper_label": "Hulpentiteit (optioneel)",
+    "helper_helper": "Deze input_text dient als reserveopslag voor je voerschema. Als de sensor niet beschikbaar is, herstelt de kaart het schema vanuit deze helper.",
+    "transport_label": "Transporttype",
+    "transport_helper": "Hoe data te schrijven: Sensor (via set_value service) of MQTT (publiceer naar zigbee2mqtt topic)",
+    "read_action_label": "Leesactie",
+    "write_action_label": "Schrijfactie",
+    "dp_code_label": "Datapuntcode",
+    "device_id_label": "Apparaat-ID",
+    "incomplete_configuration": "Onvolledige configuratie"
+  },
+  "overview": {
+    "schedules": "Schema's",
+    "active": "Actief",
+    "today": "Vandaag",
+    "avg_week": "Gem/Week"
+  }
+}
