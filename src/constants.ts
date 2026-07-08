@@ -10,6 +10,7 @@ export const EVENT_SAVE = 'save';
 export const EVENT_EDIT_MEAL = 'edit-meal';
 export const EVENT_DELETE_MEAL = 'delete-meal';
 export const EVENT_MEAL_CHANGED = 'meal-changed';
+export const EVENT_MEAL_EDIT_REQUESTED = 'meal-edit-requested';
 
 /**
  * Message types
@@ -48,6 +49,16 @@ export class ScheduleClosedEvent extends CustomEvent<void> {
   constructor() {
     super(EVENT_SCHEDULE_CLOSED, {
       detail: undefined,
+      bubbles: true,
+      composed: true,
+    });
+  }
+}
+
+export class MealEditRequestedEvent extends CustomEvent<EditMealState> {
+  constructor(detail: EditMealState) {
+    super(EVENT_MEAL_EDIT_REQUESTED, {
+      detail,
       bubbles: true,
       composed: true,
     });

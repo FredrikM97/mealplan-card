@@ -71,6 +71,7 @@ export interface CardConfig {
   manufacturer?: string;
   model?: string;
   transport_type: TransportType;
+  show_schedules?: boolean;
 }
 
 /**

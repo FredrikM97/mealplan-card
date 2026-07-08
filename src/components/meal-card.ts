@@ -16,11 +16,15 @@ export class MealCard extends LitElement {
 
   static styles = css`
     .meal-card {
-      background: var(--card-background-color, #fff);
-      border-radius: 6px;
+      background: var(
+        --meal-card-background,
+        var(--card-background-color, #fff)
+      );
+      border-radius: var(--meal-card-border-radius, 6px);
       margin-bottom: 6px;
-      border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      border: 1px solid
+        var(--meal-card-border-color, var(--divider-color, rgba(0, 0, 0, 0.12)));
+      box-shadow: var(--meal-card-box-shadow, 0 1px 3px rgba(0, 0, 0, 0.08));
     }
     .meal-card-header {
       display: flex;
@@ -30,6 +34,7 @@ export class MealCard extends LitElement {
     }
     .meal-card-header:hover {
       background: var(--secondary-background-color, #f5f5f5);
+      border-radius: var(--meal-card-border-radius, 6px);
     }
     .meal-card-header ha-switch,
     .meal-card-header ha-icon {
@@ -242,9 +247,11 @@ export class MealCard extends LitElement {
         @click=${(e: Event) => {
           e.stopPropagation();
         }}
-        title="${this.meal.enabled
-          ? localize('common.enabled')
-          : localize('common.disabled')}"
+        title="${
+          this.meal.enabled
+            ? localize('common.enabled')
+            : localize('common.disabled')
+        }"
       ></ha-switch>
     `;
   }

@@ -127,16 +127,20 @@ describe('MealPlanCard integration', () => {
     await el.updateComplete;
 
     // Verify dialog is open
-    let scheduleView = el.shadowRoot!.querySelector('schedule-view');
-    expect(scheduleView).to.exist;
+    let dialog = el.shadowRoot!.querySelector('ha-dialog');
+    expect(dialog).to.exist;
+    expect((dialog as HTMLElement & { open: boolean }).open).to.be.true;
 
     // Close dialog
+    const scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    expect(scheduleView).to.exist;
     scheduleView!.dispatchEvent(new ScheduleClosedEvent());
     await el.updateComplete;
 
     // Verify dialog is closed
-    scheduleView = el.shadowRoot!.querySelector('schedule-view');
-    expect(scheduleView).to.not.exist;
+    dialog = el.shadowRoot!.querySelector('ha-dialog');
+    expect(dialog).to.exist;
+    expect((dialog as HTMLElement & { open: boolean }).open).to.be.false;
   });
   it('updates meal state when hass changes', async () => {
     const base64_1 = encodeMealData(testMeals.breakfast);

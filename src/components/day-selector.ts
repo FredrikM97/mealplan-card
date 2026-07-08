@@ -86,9 +86,9 @@ export function renderDaySelector({
       ${labels.map(
         (d, i) => html`
           <span
-            class="day-cell${days & (1 << i) ? ' selected' : ''}${editable
-              ? ''
-              : ' readonly'}"
+            class="day-cell${days & (1 << i) ? ' selected' : ''}${
+              editable ? '' : ' readonly'
+            }"
             @click=${editable ? () => handleClick(i) : undefined}
             >${d}</span
           >

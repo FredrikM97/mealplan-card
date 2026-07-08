@@ -101,6 +101,10 @@ export class MealPlanCardEditor extends LitElement {
           },
         },
       },
+      {
+        name: 'show_schedules',
+        selector: { boolean: {} },
+      },
     ];
 
     if (this._config.transport_type !== TransportType.TUYA_SERVICE) {
@@ -239,11 +243,13 @@ export class MealPlanCardEditor extends LitElement {
     const isValid = this._allRequiredFieldsFilled();
 
     return html`
-      ${!isValid
-        ? html`<ha-alert alert-type="warning">
-            ${localize('config.incomplete_configuration')}
-          </ha-alert>`
-        : ''}
+      ${
+        !isValid
+          ? html`<ha-alert alert-type="warning">
+              ${localize('config.incomplete_configuration')}
+            </ha-alert>`
+          : ''
+      }
       <ha-form
         .hass=${this.hass}
         .data=${this._config}
@@ -277,6 +283,8 @@ export class MealPlanCardEditor extends LitElement {
         return localize('config.read_action_label');
       case 'device_id':
         return localize('config.device_id_label');
+      case 'show_schedules':
+        return localize('config.show_schedules_label');
       case 'incomplete_configuration':
         return localize('config.incomplete_configuration');
       default:
@@ -297,6 +305,8 @@ export class MealPlanCardEditor extends LitElement {
         return localize('config.overview_fields_helper');
       case 'transport_type':
         return localize('config.transport_helper');
+      case 'show_schedules':
+        return localize('config.show_schedules_helper');
       default:
         return undefined;
     }

@@ -5,8 +5,9 @@ import { MealStateController } from './mealStateController';
 import type { HomeAssistant, MealPlanCardConfig } from './types';
 import { OverviewField, TransportType } from './types';
 import { getProfileWithTransformer } from './profiles/profiles';
-import './components/overview';
-import './components/schedule-view';
+import './components/overview.js';
+import './components/schedule-view.js';
+import './components/meal-card.js';
 import { log } from './logger';
 import { getVersionString } from './version';
 import './config-form.js';
@@ -91,6 +92,15 @@ export class MealPlanCard extends LitElement {
       return this.renderConfigurationRequired();
     }
 
+    if (this.config.show_schedules) {
+      return html`
+        <schedule-view
+          .mealState=${this.mealState}
+          .hass=${this.hass}
+        ></schedule-view>
+      `;
+    }
+
     return html`
       <meal-overview
         .meals=${this.mealState.meals}
@@ -117,18 +127,22 @@ export class MealPlanCard extends LitElement {
   }
 
   private renderScheduleDialog() {
-    if (!this._dialogOpen || !this.mealState) {
+    if (!this.mealState || this.config.show_schedules) {
       return '';
     }
 
     return html`
-      <schedule-view
-        .mealState=${this.mealState}
-        .hass=${this.hass}
-        @schedule-closed=${() => {
-          this._dialogOpen = false;
-        }}
-      ></schedule-view>
+      <ha-dialog
+        .open=${this._dialogOpen}
+        header-title=${localize('schedule_view.manage_schedules')}
+        @closed=${() => (this._dialogOpen = false)}
+      >
+        <schedule-view
+          .mealState=${this.mealState}
+          .hass=${this.hass}
+          @schedule-closed=${() => (this._dialogOpen = false)}
+        ></schedule-view>
+      </ha-dialog>
     `;
   }
 
@@ -150,6 +164,7 @@ export class MealPlanCard extends LitElement {
         OverviewField.AVG_WEEK,
       ],
       transport_type: TransportType.SENSOR,
+      show_schedules: false,
     } as MealPlanCardConfig;
   }
 
