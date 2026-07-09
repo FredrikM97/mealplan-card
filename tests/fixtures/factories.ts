@@ -177,6 +177,7 @@ export function createMealPlanCardConfig(
     model: string;
     helper: string;
     portions: number;
+    show_schedules: boolean;
     minimal: boolean;
   }>,
 ): MealPlanCardConfig {
@@ -203,6 +204,9 @@ export function createMealPlanCardConfig(
       OverviewField.AVG_WEEK,
     ],
     transport_type: TransportType.SENSOR,
+    ...(overrides?.show_schedules !== undefined && {
+      show_schedules: overrides.show_schedules,
+    }),
     ...(overrides?.portions !== undefined && { portions: overrides.portions }),
   };
 }

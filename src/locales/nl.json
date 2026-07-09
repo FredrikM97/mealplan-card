@@ -69,7 +69,9 @@
     "write_action_label": "Schrijfactie",
     "dp_code_label": "Datapuntcode",
     "device_id_label": "Apparaat-ID",
-    "incomplete_configuration": "Onvolledige configuratie"
+    "incomplete_configuration": "Onvolledige configuratie",
+    "show_schedules_label": "Schema's tonen",
+    "show_schedules_helper": "Toon het voerschema direct op de kaart zonder het beheerdialoog te openen"
   },
   "overview": {
     "schedules": "Schema's",

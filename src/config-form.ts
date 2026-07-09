@@ -85,6 +85,12 @@ export class MealPlanCardEditor extends LitElement {
               },
             },
           },
+          {
+            name: 'show_schedules',
+            selector: {
+              boolean: {},
+            },
+          },
         ],
       },
       {
@@ -273,6 +279,8 @@ export class MealPlanCardEditor extends LitElement {
         return localize('config.overview_fields_label');
       case 'transport_type':
         return localize('config.transport_label');
+      case 'show_schedules':
+        return localize('config.show_schedules_label');
       case 'write_action':
         return localize('config.write_action_label');
       case 'read_action':
@@ -299,6 +307,8 @@ export class MealPlanCardEditor extends LitElement {
         return localize('config.overview_fields_helper');
       case 'transport_type':
         return localize('config.transport_helper');
+      case 'show_schedules':
+        return localize('config.show_schedules_helper');
       default:
         return undefined;
     }

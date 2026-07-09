@@ -69,7 +69,9 @@
     "write_action_label": "Write Action",
     "dp_code_label": "Data Point Code",
     "device_id_label": "Device ID",
-    "incomplete_configuration": "Incomplete Configuration"
+    "incomplete_configuration": "Incomplete Configuration",
+    "show_schedules_label": "Show schedules",
+    "show_schedules_helper": "Show the feeding schedule directly on the card without opening the manage dialog"
   },
   "overview": {
     "schedules": "Schedules",

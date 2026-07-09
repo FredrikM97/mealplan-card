@@ -68,6 +68,7 @@ export interface CardConfig {
   title: string;
   portions?: number;
   overview_fields?: OverviewField[];
+  show_schedules?: boolean;
   manufacturer?: string;
   model?: string;
   transport_type: TransportType;
