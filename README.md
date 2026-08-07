@@ -20,6 +20,8 @@ It is primarily designed for Tuya-based feeders, but may also work with other de
 
 For supported devices and models, see [SUPPORTED.md](SUPPORTED.md).
 
+<img width="430" src="https://github.com/user-attachments/assets/13882cf0-ca0e-4768-89e9-fcbc15d50aef" ce/>
+
 ## Features
 
 - See next scheduled feeding and total food for today
