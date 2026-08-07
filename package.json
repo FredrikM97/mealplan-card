@@ -18,14 +18,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@open-wc/testing": "^4.0.0",
+    "@open-wc/testing": "^5.0.0",
     "@types/eslint__js": "^9.14.0",
-    "@vitest/coverage-v8": "^4.1.9",
-    "eslint": "^10.6.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.8.0",
     "husky": "^9.1.7",
-    "jsdom": "^29.1.1",
-    "prettier": "^3.9.4",
-    "terser": "^5.48.0",
+    "jsdom": "^30.0.1",
+    "prettier": "^3.9.6",
+    "terser": "^5.49.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.1",
     "vite": "^8.1.2",
@@ -33,6 +33,6 @@
   },
   "dependencies": {
     "@kipk/load-ha-components": "^1.0.3",
-    "@open-wc/semantic-dom-diff": "^0.20.1"
+    "@open-wc/semantic-dom-diff": "^0.21.0"
   }
 }
