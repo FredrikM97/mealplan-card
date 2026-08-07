@@ -109,6 +109,38 @@ describe('MealPlanCard integration', () => {
     expect(scheduleView).to.exist;
   });
 
+  it('renders inline schedules when show_schedules is enabled', async () => {
+    const base64 = encodeMealData(testMeals.breakfast);
+    const config = createMealPlanCardConfig({ show_schedules: true });
+    const hass = createMockHassWithSensor('sensor.test', base64);
+    const el = await createMealPlanCardFixture(config, hass);
+
+    await el.updateComplete;
+
+    const overview = el.shadowRoot!.querySelector('meal-overview');
+    const scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    const manageButton = el.shadowRoot!.querySelector('ha-button');
+
+    expect(overview).to.not.exist;
+    expect(scheduleView).to.exist;
+    const inlineActions =
+      scheduleView?.shadowRoot?.querySelector('.inline-actions');
+    expect(inlineActions).to.exist;
+    expect(manageButton).to.not.exist;
+  });
+
+  it('does not render modal schedule view when show_schedules is enabled', async () => {
+    const base64 = encodeMealData(testMeals.breakfast);
+    const config = createMealPlanCardConfig({ show_schedules: true });
+    const hass = createMockHassWithSensor('sensor.test', base64);
+    const el = await createMealPlanCardFixture(config, hass);
+
+    await el.updateComplete;
+
+    const scheduleViews = el.shadowRoot!.querySelectorAll('schedule-view');
+    expect(scheduleViews.length).to.equal(1);
+  });
+
   it('closes schedule dialog on schedule-closed event', async () => {
     const base64 = encodeMealData(testMeals.breakfast);
     const config = createMealPlanCardConfig();

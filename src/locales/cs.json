@@ -69,7 +69,9 @@
     "write_action_label": "Akce zápisu",
     "dp_code_label": "Kód datového bodu (DP Code)",
     "device_id_label": "ID zařízení",
-    "incomplete_configuration": "Neúplná konfigurace"
+    "incomplete_configuration": "Neúplná konfigurace",
+    "show_schedules_label": "Zobrazit plány",
+    "show_schedules_helper": "Zobrazit plán krmení přímo na kartě bez otevření dialogu správy"
   },
   "overview": {
     "schedules": "Plány",

@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, css } from 'lit';
 import {
   customElement,
   property,
@@ -13,12 +13,98 @@ export interface DialogAction {
   slot: DialogActionSlot;
   icon?: string;
   disabled?: boolean;
-  onClick?: () => void;
+  destructive?: boolean;
+}
+
+@customElement('meal-dialog-actions')
+export class MealDialogActions extends LitElement {
+  @property({ attribute: false }) actions: DialogAction[] = [];
+  @property({ type: Boolean }) inline = false;
+
+  static styles = css`
+    .inline-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 8px 16px;
+      border-top: 1px solid var(--divider-color);
+      box-sizing: border-box;
+    }
+
+    .inline-actions [slot='secondaryAction'] {
+      margin-right: auto;
+    }
+
+    .destructive-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--error-color, #b00020);
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 8px 4px;
+      font-family: inherit;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-radius: 4px;
+    }
+    .destructive-btn:hover {
+      background-color: rgba(var(--rgb-error-color, 176, 0, 32), 0.08);
+    }
+  `;
+
+  private emitAction(id: string) {
+    this.dispatchEvent(
+      new CustomEvent('action', {
+        detail: { id },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private renderButtons() {
+    return this.actions.map((action) => {
+      if (action.destructive) {
+        return html`
+          <button
+            slot=${action.slot}
+            class="destructive-btn"
+            @click=${() => this.emitAction(action.id)}
+          >
+            ${action.label}
+          </button>
+        `;
+      }
+      return html`
+        <ha-button
+          slot=${action.slot}
+          ?disabled=${!!action.disabled}
+          @click=${() => this.emitAction(action.id)}
+        >
+          ${
+            action.icon
+              ? html`<ha-icon .icon=${action.icon} slot="icon"></ha-icon>`
+              : ''
+          }
+          ${action.label}
+        </ha-button>
+      `;
+    });
+  }
+
+  render() {
+    if (this.inline) {
+      return html`<div class="inline-actions">${this.renderButtons()}</div>`;
+    }
+
+    return html`<ha-dialog-footer>${this.renderButtons()}</ha-dialog-footer>`;
+  }
 }
 
 type DialogActionOwner = HTMLElement & {
-  getFooterActions?: () => DialogAction[];
-  handleFooterAction?: (id: string) => void;
+  footerActions?: DialogAction[];
 };
 
 /**
@@ -32,10 +118,30 @@ export class MealDialogShell extends LitElement {
   @queryAssignedElements({ flatten: true })
   private assignedChildren!: HTMLElement[];
 
+  private readonly onFooterActionsChanged = () => {
+    this.requestUpdate();
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener(
+      'footer-actions-changed',
+      this.onFooterActionsChanged,
+    );
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener(
+      'footer-actions-changed',
+      this.onFooterActionsChanged,
+    );
+    super.disconnectedCallback();
+  }
+
   private getActionOwner(): DialogActionOwner | null {
     for (const child of this.assignedChildren) {
       const owner = child as DialogActionOwner;
-      if (typeof owner.getFooterActions === 'function') {
+      if (Array.isArray(owner.footerActions)) {
         return owner;
       }
     }
@@ -68,7 +174,7 @@ export class MealDialogShell extends LitElement {
   }
 
   private getResolvedActions(): DialogAction[] {
-    const ownedActions = this.getActionOwner()?.getFooterActions?.();
+    const ownedActions = this.getActionOwner()?.footerActions;
     if (ownedActions) {
       return ownedActions;
     }
@@ -89,8 +195,14 @@ export class MealDialogShell extends LitElement {
 
   private emitAction(id: string) {
     const owner = this.getActionOwner();
-    if (owner?.handleFooterAction) {
-      owner.handleFooterAction(id);
+    if (owner) {
+      owner.dispatchEvent(
+        new CustomEvent('footer-action', {
+          detail: { id },
+          bubbles: false,
+          composed: false,
+        }),
+      );
       return;
     }
 
@@ -115,30 +227,12 @@ export class MealDialogShell extends LitElement {
         @closed=${this.handleClosed}
       >
         <slot @slotchange=${this.handleSlotChange}></slot>
-        <ha-dialog-footer slot="footer">
-          ${this.getResolvedActions().map(
-            (action) => html`
-              <ha-button
-                slot=${action.slot}
-                ?disabled=${!!action.disabled}
-                @click=${() => {
-                  if (action.onClick) {
-                    action.onClick();
-                    return;
-                  }
-                  this.emitAction(action.id);
-                }}
-              >
-                ${
-                  action.icon
-                    ? html`<ha-icon .icon=${action.icon} slot="icon"></ha-icon>`
-                    : ''
-                }
-                ${action.label}
-              </ha-button>
-            `,
-          )}
-        </ha-dialog-footer>
+        <meal-dialog-actions
+          slot="footer"
+          .actions=${this.getResolvedActions()}
+          @action=${(e: CustomEvent<{ id: string }>) =>
+            this.emitAction(e.detail.id)}
+        ></meal-dialog-actions>
       </ha-dialog>
     `;
   }
@@ -146,6 +240,7 @@ export class MealDialogShell extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
+    'meal-dialog-actions': MealDialogActions;
     'meal-dialog-shell': MealDialogShell;
   }
 }

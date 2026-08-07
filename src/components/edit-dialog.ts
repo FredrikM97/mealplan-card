@@ -11,7 +11,6 @@ import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
 import { SaveEvent, DeleteEvent } from '../constants';
 import { formatTime, hasProfileField } from '../utils';
 import { log } from '../logger';
-import type { DialogAction } from './dialog-shell';
 
 /**
  * Validate that hour and minute are valid time values
@@ -88,6 +87,7 @@ export class MealEditDialog extends LitElement {
     label {
       font-weight: 500;
       font-size: 0.95em;
+      color: var(--primary-text-color);
     }
     input[type='time'],
     input[type='number'] {
@@ -97,6 +97,13 @@ export class MealEditDialog extends LitElement {
       font-size: 1em;
       width: 100%;
       box-sizing: border-box;
+      background-color: var(--card-background-color);
+      color: var(--primary-text-color);
+      outline: none;
+    }
+    input[type='time']:focus,
+    input[type='number']:focus {
+      border-color: var(--primary-color);
     }
     .edit-mode .days-row {
       justify-content: center;
@@ -120,6 +127,21 @@ export class MealEditDialog extends LitElement {
       this.formData = { ...this.meal };
     }
   }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('edit-footer-action', this.onEditFooterAction);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('edit-footer-action', this.onEditFooterAction);
+    super.disconnectedCallback();
+  }
+
+  private readonly onEditFooterAction = (e: Event) => {
+    const customEvent = e as CustomEvent<{ id: string }>;
+    this.handleRequestedAction(customEvent.detail.id);
+  };
 
   public show(options: {
     meal: FeedingTime;
@@ -171,7 +193,7 @@ export class MealEditDialog extends LitElement {
     );
   }
 
-  public handleFooterAction(id: string): void {
+  private handleRequestedAction(id: string): void {
     switch (id) {
       case 'save':
         this.handleSave();
@@ -191,41 +213,6 @@ export class MealEditDialog extends LitElement {
       default:
         break;
     }
-  }
-
-  public getFooterActions(): DialogAction[] {
-    return this.buildFooterActions();
-  }
-
-  private buildFooterActions(): DialogAction[] {
-    const actions: DialogAction[] = [];
-    const canDelete =
-      this.index !== undefined &&
-      this.index >= 0 &&
-      hasProfileField(this.profile, ProfileField.DELETE);
-
-    if (canDelete) {
-      actions.push({
-        id: 'delete',
-        label: localize('common.delete'),
-        slot: 'secondaryAction',
-        icon: 'mdi:delete',
-      });
-    }
-
-    actions.push({
-      id: 'cancel',
-      label: localize('common.cancel'),
-      slot: 'secondaryAction',
-    });
-
-    actions.push({
-      id: 'save',
-      label: localize('common.save'),
-      slot: 'primaryAction',
-    });
-
-    return actions;
   }
 
   private validate(entry: Partial<FeedingTime>): boolean {

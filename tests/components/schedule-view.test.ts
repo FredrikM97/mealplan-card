@@ -101,7 +101,7 @@ describe('ScheduleView Component', () => {
     expect(scheduleView.getMeals().length).to.equal(2);
   });
 
-  it('emits schedule-closed when dialog emits closed', async () => {
+  it('emits schedule-closed when cancel is handled in dialog mode', async () => {
     const controller = createMealStateController();
     const el = (await createScheduleViewFixture(controller)) as ScheduleView;
 
@@ -110,8 +110,7 @@ describe('ScheduleView Component', () => {
       eventFired = true;
     });
 
-    const dialogShell = el.shadowRoot?.querySelector('meal-dialog-shell');
-    dialogShell?.dispatchEvent(new CustomEvent('closed'));
+    await el.handleCancel();
 
     expect(eventFired).to.be.true;
   });

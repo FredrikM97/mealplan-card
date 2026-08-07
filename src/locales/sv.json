@@ -69,7 +69,9 @@
     "write_action_label": "Skriva åtgärd",
     "dp_code_label": "Datapunktkod",
     "device_id_label": "Enhets-ID",
-    "incomplete_configuration": "Ofullständig konfiguration"
+    "incomplete_configuration": "Ofullständig konfiguration",
+    "show_schedules_label": "Visa scheman",
+    "show_schedules_helper": "Visa matningsschemat direkt på kortet utan att öppna hanteringsdialogen"
   },
   "overview": {
     "schedules": "Scheman",

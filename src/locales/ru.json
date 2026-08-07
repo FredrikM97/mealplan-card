@@ -69,7 +69,9 @@
     "write_action_label": "Действие записи",
     "dp_code_label": "Код точки данных",
     "device_id_label": "ID устройства",
-    "incomplete_configuration": "Неполная конфигурация"
+    "incomplete_configuration": "Неполная конфигурация",
+    "show_schedules_label": "Показывать расписания",
+    "show_schedules_helper": "Показывать расписание кормления прямо на карточке без открытия диалога управления"
   },
   "overview": {
     "schedules": "Расписаний",

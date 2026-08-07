@@ -7,6 +7,7 @@ import { OverviewField, TransportType } from './types';
 import { getProfileWithTransformer } from './profiles/profiles';
 import './components/overview';
 import './components/schedule-view';
+import './components/dialog-shell';
 import { log } from './logger';
 import { getVersionString } from './version';
 import './config-form.js';
@@ -91,6 +92,15 @@ export class MealPlanCard extends LitElement {
       return this.renderConfigurationRequired();
     }
 
+    if (this.config.show_schedules) {
+      return html`
+        <schedule-view
+          .mealState=${this.mealState}
+          .hass=${this.hass}
+        ></schedule-view>
+      `;
+    }
+
     return html`
       <meal-overview
         .meals=${this.mealState.meals}
@@ -117,18 +127,25 @@ export class MealPlanCard extends LitElement {
   }
 
   private renderScheduleDialog() {
-    if (!this._dialogOpen || !this.mealState) {
+    if (this.config.show_schedules || !this._dialogOpen || !this.mealState) {
       return '';
     }
 
     return html`
-      <schedule-view
-        .mealState=${this.mealState}
-        .hass=${this.hass}
-        @schedule-closed=${() => {
+      <meal-dialog-shell
+        .headerTitle=${localize('schedule_view.manage_schedules')}
+        @closed=${() => {
           this._dialogOpen = false;
         }}
-      ></schedule-view>
+      >
+        <schedule-view
+          .mealState=${this.mealState}
+          .hass=${this.hass}
+          @schedule-closed=${() => {
+            this._dialogOpen = false;
+          }}
+        ></schedule-view>
+      </meal-dialog-shell>
     `;
   }
 
@@ -149,6 +166,7 @@ export class MealPlanCard extends LitElement {
         OverviewField.TODAY,
         OverviewField.AVG_WEEK,
       ],
+      show_schedules: false,
       transport_type: TransportType.SENSOR,
     } as MealPlanCardConfig;
   }
