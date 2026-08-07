@@ -278,6 +278,7 @@ export class ScheduleView extends LitElement {
         id: 'add-meal',
         label: localize('common.add_meal'),
         slot: 'secondaryAction',
+        icon: 'mdi:plus',
       });
     }
 
@@ -304,7 +305,7 @@ export class ScheduleView extends LitElement {
         id: 'delete',
         label: localize('common.delete'),
         slot: 'secondaryAction',
-        icon: 'mdi:delete',
+        destructive: true,
       });
     }
 
@@ -312,7 +313,7 @@ export class ScheduleView extends LitElement {
       {
         id: 'cancel',
         label: localize('common.cancel'),
-        slot: 'secondaryAction',
+        slot: 'primaryAction',
       },
       {
         id: 'save',
@@ -334,10 +335,16 @@ export class ScheduleView extends LitElement {
   private renderMealForm() {
     if (this.editMeal === null) return '';
 
+    const isNew = this.editMeal.index === undefined || this.editMeal.index < 0;
+
     if (this.isInlineMode) {
       return html`
         <meal-dialog-shell
-          .headerTitle=${localize('schedule_view.edit_feeding_time')}
+          .headerTitle=${
+            isNew
+              ? localize('common.add_meal')
+              : localize('schedule_view.edit_feeding_time')
+          }
           @closed=${this.handleEditCancel}
           @footer-action=${(e: CustomEvent<{ id: string }>) =>
             this.handleFooterActionId(e.detail.id)}

@@ -87,6 +87,7 @@ export class MealEditDialog extends LitElement {
     label {
       font-weight: 500;
       font-size: 0.95em;
+      color: var(--primary-text-color);
     }
     input[type='time'],
     input[type='number'] {
@@ -96,6 +97,13 @@ export class MealEditDialog extends LitElement {
       font-size: 1em;
       width: 100%;
       box-sizing: border-box;
+      background-color: var(--card-background-color);
+      color: var(--primary-text-color);
+      outline: none;
+    }
+    input[type='time']:focus,
+    input[type='number']:focus {
+      border-color: var(--primary-color);
     }
     .edit-mode .days-row {
       justify-content: center;

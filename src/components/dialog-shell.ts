@@ -13,6 +13,7 @@ export interface DialogAction {
   slot: DialogActionSlot;
   icon?: string;
   disabled?: boolean;
+  destructive?: boolean;
 }
 
 @customElement('meal-dialog-actions')
@@ -26,13 +27,30 @@ export class MealDialogActions extends LitElement {
       align-items: center;
       justify-content: flex-end;
       gap: 8px;
-      padding: 8px 16px 16px;
+      padding: 8px 16px;
       border-top: 1px solid var(--divider-color);
       box-sizing: border-box;
     }
 
     .inline-actions [slot='secondaryAction'] {
       margin-right: auto;
+    }
+
+    .destructive-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--error-color, #b00020);
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 8px 4px;
+      font-family: inherit;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-radius: 4px;
+    }
+    .destructive-btn:hover {
+      background-color: rgba(var(--rgb-error-color, 176, 0, 32), 0.08);
     }
   `;
 
@@ -47,8 +65,19 @@ export class MealDialogActions extends LitElement {
   }
 
   private renderButtons() {
-    return this.actions.map(
-      (action) => html`
+    return this.actions.map((action) => {
+      if (action.destructive) {
+        return html`
+          <button
+            slot=${action.slot}
+            class="destructive-btn"
+            @click=${() => this.emitAction(action.id)}
+          >
+            ${action.label}
+          </button>
+        `;
+      }
+      return html`
         <ha-button
           slot=${action.slot}
           ?disabled=${!!action.disabled}
@@ -61,8 +90,8 @@ export class MealDialogActions extends LitElement {
           }
           ${action.label}
         </ha-button>
-      `,
-    );
+      `;
+    });
   }
 
   render() {
