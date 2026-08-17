@@ -32,7 +32,7 @@
     "vitest": "^4.0.8"
   },
   "dependencies": {
-    "@kipk/load-ha-components": "^1.0.3",
+    "@kipk/load-ha-components": "^2.1.0",
     "@open-wc/semantic-dom-diff": "^0.21.0"
   }
 }
