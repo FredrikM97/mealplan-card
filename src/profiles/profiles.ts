@@ -174,6 +174,22 @@ const baseProfiles: DeviceProfile[] = [
     encodingTemplate: TEMPLATE_FULL,
     fields: FIELDS_FULL,
   },
+  {
+    manufacturer: 'Faroro',
+    models: ['PF22'],
+    encodingType: EncodingType.HEX,
+    encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}${f(F.FILL, 6)}`,
+    fields: FIELDS_FULL,
+    ...createDayTransformer([
+      [5, 0], // Sat
+      [4, 1], // Fri
+      [3, 2], // Thu
+      [2, 3], // Wed
+      [1, 4], // Tue
+      [0, 5], // Mon
+      [6, 6], // Sun
+    ]),
+  },
 ];
 
 // Export base profiles directly - transformers will be added lazily when needed
