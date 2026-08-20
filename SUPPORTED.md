@@ -29,3 +29,5 @@
   - Models: WBS36D
 - **Kalado**
   - Models: KPF01
+- **Faroro**
+  - Models: PF22
