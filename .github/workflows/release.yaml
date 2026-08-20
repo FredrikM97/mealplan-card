@@ -165,31 +165,36 @@ jobs:
       - name: Find existing draft
         id: draft
         run: |
-          DRAFT_TAG=$(gh release list --json tagName,isDraft --jq '.[] | select(.isDraft) | .tagName' | head -1)
-          echo "tag=$DRAFT_TAG" >> "$GITHUB_OUTPUT"
+          if gh release view unreleased >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Require an existing draft to publish
-        if: steps.mode.outputs.mode == 'release' && steps.draft.outputs.tag == ''
+        if: steps.mode.outputs.mode == 'release' && steps.draft.outputs.exists == 'false'
         run: |
           echo "::error::No draft release found to publish. Push to main first to prepare one."
           exit 1
 
-      - name: Remove previous draft
-        if: steps.draft.outputs.tag != ''
-        run: gh release delete "${{ steps.draft.outputs.tag }}" --yes --cleanup-tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Update rolling draft release
         if: steps.mode.outputs.mode == 'notes'
         run: |
-          gh release create "${{ steps.notes.outputs.tag }}" \
-            --title "Unreleased" \
-            --notes-file release-notes.md \
-            --target main \
-            --draft
+          if [ "${{ steps.draft.outputs.exists }}" = "true" ]; then
+            gh release edit unreleased \
+              --title "Unreleased" \
+              --notes-file release-notes.md \
+              --target main \
+              --draft
+          else
+            gh release create unreleased \
+              --title "Unreleased" \
+              --notes-file release-notes.md \
+              --target main \
+              --draft
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -207,10 +212,12 @@ jobs:
       - name: Publish release
         if: steps.mode.outputs.mode == 'release'
         run: |
-          gh release create "${{ steps.notes.outputs.tag }}" \
+          gh release edit unreleased \
+            --tag "${{ steps.notes.outputs.tag }}" \
             --title "${{ steps.notes.outputs.tag }}" \
             --notes-file release-notes.md \
             --target main \
+            --draft=false \
             --latest
           gh release upload "${{ steps.notes.outputs.tag }}" dist/mealplan-card.js --clobber
         env:
