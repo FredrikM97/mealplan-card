@@ -1,0 +1,82 @@
+{
+  "common": {
+    "back": "Retour",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "close": "Fermer",
+    "portion": "Portion",
+    "time": "Heure",
+    "days": "Jours",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "every_day": "Tous les jours",
+    "no_days": "Aucun jour",
+    "add_meal": "Ajouter un repas"
+  },
+  "days": {
+    "short": {
+      "monday": "L",
+      "tuesday": "M",
+      "wednesday": "M",
+      "thursday": "J",
+      "friday": "V",
+      "saturday": "S",
+      "sunday": "D"
+    },
+    "full": {
+      "monday": "Lundi",
+      "tuesday": "Mardi",
+      "wednesday": "Mercredi",
+      "thursday": "Jeudi",
+      "friday": "Vendredi",
+      "saturday": "Samedi",
+      "sunday": "Dimanche"
+    }
+  },
+  "main": {
+    "manage_schedules": "Gérer",
+    "configuration_required": "Configuration requise",
+    "configuration_instructions": "Veuillez configurer un capteur et un fabricant dans les paramètres de la carte."
+  },
+  "schedule_view": {
+    "manage_schedules": "Gérer",
+    "edit_feeding_time": "Modifier l'heure du repas",
+    "no_meals_scheduled": "Aucun repas programmé",
+    "click_add_meal_to_get_started": "Cliquez sur « Ajouter un repas » ci-dessous pour créer votre premier programme d'alimentation",
+    "sensor_unavailable": "Entité indisponible",
+    "sensor_unavailable_message": "Le capteur sélectionné n'est pas disponible. Vous ne pouvez pas enregistrer de modifications tant que l'appareil n'est pas accessible."
+  },
+  "meal_card": {
+    "edit_meal": "Modifier le repas",
+    "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce repas ?"
+  },
+  "config": {
+    "portion_label": "Taille de la portion",
+    "portion_helper": "Grammes par portion",
+    "sensor_label": "Capteur du programme d'alimentation",
+    "sensor_helper": "Sélectionnez le capteur ou l'entité texte contenant les données du programme d'alimentation",
+    "manufacturer_label": "Profil du distributeur",
+    "manufacturer_helper": "Sélectionnez le fabricant et le modèle de votre distributeur",
+    "title_label": "Titre",
+    "overview_fields_label": "Pastilles d'aperçu",
+    "overview_fields_helper": "Sélectionnez les pastilles à afficher dans la ligne d'aperçu",
+    "helper_label": "Entité d'assistance (optionnel)",
+    "helper_helper": "Cet assistant input_text sert de sauvegarde pour votre programme d'alimentation. Lorsque le capteur est indisponible, la carte restaure le programme depuis cet assistant pour éviter toute perte de données.",
+    "transport_label": "Type de transport",
+    "transport_helper": "Comment écrire les données : Capteur (via le service set_value) ou MQTT (publication sur un topic zigbee2mqtt)",
+    "read_action_label": "Action de lecture",
+    "write_action_label": "Action d'écriture",
+    "dp_code_label": "Code du point de données",
+    "device_id_label": "ID de l'appareil",
+    "incomplete_configuration": "Configuration incomplète",
+    "show_schedules_label": "Afficher les programmes",
+    "show_schedules_helper": "Afficher les programmes d'alimentation directement sur la carte sans ouvrir la fenêtre de gestion"
+  },
+  "overview": {
+    "schedules": "Programmes",
+    "active": "Actif",
+    "today": "Aujourd'hui",
+    "avg_week": "Moy./Semaine"
+  }
+}
