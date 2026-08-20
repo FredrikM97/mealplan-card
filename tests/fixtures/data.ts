@@ -24,27 +24,28 @@ export const testMeals = {
   } as FeedingTime,
 };
 
+// Internal day bit convention: bit 0 = Monday ... bit 6 = Sunday.
 export const daySpecificMeals = {
   sundayOnly: {
     hour: 9,
     minute: 0,
     portion: 1,
     enabled: 1,
-    days: 0b0000001,
+    days: 0b1000000,
   } as FeedingTime,
   weekdaysOnly: {
     hour: 8,
     minute: 0,
     portion: 2,
     enabled: 1,
-    days: 0b0111110,
+    days: 0b0011111,
   } as FeedingTime,
   weekendsOnly: {
     hour: 10,
     minute: 0,
     portion: 1,
     enabled: 1,
-    days: 0b1000001,
+    days: 0b1100000,
   } as FeedingTime,
   allDays: {
     hour: 8,
