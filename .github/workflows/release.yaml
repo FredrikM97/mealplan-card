@@ -88,9 +88,12 @@ jobs:
             elif echo "$subject" | grep -qiE '^fix(\([^)]*\))?!?:'; then
               DESC=$(echo "$subject" | sed -E 's/^fix(\([^)]*\))?!?:[[:space:]]*//I')
               CHANGELOG="${CHANGELOG}- ${DESC}"$'\n'
-            elif echo "$subject" | grep -qiE '^chore(\([^)]*\))?!?:'; then
-              DESC=$(echo "$subject" | sed -E 's/^chore(\([^)]*\))?!?:[[:space:]]*//I')
+            elif echo "$subject" | grep -qiE '^build(\([^)]*\))?!?:'; then
+              # Dependabot/renovate commits use the "build" conventional-commit type
+              DESC=$(echo "$subject" | sed -E 's/^build(\([^)]*\))?!?:[[:space:]]*//I')
               CHORES="${CHORES}- ${DESC}"$'\n'
+            else
+              CHANGELOG="${CHANGELOG}- ${subject}"$'\n'
             fi
           done <<< "$(git log $RANGE --no-merges --pretty=format:'%s')"
 
@@ -119,11 +122,7 @@ jobs:
           [ -n "$CHORES" ] && { echo "## Maintenance"; printf '%s' "$CHORES"; echo; } >> release-notes.md
           if [ ! -s release-notes.md ]; then
             echo "## Changes" >> release-notes.md
-            if [ "$COUNT" -gt 0 ]; then
-              echo "- No categorized changes" >> release-notes.md
-            else
-              echo "- No changes" >> release-notes.md
-            fi
+            echo "- No changes" >> release-notes.md
           fi
 
           echo "## Contributors" >> release-notes.md
