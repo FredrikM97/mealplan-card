@@ -106,7 +106,9 @@ export class MealOverview extends LitElement {
 
   render() {
     const enabledMeals = this.meals.filter(isMealEnabled);
-    const today = new Date().getDay();
+    // getDay() is 0=Sunday..6=Saturday; days bitmask is 0=Monday..6=Sunday.
+    const jsDay = new Date().getDay();
+    const today = (jsDay + 6) % 7;
     const totalToday = getTodaysFoodGrams(enabledMeals, today) * this.portions;
     const avg = getWeeklyAveragePortion(enabledMeals) * this.portions;
     const orderedFields = this.overviewFields;

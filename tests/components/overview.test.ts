@@ -57,13 +57,12 @@ describe('Overview Component', () => {
 
   describe('getTodaysFoodGrams Function', () => {
     it('returns only meals scheduled for the specified day', () => {
-      // Sunday (day 0) gets only the second meal (1g)
       const meals: FeedingTime[] = [
         daySpecificMeals.noDayMask, // No days mask = not counted
         daySpecificMeals.sundayOnly, // Sunday only
       ];
 
-      const sundayTotal = getTodaysFoodGrams(meals, 0);
+      const sundayTotal = getTodaysFoodGrams(meals, 6);
       expect(sundayTotal).to.equal(1);
     });
 
@@ -73,10 +72,10 @@ describe('Overview Component', () => {
         daySpecificMeals.weekendsOnly, // Sun+Sat (1g each)
       ];
 
-      expect(getTodaysFoodGrams(meals, 0)).to.equal(1); // Sunday: only second meal
-      expect(getTodaysFoodGrams(meals, 1)).to.equal(2); // Monday: only first meal
-      expect(getTodaysFoodGrams(meals, 5)).to.equal(2); // Friday: only first meal
-      expect(getTodaysFoodGrams(meals, 6)).to.equal(1); // Saturday: only second meal
+      expect(getTodaysFoodGrams(meals, 0)).to.equal(2); // Monday: only first meal
+      expect(getTodaysFoodGrams(meals, 4)).to.equal(2); // Friday: only first meal
+      expect(getTodaysFoodGrams(meals, 5)).to.equal(1); // Saturday: only second meal
+      expect(getTodaysFoodGrams(meals, 6)).to.equal(1); // Sunday: only second meal
     });
   });
 
