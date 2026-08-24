@@ -6,14 +6,27 @@ import {
 } from '../types';
 import type { DeviceProfile } from '../types';
 import {
+  combineTransformers,
   createDayTransformer,
   createDictEncoderWithWrapper,
+  createFieldMapTransformer,
   createStringDayTransformer,
 } from './transformers';
 
 // Common encoding templates
 const TEMPLATE_FULL = `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`;
 const TEMPLATE_NO_DAYS = `${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 2)}`;
+
+// Default day bit mapping: internal bit 0 (Mon) .. bit 6 (Sun) maps to device bit 6 (Mon) .. bit 0 (Sun)
+const STANDARD_DAY_MAP: [number, number][] = [
+  [0, 6], // Mon
+  [1, 5], // Tue
+  [2, 4], // Wed
+  [3, 3], // Thu
+  [4, 2], // Fri
+  [5, 1], // Sat
+  [6, 0], // Sun
+];
 
 // Common field configurations
 const FIELDS_FULL = [
@@ -104,24 +117,25 @@ const baseProfiles: DeviceProfile[] = [
     encodingType: EncodingType.HEX,
     encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 1)}${f(F.ENABLED, 1)}`,
     fields: FIELDS_FULL,
-    ...createDayTransformer([
-      // Custom formatting on this device
-      [5, 0], // Sat
-      [4, 1], // Fri
-      [3, 2], // Thu
-      [2, 3], // Wed
-      [0, 4], // Mon
-      [1, 5], // Tue
-      [6, 6], // Sun
-    ]),
+    transformers: [
+      createDayTransformer([
+        // Custom formatting on this device
+        [5, 0], // Sat
+        [4, 1], // Fri
+        [3, 2], // Thu
+        [2, 3], // Wed
+        [0, 4], // Mon
+        [1, 5], // Tue
+        [6, 6], // Sun
+      ]),
+    ],
   },
   {
     manufacturer: 'Aqara',
     models: ['C1'],
     encodingType: EncodingType.DICT,
     fields: [pf.TIME, pf.SIZE, pf.DAYS, pf.EDIT, pf.DELETE, pf.ADD],
-    ...createDictEncoderWithWrapper(
-      'schedule',
+    transformers: [
       createStringDayTransformer({
         127: 'everyday', // 0b1111111 - all days
         31: 'workdays', // 0b0011111 - Mon-Fri
@@ -136,8 +150,9 @@ const baseProfiles: DeviceProfile[] = [
         85: 'mon-wed-fri-sun', // 0b1010101 - Mon(1) + Wed(4) + Fri(16) + Sun(64)
         42: 'tue-thu-sat', // 0b0101010 - Tue(2) + Thu(8) + Sat(32)
       }),
-      { portion: 'size' }, // Map internal 'portion' to device 'size'
-    ),
+      createFieldMapTransformer({ portion: 'size' }), // Map internal 'portion' to device 'size'
+      createDictEncoderWithWrapper('schedule'),
+    ],
   },
   {
     manufacturer: 'Wuipet',
@@ -180,49 +195,50 @@ const baseProfiles: DeviceProfile[] = [
     encodingType: EncodingType.HEX,
     encodingTemplate: `${f(F.DAYS, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.ENABLED, 1)}${f(F.FILL, 6)}`,
     fields: FIELDS_FULL,
-    ...createDayTransformer([
-      [5, 0], // Sat
-      [4, 1], // Fri
-      [3, 2], // Thu
-      [2, 3], // Wed
-      [1, 4], // Tue
-      [0, 5], // Mon
-      [6, 6], // Sun
-    ]),
+    transformers: [
+      createDayTransformer([
+        [5, 0], // Sat
+        [4, 1], // Fri
+        [3, 2], // Thu
+        [2, 3], // Wed
+        [1, 4], // Tue
+        [0, 5], // Mon
+        [6, 6], // Sun
+      ]),
+    ],
   },
 ];
 
-// Export base profiles directly - transformers will be added lazily when needed
-export const profiles: DeviceProfile[] = baseProfiles;
-
 /**
- * Get a profile with its transformer applied (lazy initialization)
+ * Resolves a base profile's `transformers` pipeline (or the default day transformer)
+ * into concrete encode/decode functions.
  */
-export function getProfileWithTransformer(
-  manufacturer: string,
-): DeviceProfile | undefined {
-  const profile = baseProfiles.find((p) => p.manufacturer === manufacturer);
+function resolveProfile(profile: DeviceProfile): DeviceProfile {
+  if (profile.encode || profile.decode) {
+    return profile;
+  }
 
-  if (!profile) return undefined;
+  // A profile-declared pipeline takes precedence over the default day transformer
+  if (profile.transformers && profile.transformers.length > 0) {
+    return { ...profile, ...combineTransformers(profile.transformers) };
+  }
 
-  // Return as-is if it already has encode/decode or doesn't need DAYS transformer
-  if (profile.encode || profile.decode || !profile.fields.includes(pf.DAYS)) {
+  if (!profile.fields.includes(pf.DAYS)) {
     return profile;
   }
 
   // Apply default identity transformer
-  const transformer = createDayTransformer([
-    [0, 6], // Mon
-    [1, 5], // Tue
-    [2, 4], // Wed
-    [3, 3], // Thu
-    [4, 2], // Fri
-    [5, 1], // Sat
-    [6, 0], // Sun
-  ]);
+  return { ...profile, ...createDayTransformer(STANDARD_DAY_MAP) };
+}
 
-  return {
-    ...profile,
-    ...transformer,
-  };
+// Profiles with their transformer pipelines resolved into working encode/decode functions
+export const profiles: DeviceProfile[] = baseProfiles.map(resolveProfile);
+
+/**
+ * Get a profile with its transformer pipeline applied
+ */
+export function getProfileWithTransformer(
+  manufacturer: string,
+): DeviceProfile | undefined {
+  return profiles.find((p) => p.manufacturer === manufacturer);
 }
