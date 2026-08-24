@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/javascript-node:20
+FROM mcr.microsoft.com/devcontainers/javascript-node:22
 
 # Install or refresh SSH tooling used for git-over-ssh workflows.
 RUN apt-get update \
