@@ -148,6 +148,16 @@ export interface StorageAdapter {
 export type HasGetter = () => HomeAssistant;
 
 /**
+ * A single step in a profile's transform pipeline (day remap, time packing, field
+ * rename, JSON wrapping, etc). Input/output shapes vary between steps, so they're
+ * intentionally loosely typed here; see `combineTransformers` in profiles/transformers.ts.
+ */
+export interface ProfileTransformer {
+  encode: (data: never) => unknown;
+  decode: (data: never) => unknown;
+}
+
+/**
  * Device profile with manufacturer, models, and encoding configuration
  */
 export interface DeviceProfile {
@@ -158,13 +168,21 @@ export interface DeviceProfile {
   encodingTemplate?: string;
   featureFields?: ProfileField[];
   /**
-   * Custom transformer for encoding data before sending to device.
-   * Returns structured feeding time data in device-specific format.
+   * Pipeline of transform steps applied in order on encode (and reverse order on decode).
+   * When more than one is given, they're combined automatically - no need to call
+   * combineTransformers() explicitly. A single entry is used as-is.
+   */
+  transformers?: ProfileTransformer[];
+  /**
+   * Final encode function used by the encoder classes. Normally left unset and derived
+   * from `transformers` via `resolveProfileTransformers()`; only set this directly for
+   * one-off logic that doesn't fit the transformer pipeline model.
    */
   encode?: (data: FeedingTime | FeedingTime[]) => EncodedFeedingData;
   /**
-   * Custom transformer for decoding data received from device.
-   * Converts device-specific format back to app's FeedingTime format.
+   * Final decode function used by the encoder classes. Normally left unset and derived
+   * from `transformers` via `resolveProfileTransformers()`; only set this directly for
+   * one-off logic that doesn't fit the transformer pipeline model.
    */
   decode?: (data: JsonObject) => FeedingTime | FeedingTime[];
 }
