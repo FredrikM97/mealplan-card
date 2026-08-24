@@ -176,6 +176,17 @@ export abstract class EncoderBase {
   }
   abstract encode(data: FeedingTime[]): string;
   abstract decode(data: string): FeedingTime[];
+
+  /** Builds a TemplateEncoder from the profile's `encodingTemplate`, throwing if it's missing. */
+  protected getTemplateEncoder(): TemplateEncoder {
+    const template = this.profile.encodingTemplate;
+    if (!template) {
+      throw new Error(
+        `encodingTemplate is required for ${this.constructor.name}`,
+      );
+    }
+    return new TemplateEncoder(template, this.profile);
+  }
 }
 
 class Base64Encoder extends EncoderBase {
@@ -202,46 +213,24 @@ class Base64Encoder extends EncoderBase {
   }
 
   encode(data: FeedingTime[]): string {
-    const template = this.profile.encodingTemplate;
-    if (!template) {
-      throw new Error('encodingTemplate is required for Base64Encoder');
-    }
-
-    const encoder = new TemplateEncoder(template, this.profile);
-    const hex = encoder.encode(data);
+    const hex = this.getTemplateEncoder().encode(data);
     return this.hexToBase64(hex);
   }
 
   decode(data: string): FeedingTime[] {
     if (!data || data === 'unknown') return [];
 
-    const template = this.profile.encodingTemplate;
-    if (!template) {
-      throw new Error('encodingTemplate is required for Base64Encoder');
-    }
-
     const hex = this.base64ToHex(data);
-    const encoder = new TemplateEncoder(template, this.profile);
-    return encoder.decode(hex);
+    return this.getTemplateEncoder().decode(hex);
   }
 }
 
 class TemplateBasedEncoder extends EncoderBase {
   encode(data: FeedingTime[]): string {
-    const template = this.profile.encodingTemplate;
-    if (!template) {
-      throw new Error('encodingTemplate is required for TemplateBasedEncoder');
-    }
-    const t = new TemplateEncoder(template, this.profile);
-    return t.encode(data);
+    return this.getTemplateEncoder().encode(data);
   }
   decode(data: string): FeedingTime[] {
-    const template = this.profile.encodingTemplate;
-    if (!template) {
-      throw new Error('encodingTemplate is required for TemplateBasedEncoder');
-    }
-    const t = new TemplateEncoder(template, this.profile);
-    return t.decode(data);
+    return this.getTemplateEncoder().decode(data);
   }
 }
 
