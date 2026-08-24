@@ -10,6 +10,7 @@ import {
   createDayTransformer,
   createDictEncoderWithWrapper,
   createFieldMapTransformer,
+  createPackedTimeTransformer,
   createStringDayTransformer,
 } from './transformers';
 
@@ -205,6 +206,18 @@ const baseProfiles: DeviceProfile[] = [
         [0, 5], // Mon
         [6, 6], // Sun
       ]),
+    ],
+  },
+  {
+    manufacturer: 'Tesla Smart',
+    models: ['TSL-PC-059DW'],
+    encodingType: EncodingType.BASE64,
+    encodingTemplate: `${f(F.ENABLED, 2)}${f(F.HOUR, 2)}${f(F.MINUTE, 2)}${f(F.PORTION, 2)}${f(F.DAYS, 2)}`,
+    fields: FIELDS_FULL,
+    // Time is stored as a big-endian 16-bit minutes-since-midnight value split across the HOUR/MINUTE bytes
+    transformers: [
+      createPackedTimeTransformer(),
+      createDayTransformer(STANDARD_DAY_MAP),
     ],
   },
 ];

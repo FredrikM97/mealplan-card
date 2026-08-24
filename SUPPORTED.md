@@ -31,3 +31,5 @@
   - Models: KPF01
 - **Faroro**
   - Models: PF22
+- **Tesla Smart**
+  - Models: TSL-PC-059DW
