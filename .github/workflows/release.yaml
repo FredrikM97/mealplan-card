@@ -178,6 +178,9 @@ jobs:
     needs: prepare_release
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
