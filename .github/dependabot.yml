@@ -5,8 +5,11 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    commit-message:
+      prefix: build
+      include: scope
     groups:
-      minor-and-patch-updates:
+      packages:
         patterns:
           - '*'
         update-types:
@@ -17,8 +20,11 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    commit-message:
+      prefix: build
+      include: scope
     groups:
-      ci-all-updates:
+      actions:
         patterns:
           - '*'
         update-types:
