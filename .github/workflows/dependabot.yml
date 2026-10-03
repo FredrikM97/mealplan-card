@@ -11,21 +11,34 @@ permissions:
 jobs:
   dependabot:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
+
     if: >
       github.event.pull_request.user.login == 'dependabot[bot]' &&
       github.repository == 'FredrikM97/mealplan-card'
 
     steps:
-      - name: Wait for all checks
+      - name: Wait for checks
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          while true; do
+          max_wait=1800
+          interval=15
+          elapsed=0
+
+          while [ "$elapsed" -lt "$max_wait" ]; do
             checks=$(gh api \
               "/repos/$REPOSITORY/commits/$SHA/check-runs" \
               --paginate)
+
+            total=$(echo "$checks" | jq '
+              [
+                .check_runs[]
+                | select(.name != "Dependabot auto-approve")
+              ] | length
+            ')
 
             pending=$(echo "$checks" | jq '
               [
@@ -48,42 +61,47 @@ jobs:
               ] | length
             ')
 
-            echo "Pending checks: $pending"
-            echo "Failed checks:  $failed"
+            echo "Checks: $total total, $pending pending, $failed failed"
 
             if [ "$failed" -gt 0 ]; then
-              echo "A check failed:"
-              echo "$checks" |
-                jq -r '
-                  .check_runs[]
-                  | select(.name != "Dependabot auto-approve")
-                  | select(.status == "completed")
-                  | select(
-                      .conclusion != "success" and
-                      .conclusion != "neutral" and
-                      .conclusion != "skipped"
-                    )
-                  | "  \(.name): \(.conclusion)"
-                '
+              echo "One or more checks failed:"
+              echo "$checks" | jq -r '
+                .check_runs[]
+                | select(.name != "Dependabot auto-approve")
+                | select(.status == "completed")
+                | select(
+                    .conclusion != "success" and
+                    .conclusion != "neutral" and
+                    .conclusion != "skipped"
+                  )
+                | "  \(.name): \(.conclusion)"
+              '
               exit 1
             fi
 
-            if [ "$pending" -eq 0 ]; then
+            if [ "$total" -gt 0 ] && [ "$pending" -eq 0 ]; then
               echo "All checks completed successfully."
-              break
+              exit 0
             fi
 
-            sleep 15
+            echo "Waiting ${interval}s..."
+            sleep "$interval"
+            elapsed=$((elapsed + interval))
           done
 
+          echo "Timed out after 30 minutes waiting for checks."
+          exit 1
+
       - name: Approve pull request
-        run: gh pr review --approve "$PR_URL"
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr review "$PR_URL" --approve
 
       - name: Enable auto-merge
-        run: gh pr merge --squash --auto "$PR_URL"
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr merge "$PR_URL" --squash --auto
