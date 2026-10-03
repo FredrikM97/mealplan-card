@@ -12,9 +12,6 @@ updates:
       packages:
         patterns:
           - '*'
-        update-types:
-          - minor
-          - patch
 
   - package-ecosystem: github-actions
     directory: /
@@ -27,6 +24,3 @@ updates:
       actions:
         patterns:
           - '*'
-        update-types:
-          - minor
-          - patch
