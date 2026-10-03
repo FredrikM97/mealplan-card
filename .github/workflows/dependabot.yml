@@ -1,24 +1,89 @@
 name: Dependabot auto-approve
-on: pull_request
+
+on:
+  pull_request:
 
 permissions:
   contents: write
   pull-requests: write
+  checks: read
 
 jobs:
   dependabot:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'FredrikM97/mealplan-card'
+    if: >
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.repository == 'FredrikM97/mealplan-card'
+
     steps:
-      - name: Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Approve a PR
-        run: |
-           gh pr review --approve "$PR_URL"
-           gh pr merge --squash --auto "$PR_URL"
+      - name: Wait for all checks
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          while true; do
+            checks=$(gh api \
+              "/repos/$REPOSITORY/commits/$SHA/check-runs" \
+              --paginate)
+
+            pending=$(echo "$checks" | jq '
+              [
+                .check_runs[]
+                | select(.name != "Dependabot auto-approve")
+                | select(.status != "completed")
+              ] | length
+            ')
+
+            failed=$(echo "$checks" | jq '
+              [
+                .check_runs[]
+                | select(.name != "Dependabot auto-approve")
+                | select(.status == "completed")
+                | select(
+                    .conclusion != "success" and
+                    .conclusion != "neutral" and
+                    .conclusion != "skipped"
+                  )
+              ] | length
+            ')
+
+            echo "Pending checks: $pending"
+            echo "Failed checks:  $failed"
+
+            if [ "$failed" -gt 0 ]; then
+              echo "A check failed:"
+              echo "$checks" |
+                jq -r '
+                  .check_runs[]
+                  | select(.name != "Dependabot auto-approve")
+                  | select(.status == "completed")
+                  | select(
+                      .conclusion != "success" and
+                      .conclusion != "neutral" and
+                      .conclusion != "skipped"
+                    )
+                  | "  \(.name): \(.conclusion)"
+                '
+              exit 1
+            fi
+
+            if [ "$pending" -eq 0 ]; then
+              echo "All checks completed successfully."
+              break
+            fi
+
+            sleep 15
+          done
+
+      - name: Approve pull request
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge
+        run: gh pr merge --squash --auto "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
