@@ -1,12 +1,12 @@
-import { fixture, html, expect } from '@open-wc/testing';
+import { expect, fixture, html } from '@open-wc/testing';
 import '../../src/components/overview';
 import { describe, it } from 'vitest';
 import {
   getTodaysFoodGrams,
   getWeeklyAveragePortion,
 } from '../../src/components/overview';
-import { OverviewField, type FeedingTime } from '../../src/types';
-import { testMeals, daySpecificMeals } from '../fixtures/data';
+import { type FeedingTime, OverviewField } from '../../src/types';
+import { daySpecificMeals, testMeals } from '../fixtures/data';
 
 describe('Overview Component', () => {
   describe('Component Rendering', () => {

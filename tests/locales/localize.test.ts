@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import en from '../../src/locales/en.json';
 import {
-  setLanguage,
   localize,
+  setLanguage,
   translations,
 } from '../../src/locales/localize';
-import en from '../../src/locales/en.json';
 
 describe('localize', () => {
   it('setLanguage keeps current language for unknown language', () => {

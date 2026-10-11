@@ -3,14 +3,14 @@
  * Self-contained LitElement component with internal state
  */
 
-import { LitElement, html, css, type PropertyValues } from 'lit';
+import { css, html, LitElement, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { localize } from '../locales/localize';
-import type { FeedingTime, EditMealState, HomeAssistant } from '../types';
-import { ProfileField } from '../types';
-import { MealStateController } from '../mealStateController';
-import { hasProfileField, timeToMinutes, areMealsEqual } from '../utils';
 import { ScheduleClosedEvent } from '../constants';
+import { localize } from '../locales/localize';
+import type { MealStateController } from '../mealStateController';
+import type { EditMealState, FeedingTime, HomeAssistant } from '../types';
+import { ProfileField } from '../types';
+import { areMealsEqual, hasProfileField, timeToMinutes } from '../utils';
 import type { DialogAction } from './dialog-shell';
 import './dialog-shell';
 import './edit-dialog';
@@ -207,7 +207,7 @@ export class ScheduleView extends LitElement {
   private async handleDeleteFromEdit() {
     if (this.editMeal?.index === undefined) return;
     const updatedMeals = this.draftMeals.filter(
-      (_, i) => i !== this.editMeal!.index,
+      (_, i) => i !== this.editMeal?.index,
     );
     this.draftMeals = updatedMeals;
     await this.mealState.saveMeals(updatedMeals);

@@ -1,6 +1,6 @@
-import { LitElement, html, css } from 'lit';
-import { classMap } from 'lit/directives/class-map.js';
+import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 /**
  * Generic message banner component, themed with Home Assistant CSS variables.

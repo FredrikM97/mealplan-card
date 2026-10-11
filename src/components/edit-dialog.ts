@@ -3,14 +3,14 @@
  * Self-contained LitElement component with form validation
  */
 
-import { LitElement, html, css, type PropertyValues } from 'lit';
+import { css, html, LitElement, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { renderDaySelector } from './day-selector';
+import { DeleteEvent, SaveEvent } from '../constants';
 import { localize } from '../locales/localize';
-import { ProfileField, type FeedingTime, type DeviceProfile } from '../types';
-import { SaveEvent, DeleteEvent } from '../constants';
-import { formatTime, hasProfileField } from '../utils';
 import { log } from '../logger';
+import { type DeviceProfile, type FeedingTime, ProfileField } from '../types';
+import { formatTime, hasProfileField } from '../utils';
+import { renderDaySelector } from './day-selector';
 
 /**
  * Validate that hour and minute are valid time values
@@ -18,9 +18,9 @@ import { log } from '../logger';
 function isValidTime(hour?: number, minute?: number): boolean {
   return (
     typeof hour === 'number' &&
-    !isNaN(hour) &&
+    !Number.isNaN(hour) &&
     typeof minute === 'number' &&
-    !isNaN(minute) &&
+    !Number.isNaN(minute) &&
     hour >= 0 &&
     hour <= 23 &&
     minute >= 0 &&

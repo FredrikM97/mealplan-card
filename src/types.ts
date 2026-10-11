@@ -229,7 +229,7 @@ export function isValidProfile(
   return profile !== undefined && profile !== null;
 }
 
-export const TOKEN_REGEX = /\{([A-Z_]+)\:(\d+)\}/g;
+export const TOKEN_REGEX = /\{([A-Z_]+):(\d+)\}/g;
 
 // Template field names
 export enum TemplateFieldName {

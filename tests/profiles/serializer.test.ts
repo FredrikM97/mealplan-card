@@ -1,16 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getEncoder } from '../../src/profiles/serializer';
 import {
   createDayTransformer,
   createStringDayTransformer,
 } from '../../src/profiles/transformers';
 import {
-  f,
-  TemplateFieldName as F,
   EncodingType,
-  JsonObject,
+  TemplateFieldName as F,
+  type FeedingTime,
+  f,
+  type JsonObject,
 } from '../../src/types';
-import { FeedingTime } from '../../src/types';
 import { daySpecificMeals } from '../fixtures/data';
 
 describe('TemplateEncoder error handling', () => {

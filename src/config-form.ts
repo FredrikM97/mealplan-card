@@ -1,14 +1,14 @@
+import { html, LitElement } from 'lit';
+import { property } from 'lit/decorators/property.js';
+import { customElement } from 'lit/decorators.js';
+import { localize } from './locales/localize';
+import { profiles } from './profiles/profiles';
 import {
-  HomeAssistant,
-  MealPlanCardConfig,
+  type HomeAssistant,
+  type MealPlanCardConfig,
   OverviewField,
   TransportType,
 } from './types';
-import { property } from 'lit/decorators/property.js';
-import { LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
-import { profiles } from './profiles/profiles';
-import { localize } from './locales/localize';
 
 @customElement('mealplan-card-editor')
 export class MealPlanCardEditor extends LitElement {

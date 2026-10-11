@@ -1,10 +1,10 @@
-﻿import { LitElement, html, css, type PropertyValues } from 'lit';
+﻿import { css, html, LitElement, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { localize, setLanguage } from './locales/localize';
 import { MealStateController } from './mealStateController';
+import { getProfileWithTransformer } from './profiles/profiles';
 import type { HomeAssistant, MealPlanCardConfig } from './types';
 import { OverviewField, TransportType } from './types';
-import { getProfileWithTransformer } from './profiles/profiles';
 import './components/overview';
 import './components/schedule-view';
 import './components/dialog-shell';

@@ -64,7 +64,7 @@ describe('MealCard Component', () => {
           actionReceived = action;
         }
       };
-      card['onMealAction'] = onMealAction;
+      card.onMealAction = onMealAction;
 
       const header = card.shadowRoot?.querySelector('.meal-card-header');
       expect(header).to.exist;
@@ -98,7 +98,7 @@ describe('MealCard Component', () => {
           editTriggered = true;
         }
       };
-      card['onMealAction'] = onMealAction;
+      card.onMealAction = onMealAction;
 
       const header = card.shadowRoot?.querySelector('.meal-card-header');
       (header as HTMLElement).click();
@@ -127,7 +127,7 @@ describe('MealCard Component', () => {
           receivedMeal = meal;
         }
       };
-      card['onMealAction'] = onMealAction;
+      card.onMealAction = onMealAction;
 
       const header = card.shadowRoot?.querySelector('.meal-card-header');
       expect(header).to.exist;
@@ -155,7 +155,7 @@ describe('MealCard Component', () => {
           actionReceived = action;
         }
       };
-      card['onMealAction'] = onMealAction;
+      card.onMealAction = onMealAction;
 
       // Simulate toggle change
       const toggle = card.shadowRoot?.querySelector(
@@ -230,7 +230,7 @@ describe('MealCard Component', () => {
           editTriggered = true;
         }
       };
-      card['onMealAction'] = onMealAction;
+      card.onMealAction = onMealAction;
 
       const header = card.shadowRoot?.querySelector('.meal-card-header');
       (header as HTMLElement).click();
@@ -262,7 +262,7 @@ describe('MealCard Component', () => {
           editTriggered = true;
         }
       };
-      card['onMealAction'] = onMealAction;
+      card.onMealAction = onMealAction;
 
       const header = card.shadowRoot?.querySelector('.meal-card-header');
       (header as HTMLElement).click();

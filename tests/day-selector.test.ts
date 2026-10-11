@@ -1,5 +1,5 @@
-import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'lit-html';
+import { afterEach, describe, expect, it } from 'vitest';
 import { renderDaySelector } from '../src/components/day-selector';
 
 const renderSelector = (options: {

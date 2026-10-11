@@ -3,10 +3,10 @@
  * Self-contained LitElement component
  */
 
-import { LitElement, html, css, nothing } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { OverviewField, type FeedingTime } from '../types';
 import { localize } from '../locales/localize';
+import { type FeedingTime, OverviewField } from '../types';
 import { isMealEnabled } from '../utils';
 
 /**

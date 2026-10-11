@@ -1,4 +1,4 @@
-import type { FeedingTime, DeviceProfile, ProfileField } from './types';
+import type { DeviceProfile, FeedingTime, ProfileField } from './types';
 
 /**
  * Format time as HH:MM string

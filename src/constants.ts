@@ -1,7 +1,7 @@
 /**
  * Event names used throughout the application
  */
-import type { MealPlanCardConfig, EditMealState } from './types';
+import type { EditMealState, MealPlanCardConfig } from './types';
 
 export const EVENT_CONFIG_CHANGED = 'config-changed';
 export const EVENT_VALUE_CHANGED = 'value-changed';

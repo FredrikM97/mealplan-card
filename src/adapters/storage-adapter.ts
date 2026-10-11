@@ -1,18 +1,18 @@
 import { log } from '../logger';
-import {
-  StorageAdapter,
-  HomeAssistant,
-  TransportType,
-  MealPlanCardConfig,
-  HasGetter,
-  SensorConfig,
-  MqttConfig,
-  TuyaServiceConfig,
-  DeviceProfile,
-  FeedingTime,
-  EncodingType,
-} from '../types';
 import { getEncoder } from '../profiles/serializer';
+import {
+  type DeviceProfile,
+  EncodingType,
+  type FeedingTime,
+  type HasGetter,
+  type HomeAssistant,
+  type MealPlanCardConfig,
+  type MqttConfig,
+  type SensorConfig,
+  type StorageAdapter,
+  TransportType,
+  type TuyaServiceConfig,
+} from '../types';
 
 /**
  * Shared utility functions for entity state validation and retrieval
@@ -243,7 +243,7 @@ export function createStorageAdapter(
   const transportType = config.transport_type as TransportType;
   log.debug(`Creating storage adapter for transport type: ${transportType}`);
   switch (transportType) {
-    case TransportType.SENSOR:
+    case TransportType.SENSOR: {
       const sensorConfig = config as SensorConfig;
       return new SensorAdapter(
         hass,
@@ -251,6 +251,7 @@ export function createStorageAdapter(
         sensorConfig.sensor,
         sensorConfig.helper,
       );
+    }
     case TransportType.MQTT: {
       const mqttConfig = config as MqttConfig;
       return new MqttAdapter(

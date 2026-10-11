@@ -24,3 +24,14 @@ updates:
       actions:
         patterns:
           - '*'
+  - package-ecosystem: docker
+    directory: /.devcontainer
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      actions:
+        patterns:
+          - '*'

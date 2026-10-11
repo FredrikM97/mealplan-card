@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MealStateController } from '../src/mealStateController';
 import type { ReactiveControllerHost } from 'lit';
-import { testMeals } from './fixtures/data';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { MealStateController } from '../src/mealStateController';
 import { profiles } from '../src/profiles/profiles';
 import { TransportType } from '../src/types';
+import { testMeals } from './fixtures/data';
 import {
-  createMockHass,
-  createMockHost,
-  createMockHassWithSensor,
-  encodeMealData,
   createMealStateController,
+  createMockHass,
   createMockHassWithCallService,
+  createMockHassWithSensor,
+  createMockHost,
+  encodeMealData,
 } from './fixtures/factories';
 
 describe('MealStateController', () => {
@@ -354,7 +354,7 @@ describe('MealStateController', () => {
       const hass = createMockHassWithSensor('sensor.test', encodedMeals);
       const controller = createMealStateController({ hass });
 
-      const requestUpdateSpy = vi.spyOn(controller['host'], 'requestUpdate');
+      const requestUpdateSpy = vi.spyOn(controller.host, 'requestUpdate');
 
       await controller.updateFromHass();
       const firstCallCount = requestUpdateSpy.mock.calls.length;
@@ -378,7 +378,7 @@ describe('MealStateController', () => {
       const newEncoded = encodeMealData(testMeals.dinner);
       hass.states['sensor.test'].state = newEncoded;
 
-      const requestUpdateSpy = vi.spyOn(controller['host'], 'requestUpdate');
+      const requestUpdateSpy = vi.spyOn(controller.host, 'requestUpdate');
       const callCountBefore = requestUpdateSpy.mock.calls.length;
 
       await controller.updateFromHass();
