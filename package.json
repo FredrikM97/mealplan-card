@@ -15,8 +15,7 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && biome ci .",
     "lint:fix": "tsc --noEmit && biome check --write ."
-  }
-      },
+  },
   "devDependencies": {
     "@open-wc/testing": "^5.0.0",
     "@vitest/coverage-v8": "^4.1.11",
