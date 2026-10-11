@@ -1,9 +1,9 @@
 import type { DeviceProfile, FeedingTime } from '../types';
 import {
-  TOKEN_REGEX,
-  TemplateFieldName,
-  HEX_FIELDS,
   EncodingType,
+  HEX_FIELDS,
+  TemplateFieldName,
+  TOKEN_REGEX,
 } from '../types';
 
 export interface TemplateToken {

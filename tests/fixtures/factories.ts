@@ -1,25 +1,25 @@
-import { vi } from 'vitest';
 import { fixture, html } from '@open-wc/testing';
 import type { ReactiveControllerHost } from 'lit';
-import { profiles } from '../../src/profiles/profiles';
+import { vi } from 'vitest';
+import type { ScheduleView } from '../../src/components/schedule-view';
+import { log } from '../../src/logger';
+import type { MealPlanCard } from '../../src/main';
 import { MealStateController } from '../../src/mealStateController';
+import { profiles } from '../../src/profiles/profiles';
+import { getEncoder } from '../../src/profiles/serializer';
 import type {
-  FeedingTime,
   DeviceProfile,
-  MealPlanCardConfig,
+  FeedingTime,
   HomeAssistant,
+  MealPlanCardConfig,
 } from '../../src/types';
 import {
-  ProfileField,
-  TransportType,
   EncodingType,
   OverviewField,
+  ProfileField,
+  TransportType,
 } from '../../src/types';
-import { ScheduleView } from '../../src/components/schedule-view';
-import { getEncoder } from '../../src/profiles/serializer';
 import { testMeals } from './data';
-import { MealPlanCard } from '../../src/main';
-import { log } from '../../src/logger';
 
 export function createMockHass(options?: {
   sensor?: { id: string; state: string; attributes?: Record<string, unknown> };

@@ -1,15 +1,15 @@
 import { expect } from '@open-wc/testing';
 import '../../src/components/schedule-view';
-import { ScheduleView } from '../../src/components/schedule-view';
 import { describe, it, vi } from 'vitest';
+import type { ScheduleView } from '../../src/components/schedule-view';
 import { SaveEvent } from '../../src/constants';
-import { testMeals } from '../fixtures/data';
 import type { FeedingTime } from '../../src/types';
+import { testMeals } from '../fixtures/data';
 import {
   createMealStateController,
-  getTestProfile,
   createScheduleViewFixture,
   createScheduleViewWithMeals,
+  getTestProfile,
 } from '../fixtures/factories';
 
 vi.mock('@kipk/load-ha-components', () => ({

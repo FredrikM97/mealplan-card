@@ -4,10 +4,15 @@
  */
 
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
-import { FeedingTime, DeviceProfile } from './types';
-import type { HasGetter, MealPlanCardConfig, StorageAdapter } from './types';
 import { createStorageAdapter } from './adapters/storage-adapter';
 import { log } from './logger';
+import type {
+  DeviceProfile,
+  FeedingTime,
+  HasGetter,
+  MealPlanCardConfig,
+  StorageAdapter,
+} from './types';
 import { areMealsEqual } from './utils';
 
 export class MealStateController implements ReactiveController {

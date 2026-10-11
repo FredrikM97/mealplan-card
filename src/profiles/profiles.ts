@@ -1,10 +1,10 @@
+import type { DeviceProfile } from '../types';
 import {
-  ProfileField as pf,
+  EncodingType,
   TemplateFieldName as F,
   f,
-  EncodingType,
+  ProfileField as pf,
 } from '../types';
-import type { DeviceProfile } from '../types';
 import {
   combineTransformers,
   createDayTransformer,

@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const file = join(process.cwd(), 'src/profiles/profiles.ts');
 const content = readFileSync(file, 'utf8');
@@ -15,7 +15,7 @@ while ((match = profileRegex.exec(content))) {
   // Parse models array
   const modelsRaw = match[2];
   const models = modelsRaw
-    .replace(/[\[\]'" ]/g, '')
+    .replace(/[[\]'" ]/g, '')
     .split(',')
     .filter(Boolean);
   manufacturers.push({ manufacturer, models });

@@ -1,18 +1,17 @@
 import { waitUntil } from '@open-wc/testing';
 import { expect } from 'vitest';
 import '../src/main';
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
+import { ScheduleClosedEvent } from '../src/constants';
 import { MealPlanCard } from '../src/main';
-import { vi } from 'vitest';
+import { testMeals } from './fixtures/data';
 import {
-  createMockHassWithSensor,
-  createMockHass,
   createMealPlanCardConfig,
   createMealPlanCardFixture,
+  createMockHass,
+  createMockHassWithSensor,
   encodeMealData,
 } from './fixtures/factories';
-import { ScheduleClosedEvent } from '../src/constants';
-import { testMeals } from './fixtures/data';
 
 vi.mock('@kipk/load-ha-components', () => ({
   loadHaComponents: async () => {},
@@ -43,7 +42,7 @@ describe('MealPlanCard', () => {
     let config = createMealPlanCardConfig({ minimal: true });
     let el = await createMealPlanCardFixture(config, createMockHass());
     await el.updateComplete;
-    expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('meal-overview')).to.not.exist;
 
     // Missing sensor
     config = createMealPlanCardConfig({
@@ -54,7 +53,7 @@ describe('MealPlanCard', () => {
     el = await createMealPlanCardFixture(config, createMockHass());
 
     await el.updateComplete;
-    expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('meal-overview')).to.not.exist;
 
     // Missing manufacturer (no profile)
     config = createMealPlanCardConfig({
@@ -65,7 +64,7 @@ describe('MealPlanCard', () => {
     el = await createMealPlanCardFixture(config, createMockHass());
 
     await el.updateComplete;
-    expect(el.shadowRoot!.querySelector('meal-overview')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('meal-overview')).to.not.exist;
   });
 
   it('renders with custom title', async () => {
@@ -77,9 +76,9 @@ describe('MealPlanCard', () => {
       true;
     await el.updateComplete;
 
-    const card = el.shadowRoot!.querySelector('ha-card');
+    const card = el.shadowRoot?.querySelector('ha-card');
     expect(card).to.exist;
-    const header = card!.getAttribute('header');
+    const header = card?.getAttribute('header');
     expect(header).to.equal('Custom Title');
   });
 });
@@ -99,13 +98,13 @@ describe('MealPlanCard integration', () => {
 
     await el.updateComplete;
 
-    const button = el.shadowRoot!.querySelector('ha-button');
+    const button = el.shadowRoot?.querySelector('ha-button');
     expect(button).to.exist;
 
     (button as HTMLElement).click();
     await el.updateComplete;
 
-    const scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    const scheduleView = el.shadowRoot?.querySelector('schedule-view');
     expect(scheduleView).to.exist;
   });
 
@@ -117,9 +116,9 @@ describe('MealPlanCard integration', () => {
 
     await el.updateComplete;
 
-    const overview = el.shadowRoot!.querySelector('meal-overview');
-    const scheduleView = el.shadowRoot!.querySelector('schedule-view');
-    const manageButton = el.shadowRoot!.querySelector('ha-button');
+    const overview = el.shadowRoot?.querySelector('meal-overview');
+    const scheduleView = el.shadowRoot?.querySelector('schedule-view');
+    const manageButton = el.shadowRoot?.querySelector('ha-button');
 
     expect(overview).to.not.exist;
     expect(scheduleView).to.exist;
@@ -137,7 +136,7 @@ describe('MealPlanCard integration', () => {
 
     await el.updateComplete;
 
-    const scheduleViews = el.shadowRoot!.querySelectorAll('schedule-view');
+    const scheduleViews = el.shadowRoot?.querySelectorAll('schedule-view');
     expect(scheduleViews.length).to.equal(1);
   });
 
@@ -153,21 +152,21 @@ describe('MealPlanCard integration', () => {
     await el.updateComplete;
 
     // Open dialog
-    const button = el.shadowRoot!.querySelector('ha-button');
+    const button = el.shadowRoot?.querySelector('ha-button');
     expect(button).to.exist;
     (button as HTMLElement).click();
     await el.updateComplete;
 
     // Verify dialog is open
-    let scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    let scheduleView = el.shadowRoot?.querySelector('schedule-view');
     expect(scheduleView).to.exist;
 
     // Close dialog
-    scheduleView!.dispatchEvent(new ScheduleClosedEvent());
+    scheduleView?.dispatchEvent(new ScheduleClosedEvent());
     await el.updateComplete;
 
     // Verify dialog is closed
-    scheduleView = el.shadowRoot!.querySelector('schedule-view');
+    scheduleView = el.shadowRoot?.querySelector('schedule-view');
     expect(scheduleView).to.not.exist;
   });
   it('updates meal state when hass changes', async () => {

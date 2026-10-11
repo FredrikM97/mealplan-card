@@ -1,9 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import {
+  getProfileWithTransformer,
+  profiles,
+} from '../../src/profiles/profiles';
 import { getEncoder } from '../../src/profiles/serializer';
-import { getProfileWithTransformer } from '../../src/profiles/profiles';
-import profileTestData from '../fixtures/profiles-test-data.json';
 import type { FeedingTime } from '../../src/types';
-import { profiles } from '../../src/profiles/profiles';
+import profileTestData from '../fixtures/profiles-test-data.json';
 
 const INVALID_BASE64 = '!@#$';
 

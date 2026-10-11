@@ -1,10 +1,10 @@
-import { LitElement, html, css } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { FeedingTime, DeviceProfile, MealActionHandler } from '../types';
-import { ProfileField } from '../types';
 import { localize } from '../locales/localize';
-import { renderDaySelector } from './day-selector';
+import type { DeviceProfile, FeedingTime, MealActionHandler } from '../types';
+import { ProfileField } from '../types';
 import { formatTime, hasProfileField } from '../utils';
+import { renderDaySelector } from './day-selector';
 
 @customElement('meal-card')
 export class MealCard extends LitElement {
